@@ -1,0 +1,34 @@
+{
+  "$schema": "./bronnen.schema.json",
+  "beschrijving": "Bronnen voor de event-scraper. Elke bron koppelt aan een sauna in content/saunas/ via saunaSlug. status: te-verifieren | actief | kapot. Alleen 'actief' bronnen worden gescraped. matchToken helpt bij multi-locatie-sites de juiste agendapagina te kiezen.",
+  "bronnen": [
+    {
+      "saunaSlug": "thermen-bussloo",
+      "naam": "Thermen Bussloo",
+      "land": "NL",
+      "agendaUrl": "https://www.thermenbussloo.nl/agenda",
+      "status": "actief",
+      "notitie": "Pad bijgewerkt (score 50).",
+      "laatstGecontroleerd": "2026-07-08"
+    },
+    {
+      "saunaSlug": "sauna-elysium",
+      "naam": "Sauna Elysium",
+      "land": "NL",
+      "agendaUrl": "https://www.sauna-elysium.nl/agenda",
+      "status": "kapot",
+      "notitie": "Host onbereikbaar: fetch failed",
+      "laatstGecontroleerd": "2026-07-08"
+    },
+    {
+      "saunaSlug": "thermae-boetfort",
+      "naam": "Thermae Boetfort",
+      "land": "BE",
+      "agendaUrl": "https://www.thermae.com/nl/aufguss-thermae-boetfort",
+      "matchToken": "boetfort",
+      "status": "actief",
+      "notitie": "Pad bijgewerkt (score 130).",
+      "laatstGecontroleerd": "2026-07-08"
+    }
+  ]
+}

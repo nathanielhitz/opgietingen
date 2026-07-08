@@ -6,9 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "verify-bronnen": "tsx scripts/verify-bronnen.ts",
+    "scrape": "tsx scripts/scrape-events.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.70.0",
+    "@mendable/firecrawl-js": "^4.30.0",
     "gray-matter": "^4.0.3",
     "next": "^15.5.0",
     "next-mdx-remote": "^5.0.0",
@@ -21,6 +25,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "tailwindcss": "^4.0.0",
+    "tsx": "^4.19.0",
     "typescript": "^5.7.0"
   }
 }
