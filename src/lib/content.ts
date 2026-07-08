@@ -53,6 +53,16 @@ export interface OpgietEvent {
   sauna: Sauna;
 }
 
+/**
+ * YAML parseert kale datums (2026-07-25) als Date-objecten. We willen overal
+ * ISO-strings (YYYY-MM-DD). Deze helper normaliseert beide gevallen.
+ */
+function toISODate(value: unknown): string | undefined {
+  if (value == null || value === "") return undefined;
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  return String(value);
+}
+
 /** Simpele, diacritics-veilige slugify (bv. "Noord-Holland" -> "noord-holland"). */
 export function slugify(input: string): string {
   return input
@@ -122,8 +132,8 @@ export const getAllEvents = cache((): OpgietEvent[] => {
         saunaSlug,
         titel: data.titel as string,
         type: data.type as EventType,
-        startDatum: data.startDatum as string,
-        eindDatum: (data.eindDatum as string | undefined) || undefined,
+        startDatum: toISODate(data.startDatum) as string,
+        eindDatum: toISODate(data.eindDatum),
         tijden: data.tijden as string | undefined,
         prijsIndicatie: data.prijsIndicatie as string | undefined,
         ticketUrl: data.ticketUrl as string | undefined,
