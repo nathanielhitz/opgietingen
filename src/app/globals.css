@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+/*
+  Opgietingen.nl — designtaal (PRD §9)
+  Warm, rustgevend, premium: donkere houttinten, stoom/warmte-accenten, veel witruimte.
+*/
+@theme {
+  /* Achtergronden — warm crème / zand */
+  --color-cream: #f7f2ea;
+  --color-sand: #ece1d1;
+  --color-surface: #fffdf9;
+
+  /* Inkt — warm donkerbruin i.p.v. zwart */
+  --color-ink: #2b2119;
+  --color-ink-soft: #5f5044;
+  --color-ink-faint: #8a7c6d;
+
+  /* Hout — diepe, warme bruintinten */
+  --color-wood: #6d4a2f;
+  --color-wood-dark: #3a2718;
+
+  /* Warmte-accent — gloeiend ember/terracotta */
+  --color-ember: #c1592a;
+  --color-ember-soft: #e0955f;
+  --color-ember-tint: #f5e3d6;
+
+  /* Stoom — zacht, koel accent voor rust */
+  --color-steam: #93a39d;
+  --color-steam-tint: #e6ece9;
+
+  /* Lettertypen (via next/font variabelen) */
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* Radius / schaduw voor zachte, premium kaarten */
+  --radius-card: 1rem;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+/* Subtiel stoom/warmte-verloop voor hero- en accentvlakken */
+.warmth-gradient {
+  background-image:
+    radial-gradient(60% 80% at 15% 0%, rgba(224, 149, 95, 0.18), transparent 60%),
+    radial-gradient(50% 70% at 100% 20%, rgba(147, 163, 157, 0.15), transparent 55%);
+}
