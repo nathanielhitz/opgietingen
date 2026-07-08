@@ -13,22 +13,37 @@ const ROOT = process.cwd();
 const BRONNEN_PATH = path.join(ROOT, "content", "bronnen.json");
 const EVENTS_DIR = path.join(ROOT, "content", "events");
 
-export type BronStatus = "te-verifieren" | "actief" | "kapot";
+export type BronStatus =
+  | "te-verifieren"
+  | "actief" // werkende, scrapebare agendapagina gevonden
+  | "geen-agenda" // host bereikbaar maar geen aparte agendapagina (evt. JS-gerenderd)
+  | "handmatig" // niet-scrapebaar (bv. Facebook/login-wall); handmatige check
+  | "aanvullen" // placeholder: bron nog verder in te vullen
+  | "opzetten" // toekomstig kanaal (bv. nieuwsbrief-forward), nog op te zetten
+  | "kapot"; // host onbereikbaar / URL ongeldig / geblokkeerd
 
 export interface Bron {
-  saunaSlug: string;
+  /** Stabiele sleutel; = saunaSlug voor het koppelen van gescrapete events. */
+  id: string;
   naam: string;
-  land: "NL" | "BE";
+  land: string; // "NL" | "BE" | "NL/BE"
+  provincie?: string;
+  website?: string;
   agendaUrl: string;
+  /** website | handmatig | nieuwsbrief. Alleen 'website' wordt gescrapet. */
+  type?: string;
+  /** Helpt op multi-locatie-sites de juiste agendapagina te kiezen. */
   matchToken?: string;
   status: BronStatus;
-  notitie: string;
-  laatstGecontroleerd: string | null;
+  notities?: string;
+  laatstGecontroleerd?: string | null;
 }
 
 interface BronnenFile {
   $schema?: string;
+  $comment?: string;
   beschrijving?: string;
+  laatstBijgewerkt?: string;
   bronnen: Bron[];
 }
 

@@ -90,9 +90,19 @@ Kalenderweergave en nieuwsbrief-opt-in zijn **uitgesteld** naar een latere sessi
 
 Automatische aanvulling van de agenda: haalt opgiet-events op van sauna-websites en zet ze als **concept** in `content/events/`.
 
-**Bronnen** — `content/bronnen.json`: per sauna een `agendaUrl`, gekoppeld via `saunaSlug`. `status`: `te-verifieren` | `actief` | `kapot`; alleen `actief` wordt gescrapet. `matchToken` helpt op multi-locatie-sites de juiste pagina te kiezen.
+**Bronnen** — `content/bronnen.json`: per bron een `id` (= `saunaSlug`, koppelt gescrapete events aan een profiel in `content/saunas/`), `naam`, `land`, `provincie`, `website`, `agendaUrl`, `type` (`website` | `handmatig` | `nieuwsbrief`), optioneel `matchToken`, `status` en `notities`. Alleen bronnen met `status: actief` én `type: website` worden gescrapet. Actieve bronnen hebben een bijbehorend sauna-profiel; niet-actieve bronnen zijn registry-only tot ze gecureerd worden.
 
-**Verifiëren** (`npm run verify-bronnen`) — fetcht elke `agendaUrl` (redirects, robots.txt-naleving), zoekt via sitemap + homepage-links de juiste agendapagina als het pad afwijkt (scoort op trefwoorden, sluit blog/nieuws uit), en schrijft `actief` + juiste URL of `kapot` + notitie terug. `-- --all` her-verifieert alles.
+Statusbetekenis:
+- `actief` — werkende, scrapebare agendapagina gevonden.
+- `geen-agenda` — host bereikbaar, maar geen aparte agendapagina op statische HTML (vaak JS-gerenderd) — handmatig controleren.
+- `handmatig` — niet-scrapebaar (bv. Facebook/login-wall); handmatige check. Wordt door `verify-bronnen` nooit aangepast.
+- `aanvullen` — placeholder, bron nog in te vullen.
+- `opzetten` — toekomstig kanaal (bv. nieuwsbrief-forward), nog op te zetten.
+- `kapot` — host onbereikbaar (DNS/timeout) / URL ongeldig.
+
+`verify-bronnen` slaat `handmatig`/`aanvullen`/`opzetten` en niet-website-types over.
+
+**Verifiëren** (`npm run verify-bronnen`) — fetcht elke `agendaUrl` (redirects, correcte robots.txt-naleving incl. `*`/`$`-wildcards), zoekt via sitemap + homepage-links de juiste agendapagina als het pad afwijkt (scoort op trefwoorden, sluit blog/nieuws/zakelijk uit, verkiest ondiepe sectiepagina's), en schrijft de juiste status + URL + notitie terug. `-- --all` her-verifieert alles (behalve `handmatig`). `npm run bronnen-report` print een markdown-statusrapport.
 
 **Scrapen** (`npm run scrape`) — per actieve bron:
 1. **Fetch + extractie via `src/lib/scraper.ts`** (de enige, vervangbare fetch-laag): Firecrawl haalt de pagina als markdown op én doet structured extraction met het event-datamodel als JSON-schema. Valt dat tegen (geen bruikbare output) → fallback op eigen extractie via de Claude API (`claude-haiku-4-5`) op dezelfde markdown.
@@ -103,7 +113,7 @@ Flags: `-- --limit N` (eerste N bronnen), `-- --dry-run` (mock-extractie; test d
 
 **Env / secrets:** `FIRECRAWL_API_KEY` (fetch + primaire extractie), `ANTHROPIC_API_KEY` (fallback). Lokaal via `.env`/export; in CI via GitHub Actions secrets.
 
-**Automatisering:** `.github/workflows/scrape.yml` draait `npm run scrape` elke maandag 06:00 UTC (+ handmatig via `workflow_dispatch`) en opent een PR met de nieuwe concept-events (`peter-evans/create-pull-request`). Review → `status: gepubliceerd` → merge.
+**Automatisering:** `.github/workflows/scrape.yml` draait elke maandag 06:00 UTC (+ handmatig via `workflow_dispatch`): eerst `verify-bronnen` (actualiseert statussen/URL's), dan `scrape`. Opent een PR met de nieuwe concept-events én de bijgewerkte `bronnen.json`; de PR-beschrijving bevat een bronnenstatus-rapport met alle niet-actieve bronnen als aandachtspunten (`scripts/bronnen-report.ts`). Review → `status: gepubliceerd` → merge.
 
 > Model: de fallback-extractie gebruikt bewust `claude-haiku-4-5` (snel/goedkoop). Wijzig via `FALLBACK_MODEL` in `src/lib/scraper.ts`.
 
@@ -115,6 +125,7 @@ npm run build           # productie-build (verifieer hiermee vóór commit)
 npm run start           # productie-server
 npm run lint            # eslint
 npm run verify-bronnen  # controleer/actualiseer agendaUrl's in bronnen.json
+npm run bronnen-report  # markdown-statusrapport van alle bronnen
 npm run scrape          # scrape actieve bronnen → concept-events (API-keys nodig)
 npm run scrape -- --dry-run   # test de pipeline zonder API-keys
 ```

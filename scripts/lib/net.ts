@@ -109,24 +109,40 @@ export async function getRobots(origin: string): Promise<RobotsRules> {
   return rules;
 }
 
+/** Vertaalt een robots-pattern (met '*' wildcard en optioneel '$'-anker) naar regex. */
+function ruleMatches(pattern: string, path: string): boolean {
+  let p = pattern;
+  const anchored = p.endsWith("$");
+  if (anchored) p = p.slice(0, -1);
+  const body = p
+    .split("*")
+    .map((s) => s.replace(/[.+?^${}()|[\]\\]/g, "\\$&"))
+    .join(".*");
+  try {
+    return new RegExp(`^${body}${anchored ? "$" : ""}`).test(path);
+  } catch {
+    return false;
+  }
+}
+
+/** Specificiteit (aantal letterlijke tekens) van de langst-matchende regel, of -1. */
+function matchLen(patterns: string[], path: string): number {
+  let best = -1;
+  for (const pat of patterns) {
+    if (ruleMatches(pat, path)) {
+      const specificity = pat.replace(/[*$]/g, "").length;
+      if (specificity > best) best = specificity;
+    }
+  }
+  return best;
+}
+
 /** Longest-match regel volgens de robots-conventie. Allow wint bij gelijke lengte. */
 export function isPathAllowed(rules: RobotsRules, path: string): boolean {
   if (rules.permissive) return true;
-
-  const match = (patterns: string[]): number => {
-    let longest = -1;
-    for (const p of patterns) {
-      // '*' wildcard vereenvoudigd tot prefix vóór de eerste '*'.
-      const prefix = p.split("*")[0];
-      if (path.startsWith(prefix) && prefix.length > longest) longest = prefix.length;
-    }
-    return longest;
-  };
-
-  const dis = match(rules.disallow);
+  const dis = matchLen(rules.disallow, path);
   if (dis === -1) return true;
-  const allowLen = match(rules.allow);
-  return allowLen >= dis;
+  return matchLen(rules.allow, path) >= dis;
 }
 
 /** Mag deze URL volgens robots.txt opgehaald worden? */

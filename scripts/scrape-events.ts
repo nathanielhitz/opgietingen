@@ -81,7 +81,11 @@ async function main() {
     try {
       outcome = DRY_RUN
         ? mockOutcome(bron)
-        : await scrapeAgenda(bron.agendaUrl, { saunaNaam: bron.naam, land: bron.land, jaar: REF_YEAR });
+        : await scrapeAgenda(bron.agendaUrl, {
+            saunaNaam: bron.naam,
+            land: bron.land === "BE" ? "BE" : "NL",
+            jaar: REF_YEAR,
+          });
     } catch (err) {
       console.log(`  ✗ Fout: ${err instanceof Error ? err.message : String(err)}\n`);
       continue;
@@ -91,7 +95,7 @@ async function main() {
     console.log(`  Extractie: ${outcome.method}, ${outcome.events.length} kandidaat-event(s).`);
 
     for (const ev of outcome.events) {
-      const key = dedupKey(bron.saunaSlug, ev.startDatum);
+      const key = dedupKey(bron.id, ev.startDatum);
       if (existing.has(key) || seen.has(key)) {
         console.log(`  = dedup: ${ev.titel} (${ev.startDatum}) bestaat al.`);
         skipped++;
@@ -99,7 +103,7 @@ async function main() {
       }
 
       const newEvent: NewEvent = {
-        saunaSlug: bron.saunaSlug,
+        saunaSlug: bron.id,
         titel: ev.titel,
         type: ev.type,
         startDatum: ev.startDatum,

@@ -31,6 +31,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Stap 1 — verifieer bronnen (robots, redirects, agendapagina-discovery).
+      # Werkt bronnen.json bij: kapotte/gewijzigde URL's worden zo automatisch
+      # gemeld in de PR. Vereist geen API-keys (plain fetch).
+      - name: Verifieer bronnen
+        run: npm run verify-bronnen -- --all
+
+      # Stap 2 — scrape alleen de actieve bronnen.
       - name: Scrape events (nieuwe concepts naar content/events/)
         env:
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
@@ -42,25 +49,32 @@ jobs:
             npm run scrape
           fi
 
-      - name: Pull request met nieuwe events
+      # Stap 3 — bouw de PR-beschrijving met de actuele bronnenstatus.
+      - name: Bouw PR-beschrijving
+        run: |
+          {
+            echo "Automatisch gescrapete opgiet-events, toegevoegd als **concept**."
+            echo ""
+            echo "- Bronnen eerst geverifieerd (\`verify-bronnen\`), daarna gescraped."
+            echo "- Fetch + extractie via Firecrawl, met Claude-fallback (\`claude-haiku-4-5\`)."
+            echo "- Gededupliceerd op \`saunaSlug + startDatum\`; nieuwe events krijgen \`status: concept\`."
+            echo ""
+            echo "**Reviewstappen vóór merge:** controleer datums/titels/types, zet \`concept\` → \`gepubliceerd\` voor wat live mag, en corrigeer/verwijder onjuiste events."
+            echo ""
+            npm run --silent bronnen-report
+          } > pr-body.md
+
+      - name: Pull request met nieuwe events + bronnenstatus
         uses: peter-evans/create-pull-request@v6
         with:
-          add-paths: content/events
+          add-paths: |
+            content/events
+            content/bronnen.json
           branch: scrape/nieuwe-events
           delete-branch: true
-          commit-message: "chore(scraper): nieuwe opgiet-events (concept)"
+          commit-message: "chore(scraper): nieuwe opgiet-events (concept) + bronnenstatus"
           title: "Nieuwe opgiet-events (concept) — wekelijkse scrape"
-          body: |
-            Automatisch gescrapete opgiet-events, toegevoegd als **concept**.
-
-            - Bron: `content/bronnen.json` (alleen bronnen met status `actief`)
-            - Fetch + extractie via Firecrawl, met Claude-fallback (`claude-haiku-4-5`)
-            - Gededupliceerd op `saunaSlug + startDatum`
-
-            **Reviewstappen vóór merge:**
-            1. Controleer datums, titels en types per event.
-            2. Zet `status: concept` → `gepubliceerd` voor events die live mogen.
-            3. Verwijder of corrigeer onjuiste/dubbele events.
+          body-path: pr-body.md
           labels: |
             scraper
             automated

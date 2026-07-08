@@ -23,7 +23,7 @@ const KEYWORD_SCORE: Array<[RegExp, number]> = [
 
 const CONTENT_HINT = /(aufguss|opgiet|agenda)/i;
 // Losse artikelen/nieuws/overige pagina's zijn geen agenda-overzicht → uitsluiten.
-const DISQUALIFY = /(^|\/)(blog|nieuws|news|artikel|pers|werkenbij|vacature|sponsor|faq|contact|over|arrangement)/i;
+const DISQUALIFY = /(^|\/)(blog|nieuws|news|artikel|pers|werkenbij|vacature|sponsor|faq|contact|over|arrangement|meeting|zakelijk|vergader|cadeau|webshop)/i;
 const TODAY = new Date().toISOString().slice(0, 10);
 
 interface Scored {
@@ -96,7 +96,7 @@ async function candidatesFromRoot(origin: string): Promise<string[]> {
 }
 
 interface Resolution {
-  status: "actief" | "kapot";
+  status: "actief" | "geen-agenda" | "kapot";
   url: string;
   notitie: string;
 }
@@ -120,10 +120,15 @@ async function resolveAgenda(bron: Bron): Promise<Resolution> {
     }
   };
 
-  // 1. Probeer de opgegeven URL.
+  // 1. Probeer de opgegeven URL + bepaal of de host überhaupt bereikbaar is.
   const direct = await fetchUrl(bron.agendaUrl);
-  if (direct.error && direct.status === 0) {
-    return { status: "kapot", url: bron.agendaUrl, notitie: `Host onbereikbaar: ${direct.error}` };
+  const isOrigin = bron.agendaUrl === origin || bron.agendaUrl === `${origin}/`;
+  const rootRes = isOrigin ? direct : await fetchUrl(origin);
+  const hostReachable = direct.ok || rootRes.ok;
+
+  if (!hostReachable) {
+    const reason = direct.error || rootRes.error || `HTTP ${direct.status}`;
+    return { status: "kapot", url: bron.agendaUrl, notitie: `Host onbereikbaar: ${reason}` };
   }
 
   // 2. Verzamel kandidaten (opgegeven URL + sitemap + homepage-links).
@@ -149,23 +154,29 @@ async function resolveAgenda(bron: Bron): Promise<Resolution> {
     }
   }
 
-  // 4. Geen betere kandidaat, maar opgegeven URL werkte wel.
-  if (direct.ok && check(direct.finalUrl)) {
-    return { status: "actief", url: direct.finalUrl, notitie: "Bevestigd (geen agenda-trefwoord in pad)." };
-  }
-
-  if (direct.ok && !check(direct.finalUrl)) {
-    return { status: "kapot", url: bron.agendaUrl, notitie: "Geblokkeerd door robots.txt." };
-  }
-
-  return { status: "kapot", url: bron.agendaUrl, notitie: `Geen agendapagina gevonden (HTTP ${direct.status}).` };
+  // 4. Host is bereikbaar, maar geen aparte agendapagina gevonden op statische HTML.
+  const fallbackUrl = direct.ok ? direct.finalUrl : rootRes.ok ? rootRes.finalUrl : bron.agendaUrl;
+  const detail = direct.ok ? "" : ` (opgegeven pad gaf HTTP ${direct.status})`;
+  return {
+    status: "geen-agenda",
+    url: fallbackUrl,
+    notitie: `Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd)${detail} — handmatig controleren.`,
+  };
 }
 
 async function main() {
   const all = process.argv.includes("--all");
   const data = readBronnen();
 
-  const todo = data.bronnen.filter((b) => all || b.status === "te-verifieren");
+  // Niet-verifieerbare bronnen overslaan: handmatig/placeholder-statussen,
+  // niet-website-types en bronnen zonder agenda-URL.
+  const skip = (b: Bron) =>
+    ["handmatig", "aanvullen", "opzetten"].includes(b.status) ||
+    b.type === "handmatig" ||
+    b.type === "nieuwsbrief" ||
+    !b.agendaUrl;
+
+  const todo = data.bronnen.filter((b) => !skip(b) && (all || b.status === "te-verifieren"));
   console.log(`Verifieer ${todo.length} van ${data.bronnen.length} bronnen…\n`);
 
   for (const bron of data.bronnen) {
@@ -174,16 +185,18 @@ async function main() {
     const result = await resolveAgenda(bron);
     bron.status = result.status;
     bron.agendaUrl = result.url;
-    bron.notitie = result.notitie;
+    bron.notities = result.notitie;
     bron.laatstGecontroleerd = TODAY;
     console.log(`${result.status.toUpperCase()} → ${result.url}\n  ${result.notitie}`);
     await sleep(REQUEST_DELAY_MS);
   }
 
   writeBronnen(data);
-  const actief = data.bronnen.filter((b) => b.status === "actief").length;
-  const kapot = data.bronnen.filter((b) => b.status === "kapot").length;
-  console.log(`\nKlaar. Actief: ${actief}, kapot: ${kapot}. bronnen.json bijgewerkt.`);
+  const count = (s: string) => data.bronnen.filter((b) => b.status === s).length;
+  console.log(
+    `\nKlaar. actief: ${count("actief")}, geen-agenda: ${count("geen-agenda")}, ` +
+      `handmatig: ${count("handmatig")}, kapot: ${count("kapot")}. bronnen.json bijgewerkt.`
+  );
 }
 
 main().catch((err) => {
