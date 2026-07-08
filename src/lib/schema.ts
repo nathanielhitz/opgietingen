@@ -10,6 +10,32 @@ export function absoluteUrl(pathOrUrl: string): string {
 
 const COUNTRY_CODE: Record<string, string> = { NL: "NL", BE: "BE" };
 
+/** WebSite + Organization JSON-LD voor de homepage (merkentiteit / GEO). */
+export function siteSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": `${site.url}#website`,
+        url: site.url,
+        name: site.name,
+        description: site.description,
+        inLanguage: "nl-NL",
+        publisher: { "@id": `${site.url}#organization` },
+      },
+      {
+        "@type": "Organization",
+        "@id": `${site.url}#organization`,
+        name: site.name,
+        url: site.url,
+        description: site.tagline,
+        areaServed: ["Nederland", "België"],
+      },
+    ],
+  };
+}
+
 function placeSchema(sauna: Sauna) {
   return {
     "@type": "Place",

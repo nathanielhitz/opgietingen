@@ -4,6 +4,8 @@ import { EVENT_TYPES, COUNTRY_LABELS, type EventType } from "@/lib/site";
 import { isUpcoming, monthYearSlug, monthYearLabel } from "@/lib/dates";
 import { EventCard } from "@/components/EventCard";
 import { SaunaCard } from "@/components/SaunaCard";
+import { JsonLd } from "@/components/JsonLd";
+import { siteSchema } from "@/lib/schema";
 
 export const revalidate = 3600;
 
@@ -20,6 +22,7 @@ export default function HomePage() {
 
   return (
     <div>
+      <JsonLd data={siteSchema()} />
       {/* Hero — licht, met zoekbalk */}
       <section className="warmth-gradient border-b border-sand">
         <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
