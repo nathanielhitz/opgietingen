@@ -63,6 +63,22 @@ export function eventSchema(event: OpgietEvent) {
   };
 }
 
+/** schema.org ItemList JSON-LD voor lijstpagina's (agenda/maand/provincie). */
+export function eventItemListSchema(events: OpgietEvent[], name: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name,
+    numberOfItems: events.length,
+    itemListElement: events.map((e, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: absoluteUrl(`/event/${e.slug}`),
+      name: e.titel,
+    })),
+  };
+}
+
 /** schema.org LocalBusiness JSON-LD voor een saunapagina. */
 export function saunaSchema(sauna: Sauna) {
   return {
