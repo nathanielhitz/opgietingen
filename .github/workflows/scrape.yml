@@ -1,0 +1,66 @@
+name: Scrape opgiet-events
+
+# Draait elke maandag om 06:00 UTC (± 07:00/08:00 NL-tijd). Ook handmatig te starten.
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Max. aantal bronnen (leeg = alle actieve bronnen)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Scrape events (nieuwe concepts naar content/events/)
+        env:
+          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -n "${{ github.event.inputs.limit }}" ]; then
+            npm run scrape -- --limit "${{ github.event.inputs.limit }}"
+          else
+            npm run scrape
+          fi
+
+      - name: Pull request met nieuwe events
+        uses: peter-evans/create-pull-request@v6
+        with:
+          add-paths: content/events
+          branch: scrape/nieuwe-events
+          delete-branch: true
+          commit-message: "chore(scraper): nieuwe opgiet-events (concept)"
+          title: "Nieuwe opgiet-events (concept) — wekelijkse scrape"
+          body: |
+            Automatisch gescrapete opgiet-events, toegevoegd als **concept**.
+
+            - Bron: `content/bronnen.json` (alleen bronnen met status `actief`)
+            - Fetch + extractie via Firecrawl, met Claude-fallback (`claude-haiku-4-5`)
+            - Gededupliceerd op `saunaSlug + startDatum`
+
+            **Reviewstappen vóór merge:**
+            1. Controleer datums, titels en types per event.
+            2. Zet `status: concept` → `gepubliceerd` voor events die live mogen.
+            3. Verwijder of corrigeer onjuiste/dubbele events.
+          labels: |
+            scraper
+            automated

@@ -30,6 +30,7 @@ Opgietingen.nl is dé agenda voor opgiet-evenementen (Aufguss-sessies, opgietwee
 content/
   saunas/*.mdx      # sauna-profielen (frontmatter + beschrijving)
   events/*.mdx      # opgiet-events (frontmatter + beschrijving/programma)
+  bronnen.json      # scraper-bronnen (agendaUrl per sauna, status)
 src/
   app/              # App Router routes (zie hieronder)
   components/       # herbruikbare UI (SiteHeader, EventCard, filters, ...)
@@ -37,6 +38,13 @@ src/
     site.ts         # site-config, EVENT_TYPES, PROVINCES, COUNTRY_LABELS
     content.ts      # content-loader: leest & parseert MDX, joint events↔saunas
     clicks.ts       # affiliate klik-logging (fase 1: append naar data/clicks.log)
+    scraper.ts      # scraper-laag: Firecrawl (markdown + extractie) + Claude-fallback
+scripts/
+  verify-bronnen.ts # verifieert agendaUrl's in bronnen.json (robots, discovery)
+  scrape-events.ts  # scrapet actieve bronnen → nieuwe events als concept-MDX
+  lib/              # net.ts (fetch/robots), content.ts (bronnen/dedup/MDX-write)
+.github/workflows/
+  scrape.yml        # wekelijkse scrape (cron ma 06:00) → PR met concept-events
 data/
   clicks.log        # klik-log (gitignored)
 ```
@@ -47,7 +55,9 @@ data/
 
 **Event** (`content/events/<slug>.mdx` frontmatter): `slug`, `saunaSlug` (koppelt aan sauna), `titel`, `type` (`opgietweekend`|`thema`|`kampioenschap`|`regulier`), `startDatum` (`YYYY-MM-DD`), `eindDatum`, `tijden`, `prijsIndicatie`, `ticketUrl` (affiliate), `afbeelding`, `status` (`concept`|`gepubliceerd`|`afgelopen`). MDX-body = beschrijving/programma.
 
-> Events joinen aan sauna's via `saunaSlug`. Alleen `status: gepubliceerd` events zijn zichtbaar (concepts worden gefilterd in de loader).
+Optioneel veld `bron: scraper` markeert automatisch gescrapete events.
+
+> Events joinen aan sauna's via `saunaSlug`. Alleen `status: gepubliceerd` events zijn zichtbaar (concepts worden gefilterd in de loader). Gescrapete events komen binnen als `concept` en worden pas zichtbaar na handmatige review + `status: gepubliceerd`.
 
 ## Routes (PRD §6)
 
@@ -76,13 +86,37 @@ Kalenderweergave en nieuwsbrief-opt-in zijn **uitgesteld** naar een latere sessi
 - **Affiliate-links altijd via `/uit/[event-of-sauna-slug]`** zodat kliks meetbaar zijn — nooit direct naar de sauna linken vanaf CTA's.
 - **SEO:** elke route exporteert `metadata`/`generateMetadata`; detailpagina's renderen JSON-LD structured data; `sitemap.ts` genereert `/sitemap.xml`.
 
+## Content-scraper (pipeline)
+
+Automatische aanvulling van de agenda: haalt opgiet-events op van sauna-websites en zet ze als **concept** in `content/events/`.
+
+**Bronnen** — `content/bronnen.json`: per sauna een `agendaUrl`, gekoppeld via `saunaSlug`. `status`: `te-verifieren` | `actief` | `kapot`; alleen `actief` wordt gescrapet. `matchToken` helpt op multi-locatie-sites de juiste pagina te kiezen.
+
+**Verifiëren** (`npm run verify-bronnen`) — fetcht elke `agendaUrl` (redirects, robots.txt-naleving), zoekt via sitemap + homepage-links de juiste agendapagina als het pad afwijkt (scoort op trefwoorden, sluit blog/nieuws uit), en schrijft `actief` + juiste URL of `kapot` + notitie terug. `-- --all` her-verifieert alles.
+
+**Scrapen** (`npm run scrape`) — per actieve bron:
+1. **Fetch + extractie via `src/lib/scraper.ts`** (de enige, vervangbare fetch-laag): Firecrawl haalt de pagina als markdown op én doet structured extraction met het event-datamodel als JSON-schema. Valt dat tegen (geen bruikbare output) → fallback op eigen extractie via de Claude API (`claude-haiku-4-5`) op dezelfde markdown.
+2. **Dedup** tegen bestaande events op `saunaSlug + startDatum`.
+3. **Schrijft** nieuwe events als MDX met `status: concept`, `bron: scraper`.
+
+Flags: `-- --limit N` (eerste N bronnen), `-- --dry-run` (mock-extractie; test dedup + MDX zonder API-keys).
+
+**Env / secrets:** `FIRECRAWL_API_KEY` (fetch + primaire extractie), `ANTHROPIC_API_KEY` (fallback). Lokaal via `.env`/export; in CI via GitHub Actions secrets.
+
+**Automatisering:** `.github/workflows/scrape.yml` draait `npm run scrape` elke maandag 06:00 UTC (+ handmatig via `workflow_dispatch`) en opent een PR met de nieuwe concept-events (`peter-evans/create-pull-request`). Review → `status: gepubliceerd` → merge.
+
+> Model: de fallback-extractie gebruikt bewust `claude-haiku-4-5` (snel/goedkoop). Wijzig via `FALLBACK_MODEL` in `src/lib/scraper.ts`.
+
 ## Commando's
 
 ```bash
-npm run dev      # dev-server (http://localhost:3000)
-npm run build    # productie-build (verifieer hiermee vóór commit)
-npm run start    # productie-server
-npm run lint     # eslint
+npm run dev             # dev-server (http://localhost:3000)
+npm run build           # productie-build (verifieer hiermee vóór commit)
+npm run start           # productie-server
+npm run lint            # eslint
+npm run verify-bronnen  # controleer/actualiseer agendaUrl's in bronnen.json
+npm run scrape          # scrape actieve bronnen → concept-events (API-keys nodig)
+npm run scrape -- --dry-run   # test de pipeline zonder API-keys
 ```
 
 ## Fase-grenzen
