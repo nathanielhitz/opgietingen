@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getAllEvents, getAllSaunas, getProvincesWithEvents, slugify } from "@/lib/content";
-import { EVENT_TYPES, COUNTRY_LABELS, type EventType } from "@/lib/site";
 import { isUpcoming, monthYearSlug, monthYearLabel } from "@/lib/dates";
+import HeroHeader from "@/components/HeroHeader";
 import { EventCard } from "@/components/EventCard";
 import { SaunaCard } from "@/components/SaunaCard";
 import { JsonLd } from "@/components/JsonLd";
@@ -23,50 +23,7 @@ export default function HomePage() {
   return (
     <div>
       <JsonLd data={siteSchema()} />
-      {/* Hero — licht, met zoekbalk */}
-      <section className="warmth-gradient border-b border-sand">
-        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
-          <p className="text-sm font-semibold uppercase tracking-wider text-ember">Opgietingen · Aufguss · NL &amp; BE</p>
-          <h1 className="mt-3 max-w-3xl font-display text-4xl font-semibold leading-tight text-ink sm:text-5xl">
-            Vind de mooiste opgietingen bij jou in de buurt
-          </h1>
-          <p className="mt-4 max-w-xl text-lg text-ink-soft">
-            Dé agenda voor opgietweekenden, thema-avonden en Aufguss-kampioenschappen in sauna's in Nederland en België.
-          </p>
-
-          {/* Zoekbalk: GET-form naar /agenda (werkt zonder JS) */}
-          <form action="/agenda" className="mt-8 flex max-w-2xl flex-col gap-3 rounded-[--radius-card] border border-sand bg-surface/90 p-3 shadow-sm backdrop-blur sm:flex-row sm:items-end">
-            <label className="flex-1">
-              <span className="mb-1 block px-1 text-xs font-medium text-ink-faint">Provincie</span>
-              <select name="provincie" className="w-full rounded-lg border border-sand bg-cream px-3 py-2.5 text-sm text-ink focus:border-ember focus:outline-none">
-                <option value="">Alle provincies</option>
-                {provinces.map((p) => (
-                  <option key={p.provincie} value={slugify(p.provincie)}>
-                    {p.provincie} — {COUNTRY_LABELS[p.land]}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="flex-1">
-              <span className="mb-1 block px-1 text-xs font-medium text-ink-faint">Type</span>
-              <select name="type" className="w-full rounded-lg border border-sand bg-cream px-3 py-2.5 text-sm text-ink focus:border-ember focus:outline-none">
-                <option value="">Alle types</option>
-                {(Object.keys(EVENT_TYPES) as EventType[]).map((t) => (
-                  <option key={t} value={t}>
-                    {EVENT_TYPES[t]}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <button
-              type="submit"
-              className="rounded-full bg-ember px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-ember/90"
-            >
-              Zoek opgietingen
-            </button>
-          </form>
-        </div>
-      </section>
+      <HeroHeader provinces={provinces} />
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         {/* Komende events */}

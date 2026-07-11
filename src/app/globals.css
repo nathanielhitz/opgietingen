@@ -59,3 +59,10 @@ h1, h2, h3, h4 {
     radial-gradient(60% 80% at 15% 0%, rgba(224, 149, 95, 0.18), transparent 60%),
     radial-gradient(50% 70% at 100% 20%, rgba(147, 163, 157, 0.15), transparent 55%);
 }
+
+/* Donkere scrim over de hero-foto (van onder/links) zodat lichte tekst leesbaar blijft. */
+.hero-overlay {
+  background-image:
+    linear-gradient(to top, rgba(43, 33, 25, 0.85), rgba(43, 33, 25, 0.35) 55%, rgba(43, 33, 25, 0.15)),
+    linear-gradient(to right, rgba(43, 33, 25, 0.55), transparent 60%);
+}
