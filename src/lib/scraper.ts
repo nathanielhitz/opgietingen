@@ -177,6 +177,25 @@ async function firecrawlScrape(
   };
 }
 
+// Haalt een pagina op als markdown via Firecrawl (echte browser-rendering),
+// zonder structured extraction. Voor verify-bronnen's JS-fallback (spec §4).
+// Retourneert null als er geen key is of de fetch niets bruikbaars oplevert.
+export async function firecrawlFetchMarkdown(url: string): Promise<string | null> {
+  if (!process.env.FIRECRAWL_API_KEY) return null;
+  try {
+    const doc = await getFirecrawl().scrape(url, {
+      formats: ["markdown"],
+      onlyMainContent: true,
+      headers: { "User-Agent": USER_AGENT },
+      timeout: 60000,
+    });
+    const markdown = doc.markdown ?? "";
+    return markdown.trim() ? markdown : null;
+  } catch {
+    return null;
+  }
+}
+
 /* ---------- Claude-fallback (claude-haiku-4-5) ---------- */
 
 async function claudeExtract(markdown: string, ctx: ScrapeContext): Promise<ScrapedEvent[]> {
