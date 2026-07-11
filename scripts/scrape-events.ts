@@ -39,22 +39,42 @@ const AUTO_PUBLISH = process.env.SCRAPE_AUTOPUBLISH === "true";
 /** Mock-extractie voor --dry-run: twee toekomstige events per bron. */
 function mockOutcome(bron: Bron): ScrapeOutcome {
   const events: ScrapedEvent[] = [
+    // Geldig — moet slagen (gepubliceerd bij AUTO_PUBLISH).
     {
-      titel: `Proefopgieting ${bron.naam}`,
-      type: "regulier",
+      titel: "Aufguss-avond (mock)",
+      type: "thema",
       startDatum: "2027-02-14",
-      tijden: "19:00 – 22:00",
-      prijsIndicatie: "Bij dagentree",
-      beschrijving: `Mock-event voor ${bron.naam} (dry-run).`,
+      beschrijving: "Sfeervolle opgieting met muziek.",
     },
     {
-      titel: `Winter Aufguss ${bron.naam}`,
-      type: "thema",
+      titel: "Opgietweekend (mock)",
+      type: "opgietweekend",
       startDatum: "2027-03-07",
-      beschrijving: `Tweede mock-event voor ${bron.naam} (dry-run).`,
+      beschrijving: "Doorlopende opgietingen het hele weekend.",
+    },
+    // Afkeur: datum in verleden.
+    {
+      titel: "Oude Aufguss (mock)",
+      type: "thema",
+      startDatum: "2020-01-01",
+      beschrijving: "Voorbije opgieting.",
+    },
+    // Afkeur: niet-opgiet-event.
+    {
+      titel: "Moederdagbrunch (mock)",
+      type: "regulier",
+      startDatum: "2027-05-10",
+      beschrijving: "Luxe buffet met bubbels.",
+    },
+    // Afkeur: ongeldig type.
+    {
+      titel: "Opgieting met fout type (mock)",
+      type: "feestje" as ScrapedEvent["type"],
+      startDatum: "2027-06-01",
+      beschrijving: "Bevat opgiet-trefwoord maar fout type.",
     },
   ];
-  return { events, markdown: "(dry-run)", method: "none", warnings: ["dry-run: geen echte fetch"] };
+  return { events, markdown: "", method: "none", warnings: ["dry-run: geen echte fetch"] };
 }
 
 async function main() {
