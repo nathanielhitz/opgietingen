@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getAllEvents, getProvincesWithEvents, slugify } from "@/lib/content";
 import { parseFilters, filterEvents, validateDateRange, type SearchParams } from "@/lib/filters";
 import { AgendaFilters, type ProvinceOption } from "@/components/AgendaFilters";
-import { EventCard } from "@/components/EventCard";
+import { AgendaEventCard } from "@/components/AgendaEventCard";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -51,10 +51,10 @@ export default async function AgendaPage({
       </div>
 
       {filterError ? null : events.length > 0 ? (
-        <ul className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-4 space-y-3">
           {events.map((event) => (
             <li key={event.slug}>
-              <EventCard event={event} />
+              <AgendaEventCard event={event} />
             </li>
           ))}
         </ul>
