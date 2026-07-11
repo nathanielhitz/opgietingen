@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { EVENT_TYPES, COUNTRY_LABELS, type Country, type EventType } from "@/lib/site";
 
@@ -11,17 +11,28 @@ export interface ProvinceOption {
   count: number;
 }
 
-export function AgendaFilters({ provinces }: { provinces: ProvinceOption[] }) {
+export function AgendaFilters({
+  provinces,
+  error,
+}: {
+  provinces: ProvinceOption[];
+  error: string | null;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
 
+  const q = params.get("q") ?? "";
   const land = params.get("land") ?? "";
   const provincie = params.get("provincie") ?? "";
   const type = params.get("type") ?? "";
   const van = params.get("van") ?? "";
   const tot = params.get("tot") ?? "";
-  const activeCount = [land, provincie, type, van, tot].filter(Boolean).length;
+  const [searchValue, setSearchValue] = useState(q);
+
+  useEffect(() => {
+    setSearchValue(q);
+  }, [q]);
 
   const update = useCallback(
     (changes: Record<string, string>) => {
@@ -39,11 +50,56 @@ export function AgendaFilters({ provinces }: { provinces: ProvinceOption[] }) {
   );
 
   const visibleProvinces = provinces.filter((p) => !land || p.land === land);
+  const hasActiveSearch = normalizeSearch(q) !== "";
+  const activeFilters = [
+    hasActiveSearch ? { key: "q", label: `Zoeken: “${q.trim()}”` } : null,
+    land ? { key: "land", label: `Land: ${COUNTRY_LABELS[land as Country] ?? land}` } : null,
+    provincie
+      ? {
+          key: "provincie",
+          label: `Provincie: ${provinces.find((p) => p.slug === provincie)?.provincie ?? provincie}`,
+        }
+      : null,
+    type
+      ? { key: "type", label: `Type: ${EVENT_TYPES[type as EventType] ?? type}` }
+      : null,
+    van ? { key: "van", label: `Vanaf: ${van}` } : null,
+    tot ? { key: "tot", label: `Tot en met: ${tot}` } : null,
+  ].filter((filter): filter is { key: string; label: string } => filter !== null);
+
+  function submitSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    update({ q: searchValue.trim() });
+  }
 
   return (
     <div className="rounded-[--radius-card] border border-sand bg-surface p-4 shadow-sm sm:p-5">
+      <form onSubmit={submitSearch}>
+        <label htmlFor="agenda-search" className="mb-1 block text-xs font-medium text-ink-faint">
+          Zoek op event, sauna of plaats
+        </label>
+        <div className="flex gap-2">
+          <input
+            id="agenda-search"
+            type="search"
+            name="q"
+            autoComplete="off"
+            value={searchValue}
+            onChange={(event) => setSearchValue(event.target.value)}
+            placeholder="Bijvoorbeeld Aufguss of Thermen Bussloo"
+            className="min-h-11 min-w-0 flex-1 rounded-lg border border-sand bg-cream px-3 text-sm text-ink focus:border-ember focus:outline-none focus-visible:ring-2 focus-visible:ring-ember/40"
+          />
+          <button
+            type="submit"
+            className="min-h-11 rounded-lg bg-ember px-4 text-sm font-medium text-white transition-colors hover:bg-ember/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember focus-visible:ring-offset-2"
+          >
+            Zoeken
+          </button>
+        </div>
+      </form>
+
       {/* Land */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="mt-4 flex flex-wrap items-center gap-2">
         <Pill active={!land} onClick={() => update({ land: "" })}>
           Alle landen
         </Pill>
@@ -55,7 +111,7 @@ export function AgendaFilters({ provinces }: { provinces: ProvinceOption[] }) {
       </div>
 
       {/* Type */}
-      <div className="mt-3 flex flex-nowrap gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
+      <div className="mt-3 flex flex-wrap gap-2">
         <Pill active={!type} onClick={() => update({ type: "" })}>
           Alle types
         </Pill>
@@ -105,21 +161,48 @@ export function AgendaFilters({ provinces }: { provinces: ProvinceOption[] }) {
         </label>
       </div>
 
-      {activeCount > 0 && (
-        <div className="mt-4 flex items-center justify-between border-t border-sand pt-3">
-          <span className="text-xs text-ink-faint">
-            {activeCount} {activeCount === 1 ? "filter" : "filters"} actief
-          </span>
+      {error && (
+        <p role="alert" className="mt-4 rounded-lg bg-ember/10 px-3 py-2 text-sm text-ember">
+          {error}
+        </p>
+      )}
+
+      {activeFilters.length > 0 && (
+        <div
+          aria-label="Actieve filters"
+          className="mt-4 flex flex-wrap items-center gap-2 border-t border-sand pt-3"
+        >
+          {activeFilters.map((filter) => (
+            <button
+              key={filter.key}
+              type="button"
+              onClick={() => update({ [filter.key]: "" })}
+              aria-label={`${filter.label} verwijderen`}
+              className="min-h-11 rounded-full bg-cream px-3 text-sm font-medium text-ink-soft transition-colors hover:bg-sand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember focus-visible:ring-offset-2"
+            >
+              {filter.label} <span aria-hidden="true">×</span>
+            </button>
+          ))}
           <button
+            type="button"
             onClick={() => router.replace(pathname, { scroll: false })}
-            className="text-sm font-medium text-ember hover:text-ember/80"
+            className="ml-auto min-h-11 px-2 text-sm font-medium text-ember hover:text-ember/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember focus-visible:ring-offset-2"
           >
-            Wis filters
+            Wis alle filters
           </button>
         </div>
       )}
     </div>
   );
+}
+
+function normalizeSearch(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "")
+    .trim();
 }
 
 function Pill({
@@ -135,7 +218,8 @@ function Pill({
     <button
       type="button"
       onClick={onClick}
-      className={`whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
+      aria-pressed={active}
+      className={`min-h-11 whitespace-nowrap rounded-full px-3.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember focus-visible:ring-offset-2 ${
         active ? "bg-ember text-white shadow-sm" : "bg-cream text-ink-soft hover:bg-sand"
       }`}
     >

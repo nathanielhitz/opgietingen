@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getAllEvents, getProvincesWithEvents, slugify } from "@/lib/content";
-import { parseFilters, filterEvents, type SearchParams } from "@/lib/filters";
+import { parseFilters, filterEvents, validateDateRange, type SearchParams } from "@/lib/filters";
 import { AgendaFilters, type ProvinceOption } from "@/components/AgendaFilters";
 import { EventCard } from "@/components/EventCard";
 import { site } from "@/lib/site";
@@ -22,7 +23,8 @@ export default async function AgendaPage({
 }) {
   const sp = await searchParams;
   const filters = parseFilters(sp);
-  const events = filterEvents(getAllEvents(), filters);
+  const filterError = validateDateRange(filters.van, filters.tot);
+  const events = filterError ? [] : filterEvents(getAllEvents(), filters);
 
   const provinceOptions: ProvinceOption[] = getProvincesWithEvents().map((p) => ({
     ...p,
@@ -39,16 +41,16 @@ export default async function AgendaPage({
       </header>
 
       <div className="mt-6">
-        <AgendaFilters provinces={provinceOptions} />
+        <AgendaFilters provinces={provinceOptions} error={filterError} />
       </div>
 
       <div className="mt-6 flex items-baseline justify-between">
-        <p className="text-sm text-ink-faint">
+        <p aria-live="polite" className="text-sm text-ink-faint">
           {events.length} {events.length === 1 ? "event" : "events"} gevonden
         </p>
       </div>
 
-      {events.length > 0 ? (
+      {filterError ? null : events.length > 0 ? (
         <ul className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((event) => (
             <li key={event.slug}>
@@ -62,6 +64,12 @@ export default async function AgendaPage({
           <p className="mx-auto mt-2 max-w-sm text-sm text-ink-soft">
             Pas je filters aan of bekijk de volledige agenda. Nieuwe opgietingen worden regelmatig toegevoegd.
           </p>
+          <Link
+            href="/agenda"
+            className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-ember px-4 text-sm font-medium text-white transition-colors hover:bg-ember/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember focus-visible:ring-offset-2"
+          >
+            Wis alle filters
+          </Link>
         </div>
       )}
 
