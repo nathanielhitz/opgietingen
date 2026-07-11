@@ -150,8 +150,8 @@ export function eventSlug(ev: NewEvent): string {
 }
 
 /**
- * Schrijft een event als MDX met status "concept". Retourneert het pad, of
- * null als het bestand al bestaat (geen overschrijving).
+ * Schrijft een event als MDX met de status uit ev.status. Retourneert het pad,
+ * of null als het bestand al bestaat (geen overschrijving).
  */
 export function writeEventMdx(ev: NewEvent): string | null {
   fs.mkdirSync(EVENTS_DIR, { recursive: true });
