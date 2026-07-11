@@ -49,16 +49,17 @@ export default function HeroHeader({
           in Nederland en België.
         </p>
 
-        {/* Zoekbalk: GET-form naar /agenda (werkt zonder JS) */}
+        {/* Zoekbalk: GET-form naar /agenda (werkt zonder JS). Frosted glass zodat
+            hij in de herofoto opgaat in plaats van er als wit blok op te liggen. */}
         <form
           action="/agenda"
-          className="mt-8 flex max-w-2xl flex-col gap-3 rounded-[--radius-card] border border-white/20 bg-surface/95 p-3 shadow-lg backdrop-blur sm:flex-row sm:items-end"
+          className="mt-8 flex max-w-2xl flex-col gap-3 rounded-[--radius-card] border border-white/15 bg-white/10 p-3 shadow-lg backdrop-blur-md sm:flex-row sm:items-end"
         >
           <label className="flex-1">
-            <span className="mb-1 block px-1 text-xs font-medium text-ink-faint">Provincie</span>
+            <span className="mb-1 block px-1 text-xs font-medium text-cream/80">Provincie</span>
             <select
               name="provincie"
-              className="w-full rounded-lg border border-sand bg-cream px-3 py-2.5 text-sm text-ink focus:border-ember focus:outline-none"
+              className="select-glass w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2.5 text-sm text-white focus:border-ember-soft focus:outline-none"
             >
               <option value="">Alle provincies</option>
               {provinces.map((p) => (
@@ -69,10 +70,10 @@ export default function HeroHeader({
             </select>
           </label>
           <label className="flex-1">
-            <span className="mb-1 block px-1 text-xs font-medium text-ink-faint">Type</span>
+            <span className="mb-1 block px-1 text-xs font-medium text-cream/80">Type</span>
             <select
               name="type"
-              className="w-full rounded-lg border border-sand bg-cream px-3 py-2.5 text-sm text-ink focus:border-ember focus:outline-none"
+              className="select-glass w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2.5 text-sm text-white focus:border-ember-soft focus:outline-none"
             >
               <option value="">Alle types</option>
               {(Object.keys(EVENT_TYPES) as EventType[]).map((t) => (

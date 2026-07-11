@@ -60,6 +60,22 @@ h1, h2, h3, h4 {
     radial-gradient(50% 70% at 100% 20%, rgba(147, 163, 157, 0.15), transparent 55%);
 }
 
+/* Glazen select op de donkere hero: eigen wit chevron-pijltje (het native
+   pijltje is donker en valt weg tegen de foto) en donkere tekst in de
+   uitklaplijst, die in sommige browsers de select-kleur zou erven. */
+.select-glass {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23ffffff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.65rem center;
+  background-size: 1rem;
+  padding-right: 2.25rem;
+}
+.select-glass option {
+  color: var(--color-ink);
+  background-color: var(--color-cream);
+}
+
 /* Donkere scrim over de hero-foto (van onder/links) zodat lichte tekst leesbaar blijft. */
 .hero-overlay {
   background-image:
