@@ -140,6 +140,8 @@ export interface NewEvent {
   prijsIndicatie?: string;
   ticketUrl?: string;
   beschrijving: string;
+  status: "concept" | "gepubliceerd"; // door de poort bepaald
+  keurNotitie?: string; // afkeurreden(en) bij status concept
 }
 
 /** Genereert een unieke, leesbare slug voor het event-bestand. */
@@ -167,8 +169,9 @@ export function writeEventMdx(ev: NewEvent): string | null {
     ...(ev.tijden ? { tijden: ev.tijden } : {}),
     ...(ev.prijsIndicatie ? { prijsIndicatie: ev.prijsIndicatie } : {}),
     ...(ev.ticketUrl ? { ticketUrl: ev.ticketUrl } : {}),
-    status: "concept",
+    status: ev.status,
     bron: "scraper",
+    ...(ev.keurNotitie ? { keurNotitie: ev.keurNotitie } : {}),
   };
 
   const body = ev.beschrijving?.trim() || `${ev.titel} bij deze sauna.`;

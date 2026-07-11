@@ -15,11 +15,13 @@
 import {
   readBronnen,
   existingEventKeys,
+  existingSaunaSlugs,
   dedupKey,
   writeEventMdx,
   type Bron,
   type NewEvent,
 } from "./lib/content";
+import { evaluateEvent } from "./lib/quality-gate";
 import { isAllowed, sleep, REQUEST_DELAY_MS } from "./lib/net";
 import { scrapeAgenda, type ScrapeOutcome, type ScrapedEvent } from "../src/lib/scraper";
 
@@ -31,6 +33,8 @@ function argValue(name: string): string | undefined {
 const DRY_RUN = process.argv.includes("--dry-run");
 const LIMIT = argValue("--limit") ? Number(argValue("--limit")) : Infinity;
 const REF_YEAR = new Date().getUTCFullYear();
+const TODAY = new Date().toISOString().slice(0, 10);
+const AUTO_PUBLISH = process.env.SCRAPE_AUTOPUBLISH === "true";
 
 /** Mock-extractie voor --dry-run: twee toekomstige events per bron. */
 function mockOutcome(bron: Bron): ScrapeOutcome {
@@ -64,6 +68,7 @@ async function main() {
   );
 
   const existing = existingEventKeys();
+  const saunaSlugs = existingSaunaSlugs();
   const seen = new Set<string>(); // dedup binnen deze run
   let written = 0;
   let skipped = 0;
@@ -102,6 +107,20 @@ async function main() {
         continue;
       }
 
+      const verdict = evaluateEvent(
+        {
+          saunaSlug: bron.id,
+          titel: ev.titel,
+          type: ev.type,
+          startDatum: ev.startDatum,
+          beschrijving: ev.beschrijving,
+        },
+        { saunaSlugs, today: TODAY },
+      );
+
+      const status: "concept" | "gepubliceerd" =
+        verdict.passed && AUTO_PUBLISH ? "gepubliceerd" : "concept";
+
       const newEvent: NewEvent = {
         saunaSlug: bron.id,
         titel: ev.titel,
@@ -112,13 +131,17 @@ async function main() {
         prijsIndicatie: ev.prijsIndicatie,
         ticketUrl: ev.ticketUrl ?? bron.agendaUrl,
         beschrijving: ev.beschrijving,
+        status,
+        ...(verdict.passed ? {} : { keurNotitie: verdict.redenen.join("; ") }),
       };
 
       const path = writeEventMdx(newEvent);
       if (path) {
         seen.add(key);
         written++;
-        console.log(`  + nieuw concept: ${path.replace(process.cwd() + "/", "")}`);
+        console.log(
+          `  + ${status}${verdict.passed ? "" : " (afgekeurd: " + verdict.redenen.join("; ") + ")"} — ${ev.titel}`,
+        );
       } else {
         skipped++;
         console.log(`  = bestand bestaat al voor: ${ev.titel}`);
