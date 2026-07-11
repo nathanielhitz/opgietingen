@@ -14,7 +14,7 @@ export default function HeroHeader({
     <section className="relative isolate overflow-hidden border-b border-wood-dark">
       {/* Foto-lagen: art-direction per breakpoint (staand mobiel, liggend desktop) */}
       <Image
-        src="/images/hero/hero-mobiel.jpg"
+        src="/images/hero/hero-mobiel.png"
         alt=""
         aria-hidden
         fill
@@ -23,7 +23,7 @@ export default function HeroHeader({
         className="object-cover md:hidden"
       />
       <Image
-        src="/images/hero/hero-desktop.jpg"
+        src="/images/hero/hero-desktop.png"
         alt=""
         aria-hidden
         fill
