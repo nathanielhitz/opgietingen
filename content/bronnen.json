@@ -12,7 +12,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-08"
+      "laatstGecontroleerd": "2026-07-11"
     },
     {
       "id": "fortuna-wellness",
@@ -24,7 +24,7 @@
       "type": "website",
       "status": "kapot",
       "notities": "Host onbereikbaar: fetch failed",
-      "laatstGecontroleerd": "2026-07-08"
+      "laatstGecontroleerd": "2026-07-11"
     },
     {
       "id": "spasereen",
@@ -36,7 +36,7 @@
       "type": "website",
       "status": "kapot",
       "notities": "Host onbereikbaar: fetch failed",
-      "laatstGecontroleerd": "2026-07-08"
+      "laatstGecontroleerd": "2026-07-11"
     },
     {
       "id": "sauna-elysium",
@@ -48,7 +48,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-08"
+      "laatstGecontroleerd": "2026-07-11"
     },
     {
       "id": "thermae-2000",
@@ -58,9 +58,9 @@
       "website": "https://www.thermae.nl",
       "agendaUrl": "https://www.thermae.nl/",
       "type": "website",
-      "status": "geen-agenda",
-      "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) — handmatig controleren.",
-      "laatstGecontroleerd": "2026-07-08"
+      "status": "actief",
+      "notities": "Bevestigd via Firecrawl (JS-gerenderd).",
+      "laatstGecontroleerd": "2026-07-11"
     },
     {
       "id": "thermen-berendonck",
@@ -72,7 +72,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-08"
+      "laatstGecontroleerd": "2026-07-11"
     },
     {
       "id": "thermen-soesterberg",
@@ -84,7 +84,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-08"
+      "laatstGecontroleerd": "2026-07-11"
     },
     {
       "id": "sauna-drome",
@@ -96,7 +96,7 @@
       "type": "website",
       "status": "kapot",
       "notities": "Host onbereikbaar: fetch failed",
-      "laatstGecontroleerd": "2026-07-08"
+      "laatstGecontroleerd": "2026-07-11"
     },
     {
       "id": "sauna-zwaluwhoeve",
@@ -108,7 +108,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-08"
+      "laatstGecontroleerd": "2026-07-11"
     },
     {
       "id": "veluwse-bron",
@@ -116,11 +116,11 @@
       "land": "NL",
       "provincie": "Gelderland",
       "website": "https://www.veluwsebron.nl",
-      "agendaUrl": "https://veluwsebron.nl/",
+      "agendaUrl": "https://veluwsebron.nl/wellnessrituelen/events",
       "type": "website",
-      "status": "geen-agenda",
-      "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) (opgegeven pad gaf HTTP 404) — handmatig controleren.",
-      "laatstGecontroleerd": "2026-07-08"
+      "status": "actief",
+      "notities": "Pad bijgewerkt (score 10).",
+      "laatstGecontroleerd": "2026-07-11"
     },
     {
       "id": "spawell",
@@ -132,7 +132,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-08"
+      "laatstGecontroleerd": "2026-07-11"
     },
     {
       "id": "waer-waters",
@@ -143,8 +143,8 @@
       "agendaUrl": "https://www.waerwaters.com/",
       "type": "website",
       "status": "geen-agenda",
-      "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) (opgegeven pad gaf HTTP 404) — handmatig controleren.",
-      "laatstGecontroleerd": "2026-07-08"
+      "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) — handmatig controleren.",
+      "laatstGecontroleerd": "2026-07-11"
     },
     {
       "id": "thermen-dilbeek",
@@ -155,8 +155,8 @@
       "agendaUrl": "https://www.thermendilbeek.be/",
       "type": "website",
       "status": "geen-agenda",
-      "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) (opgegeven pad gaf HTTP 404) — handmatig controleren.",
-      "laatstGecontroleerd": "2026-07-08"
+      "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) — handmatig controleren.",
+      "laatstGecontroleerd": "2026-07-11"
     },
     {
       "id": "thermen-katara",
@@ -168,7 +168,7 @@
       "type": "website",
       "status": "kapot",
       "notities": "Host onbereikbaar: fetch failed",
-      "laatstGecontroleerd": "2026-07-08"
+      "laatstGecontroleerd": "2026-07-11"
     },
     {
       "id": "thermen-londerzeel",
@@ -180,7 +180,7 @@
       "type": "website",
       "status": "geen-agenda",
       "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) — handmatig controleren.",
-      "laatstGecontroleerd": "2026-07-08"
+      "laatstGecontroleerd": "2026-07-11"
     },
     {
       "id": "thermae-boetfort",
@@ -193,7 +193,7 @@
       "matchToken": "boetfort",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-08"
+      "laatstGecontroleerd": "2026-07-11"
     },
     {
       "id": "thermae-grimbergen",
@@ -206,7 +206,7 @@
       "matchToken": "grimbergen",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-08"
+      "laatstGecontroleerd": "2026-07-11"
     },
     {
       "id": "lago",
@@ -218,7 +218,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-08"
+      "laatstGecontroleerd": "2026-07-11"
     },
     {
       "id": "aquatopia-sauna-be",
