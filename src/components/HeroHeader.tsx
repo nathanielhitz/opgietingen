@@ -36,7 +36,8 @@ export default function HeroHeader({
       <div className="hero-overlay absolute inset-0" aria-hidden />
 
       {/* Inhoud */}
-      <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
+      {/* De site-header zweeft transparant over de foto; pt compenseert zijn hoogte. */}
+      <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-32 sm:px-6 sm:pb-28 sm:pt-40">
         <p className="text-sm font-semibold uppercase tracking-wider text-ember-soft">
           Opgietingen · Aufguss · NL &amp; BE
         </p>
