@@ -12,6 +12,7 @@ import matter from "gray-matter";
 const ROOT = process.cwd();
 const BRONNEN_PATH = path.join(ROOT, "content", "bronnen.json");
 const EVENTS_DIR = path.join(ROOT, "content", "events");
+const SAUNAS_DIR = path.join(ROOT, "content", "saunas");
 
 export type BronStatus =
   | "te-verifieren"
@@ -80,6 +81,18 @@ export function existingEventKeys(): Set<string> {
     if (data.saunaSlug && startDatum) keys.add(dedupKey(String(data.saunaSlug), startDatum));
   }
   return keys;
+}
+
+// Slugs van bestaande sauna-profielen (bestandsnaam zonder .mdx).
+// Gebruikt door de kwaliteitspoort om saunaSlug-verwijzingen te valideren.
+export function existingSaunaSlugs(): Set<string> {
+  if (!fs.existsSync(SAUNAS_DIR)) return new Set();
+  return new Set(
+    fs
+      .readdirSync(SAUNAS_DIR)
+      .filter((f) => f.endsWith(".mdx"))
+      .map((f) => f.replace(/\.mdx$/, "")),
+  );
 }
 
 /* ---------- Slug + HTML ---------- */
