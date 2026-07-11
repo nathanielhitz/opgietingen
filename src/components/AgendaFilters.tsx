@@ -50,9 +50,8 @@ export function AgendaFilters({
   );
 
   const visibleProvinces = provinces.filter((p) => !land || p.land === land);
-  const hasActiveSearch = normalizeSearch(q) !== "";
   const activeFilters = [
-    hasActiveSearch ? { key: "q", label: `Zoeken: “${q.trim()}”` } : null,
+    q.trim() ? { key: "q", label: `Zoeken: “${q.trim()}”` } : null,
     land ? { key: "land", label: `Land: ${COUNTRY_LABELS[land as Country] ?? land}` } : null,
     provincie
       ? {
@@ -194,15 +193,6 @@ export function AgendaFilters({
       )}
     </div>
   );
-}
-
-function normalizeSearch(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9]+/g, "")
-    .trim();
 }
 
 function Pill({
