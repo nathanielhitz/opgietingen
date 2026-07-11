@@ -1,7 +1,9 @@
+import Image from "next/image";
+
 /*
-  Coverafbeelding voor event- en saunakaarten. Dummy content gebruikt SVG's;
-  daarvoor is next/image-optimalisatie overbodig, dus een gewone <img> met een
-  warme gradient-fallback als er (nog) geen afbeelding is.
+  Coverafbeelding voor event- en saunakaarten. Echte foto's gaan via next/image
+  (automatische WebP + juiste formaten); zonder afbeelding valt de kaart terug
+  op een warme gradient met stoomwolkje.
 */
 export function CoverImage({
   src,
@@ -17,13 +19,12 @@ export function CoverImage({
   return (
     <div className={`relative overflow-hidden bg-wood-dark warmth-gradient ${className}`}>
       {src ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
           src={src}
           alt={alt}
-          loading="lazy"
-          sizes={sizes}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          fill
+          sizes={sizes ?? "100vw"}
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
       ) : (
         <div aria-hidden className="grid h-full w-full place-items-center text-ember-soft/40">

@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="SpaWell">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4a2c18"/><stop offset="1" stop-color="#8a5a34"/></linearGradient>
-  <radialGradient id="glow" cx="18%" cy="20%" r="70%"><stop offset="0" stop-color="#e0955f" stop-opacity="0.55"/><stop offset="1" stop-color="#e0955f" stop-opacity="0"/></radialGradient></defs>
-  <rect width="1200" height="675" fill="url(#g)"/><rect width="1200" height="675" fill="url(#glow)"/>
-  <g fill="none" stroke="#e0955f" stroke-opacity="0.4" stroke-width="6" stroke-linecap="round">
-    <path d="M300 470 q-40 -70 0 -140 q40 -70 0 -140"/><path d="M360 470 q-40 -70 0 -140 q40 -70 0 -140"/><path d="M420 470 q-40 -70 0 -140 q40 -70 0 -140"/></g>
-  <text x="80" y="560" font-family="Georgia, serif" font-size="60" fill="#faf6ee" font-weight="600">SpaWell</text>
-  <text x="82" y="612" font-family="Helvetica, Arial, sans-serif" font-size="30" fill="#faf6ee" fill-opacity="0.75">Bavel · Noord-Brabant</text></svg>

@@ -137,7 +137,9 @@ export const getAllEvents = cache((): OpgietEvent[] => {
         tijden: data.tijden as string | undefined,
         prijsIndicatie: data.prijsIndicatie as string | undefined,
         ticketUrl: data.ticketUrl as string | undefined,
-        afbeelding: data.afbeelding as string | undefined,
+        // Zonder eigen afbeelding (bv. gescrapete events) valt het event terug
+        // op de foto van de sauna, zodat kaarten nooit zonder beeld staan.
+        afbeelding: (data.afbeelding as string | undefined) ?? sauna.afbeelding,
         status: (data.status as EventStatus) ?? "gepubliceerd",
         body,
         sauna,
