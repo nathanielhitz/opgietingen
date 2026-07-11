@@ -86,9 +86,23 @@ export function parseMonthYearSlug(slug: string): { monthIndex: number; year: nu
   return { monthIndex, year: Number(match[2]) };
 }
 
-/** Vandaag als ISO-string (YYYY-MM-DD), in lokale tijd. Alleen op request-tijd gebruiken. */
+/** Datum als ISO-string (YYYY-MM-DD) in de Nederlandse sitetijdzone. */
+export function todayISOInTimeZone(now: Date = new Date()): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Amsterdam",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+  const value = (type: "year" | "month" | "day") =>
+    parts.find((part) => part.type === type)?.value;
+
+  return `${value("year")}-${value("month")}-${value("day")}`;
+}
+
+/** Vandaag als ISO-string (YYYY-MM-DD) in Europe/Amsterdam. Alleen op request-tijd gebruiken. */
 export function todayISO(): string {
-  return new Date().toISOString().slice(0, 10);
+  return todayISOInTimeZone();
 }
 
 /** Is het event nog niet afgelopen t.o.v. referentie (default vandaag)? */

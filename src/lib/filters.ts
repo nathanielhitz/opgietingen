@@ -5,6 +5,8 @@ import { isUpcoming } from "@/lib/dates";
 
 /** Filtercriteria voor de agenda. Alles optioneel; leeg = toon komende events. */
 export interface EventFilters {
+  /** Vrije zoekopdracht. */
+  q?: string;
   land?: Country;
   /** Provincie als slug (bv. "noord-holland"). */
   provincie?: string;
@@ -23,18 +25,38 @@ function first(v: string | string[] | undefined): string | undefined {
   return Array.isArray(v) ? v[0] : v;
 }
 
+function isRealIsoDate(value: string | undefined): value is string {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+  );
+}
+
 /** Leest EventFilters uit URL-searchparams (?land=NL&provincie=...&type=...&van=...&tot=...&toon=alles). */
 export function parseFilters(sp: SearchParams): EventFilters {
   const land = first(sp.land);
   const type = first(sp.type);
+  const q = first(sp.q)?.trim() || undefined;
+  const van = first(sp.van);
+  const tot = first(sp.tot);
   return {
+    q,
     land: land === "NL" || land === "BE" ? land : undefined,
     provincie: first(sp.provincie) || undefined,
     type: type && type in EVENT_TYPES ? (type as EventType) : undefined,
-    van: first(sp.van) || undefined,
-    tot: first(sp.tot) || undefined,
+    van: isRealIsoDate(van) ? van : undefined,
+    tot: isRealIsoDate(tot) ? tot : undefined,
     toonAfgelopen: first(sp.toon) === "alles",
   };
+}
+
+/** Geeft een foutmelding wanneer het datumbereik omgekeerd is. */
+export function validateDateRange(van?: string, tot?: string): string | null {
+  return van && tot && tot < van ? "De einddatum ligt vóór de begindatum." : null;
 }
 
 /** Past filters toe. Sorteervolgorde (op datum) blijft behouden vanuit de loader. */
@@ -43,11 +65,23 @@ export function filterEvents(
   f: EventFilters,
   ref?: string
 ): OpgietEvent[] {
+  if (validateDateRange(f.van, f.tot)) return [];
+
+  const query = f.q ? slugify(f.q) : undefined;
   return events.filter((e) => {
     if (!f.toonAfgelopen && !isUpcoming(e, ref)) return false;
     if (f.land && e.sauna.land !== f.land) return false;
     if (f.provincie && slugify(e.sauna.provincie) !== f.provincie) return false;
     if (f.type && e.type !== f.type) return false;
+    if (
+      query &&
+      ![e.titel, e.sauna.naam, e.sauna.plaats, e.sauna.provincie]
+        .map(slugify)
+        .join(" ")
+        .includes(query)
+    ) {
+      return false;
+    }
 
     const eind = e.eindDatum ?? e.startDatum;
     if (f.van && eind < f.van) return false;
@@ -58,5 +92,5 @@ export function filterEvents(
 
 /** Telt hoeveel filters actief zijn (voor UI-badge). */
 export function activeFilterCount(f: EventFilters): number {
-  return [f.land, f.provincie, f.type, f.van, f.tot].filter(Boolean).length;
+  return [f.q, f.land, f.provincie, f.type, f.van, f.tot].filter(Boolean).length;
 }

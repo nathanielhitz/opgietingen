@@ -70,22 +70,6 @@ export function eventSchema(event: OpgietEvent) {
     ...(event.afbeelding ? { image: [absoluteUrl(event.afbeelding)] } : {}),
     url: absoluteUrl(`/event/${event.slug}`),
     location: placeSchema(sauna),
-    organizer: {
-      "@type": "Organization",
-      name: sauna.naam,
-      ...(sauna.website ? { url: sauna.website } : {}),
-    },
-    ...(event.ticketUrl
-      ? {
-          offers: {
-            "@type": "Offer",
-            url: absoluteUrl(`/uit/${event.slug}`),
-            priceCurrency: "EUR",
-            availability: "https://schema.org/InStock",
-            category: event.prijsIndicatie ?? "Toegang",
-          },
-        }
-      : {}),
   };
 }
 
