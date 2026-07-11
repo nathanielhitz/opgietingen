@@ -47,7 +47,7 @@ export function parseFilters(sp: SearchParams): EventFilters {
     q,
     land: land === "NL" || land === "BE" ? land : undefined,
     provincie: first(sp.provincie) || undefined,
-    type: type && type in EVENT_TYPES ? (type as EventType) : undefined,
+    type: type && Object.hasOwn(EVENT_TYPES, type) ? (type as EventType) : undefined,
     van: isRealIsoDate(van) ? van : undefined,
     tot: isRealIsoDate(tot) ? tot : undefined,
     toonAfgelopen: first(sp.toon) === "alles",

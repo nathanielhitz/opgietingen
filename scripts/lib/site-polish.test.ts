@@ -66,6 +66,11 @@ test("parseFilters trimt q en negeert ongeldige datum- en typefilters", () => {
   );
 });
 
+test("parseFilters accepteert alleen eigen sleutels als eventtype", () => {
+  assert.equal(parseFilters({ type: "toString" }).type, undefined);
+  assert.equal(parseFilters({ type: "constructor" }).type, undefined);
+});
+
 test("filterEvents zoekt hoofdletterongevoelig op titel, sauna en plaats", () => {
   for (const q of ["MIDZOMERNACHT", "thermen bussloo", "VOORST"]) {
     assert.deepEqual(filterEvents([event], { q, toonAfgelopen: true }), [event]);
