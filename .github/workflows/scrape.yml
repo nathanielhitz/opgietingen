@@ -13,7 +13,7 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
+  issues: write
 
 jobs:
   scrape:
@@ -36,12 +36,15 @@ jobs:
       # gemeld in de PR. Vereist geen API-keys (plain fetch).
       - name: Verifieer bronnen
         run: npm run verify-bronnen -- --all
+        env:
+          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
 
       # Stap 2 — scrape alleen de actieve bronnen.
       - name: Scrape events (nieuwe concepts naar content/events/)
         env:
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SCRAPE_AUTOPUBLISH: "true"
         run: |
           if [ -n "${{ github.event.inputs.limit }}" ]; then
             npm run scrape -- --limit "${{ github.event.inputs.limit }}"
@@ -49,32 +52,38 @@ jobs:
             npm run scrape
           fi
 
-      # Stap 3 — bouw de PR-beschrijving met de actuele bronnenstatus.
-      - name: Bouw PR-beschrijving
+      - name: Commit resultaten op main
         run: |
-          {
-            echo "Automatisch gescrapete opgiet-events, toegevoegd als **concept**."
-            echo ""
-            echo "- Bronnen eerst geverifieerd (\`verify-bronnen\`), daarna gescraped."
-            echo "- Fetch + extractie via Firecrawl, met Claude-fallback (\`claude-haiku-4-5\`)."
-            echo "- Gededupliceerd op \`saunaSlug + startDatum\`; nieuwe events krijgen \`status: concept\`."
-            echo ""
-            echo "**Reviewstappen vóór merge:** controleer datums/titels/types, zet \`concept\` → \`gepubliceerd\` voor wat live mag, en corrigeer/verwijder onjuiste events."
-            echo ""
-            npm run --silent bronnen-report
-          } > pr-body.md
+          git config user.name "opgietingen-bot"
+          git config user.email "bot@opgietingen.nl"
+          git add content/events content/bronnen.json
+          if git diff --cached --quiet; then
+            echo "Geen wijzigingen om te committen."
+          else
+            git commit -m "chore(scraper): wekelijkse run — nieuwe events + bronnenstatus"
+            git push origin HEAD:main
+          fi
 
-      - name: Pull request met nieuwe events + bronnenstatus
-        uses: peter-evans/create-pull-request@v6
-        with:
-          add-paths: |
-            content/events
-            content/bronnen.json
-          branch: scrape/nieuwe-events
-          delete-branch: true
-          commit-message: "chore(scraper): nieuwe opgiet-events (concept) + bronnenstatus"
-          title: "Nieuwe opgiet-events (concept) — wekelijkse scrape"
-          body-path: pr-body.md
-          labels: |
-            scraper
-            automated
+      - name: Bouw probleemrapport
+        id: report
+        run: echo "status=$(npm run --silent scrape-report)" >> "$GITHUB_OUTPUT"
+
+      - name: Beheer scraper-issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create scraper-probleem --color B60205 --description "Scraper heeft aandacht nodig" || true
+          EXISTING=$(gh issue list --label scraper-probleem --state open --json number --jq '.[0].number')
+          if [ "${{ steps.report.outputs.status }}" = "problemen" ]; then
+            if [ -n "$EXISTING" ]; then
+              gh issue edit "$EXISTING" --body-file scrape-issue.md
+              gh issue comment "$EXISTING" --body "Rapport bijgewerkt door de wekelijkse run."
+            else
+              gh issue create --title "Scraper: aandachtspunten" \
+                --label scraper-probleem --body-file scrape-issue.md
+            fi
+          else
+            if [ -n "$EXISTING" ]; then
+              gh issue close "$EXISTING" --comment "Schone run — geen aandachtspunten meer."
+            fi
+          fi
