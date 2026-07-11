@@ -41,10 +41,11 @@ src/
     scraper.ts      # scraper-laag: Firecrawl (markdown + extractie) + Claude-fallback
 scripts/
   verify-bronnen.ts # verifieert agendaUrl's in bronnen.json (robots, discovery)
-  scrape-events.ts  # scrapet actieve bronnen → nieuwe events als concept-MDX
-  lib/              # net.ts (fetch/robots), content.ts (bronnen/dedup/MDX-write)
+  scrape-events.ts  # scrapet actieve bronnen → events via kwaliteitspoort (gepubliceerd/concept)
+  scrape-report.ts  # bouwt het probleem-issue-rapport (concepts + bronnen + ontbrekende profielen)
+  lib/              # net.ts (fetch/robots), content.ts (bronnen/dedup/MDX-write), quality-gate.ts (poort)
 .github/workflows/
-  scrape.yml        # wekelijkse scrape (cron ma 06:00) → PR met concept-events
+  scrape.yml        # wekelijkse scrape (cron ma 06:00) → commit op main + scraper-issue
 data/
   clicks.log        # klik-log (gitignored)
 ```
@@ -55,7 +56,7 @@ data/
 
 **Event** (`content/events/<slug>.mdx` frontmatter): `slug`, `saunaSlug` (koppelt aan sauna), `titel`, `type` (`opgietweekend`|`thema`|`kampioenschap`|`regulier`), `startDatum` (`YYYY-MM-DD`), `eindDatum`, `tijden`, `prijsIndicatie`, `ticketUrl` (affiliate), `afbeelding`, `status` (`concept`|`gepubliceerd`|`afgelopen`). MDX-body = beschrijving/programma.
 
-Optioneel veld `bron: scraper` markeert automatisch gescrapete events.
+Optioneel veld `bron: scraper` markeert automatisch gescrapete events. Optioneel veld `keurNotitie` bevat de afkeurreden(en) van de kwaliteitspoort wanneer een gescrapet event als `concept` blijft staan.
 
 > Events joinen aan sauna's via `saunaSlug`. Alleen `status: gepubliceerd` events zijn zichtbaar (concepts worden gefilterd in de loader). Gescrapete events komen binnen als `concept` en worden pas zichtbaar na handmatige review + `status: gepubliceerd`.
 
@@ -102,18 +103,19 @@ Statusbetekenis:
 
 `verify-bronnen` slaat `handmatig`/`aanvullen`/`opzetten` en niet-website-types over.
 
-**Verifiëren** (`npm run verify-bronnen`) — fetcht elke `agendaUrl` (redirects, correcte robots.txt-naleving incl. `*`/`$`-wildcards), zoekt via sitemap + homepage-links de juiste agendapagina als het pad afwijkt (scoort op trefwoorden, sluit blog/nieuws/zakelijk uit, verkiest ondiepe sectiepagina's), en schrijft de juiste status + URL + notitie terug. `-- --all` her-verifieert alles (behalve `handmatig`). `npm run bronnen-report` print een markdown-statusrapport.
+**Verifiëren** (`npm run verify-bronnen`) — fetcht elke `agendaUrl` (redirects, correcte robots.txt-naleving incl. `*`/`$`-wildcards), zoekt via sitemap + homepage-links de juiste agendapagina als het pad afwijkt (scoort op trefwoorden, sluit blog/nieuws/zakelijk uit, verkiest ondiepe sectiepagina's), en schrijft de juiste status + URL + notitie terug. Als de kale fetch geen agendapagina oplevert (JS-gerenderd), volgt een **Firecrawl-fallback** (echte browser-rendering; robots blijft gelden) via `firecrawlFetchMarkdown` — vereist `FIRECRAWL_API_KEY`. `-- --all` her-verifieert alles (behalve `handmatig`). `npm run bronnen-report` print een markdown-statusrapport.
 
 **Scrapen** (`npm run scrape`) — per actieve bron:
 1. **Fetch + extractie via `src/lib/scraper.ts`** (de enige, vervangbare fetch-laag): Firecrawl haalt de pagina als markdown op én doet structured extraction met het event-datamodel als JSON-schema. Valt dat tegen (geen bruikbare output) → fallback op eigen extractie via de Claude API (`claude-haiku-4-5`) op dezelfde markdown.
-2. **Dedup** tegen bestaande events op `saunaSlug + startDatum`.
-3. **Schrijft** nieuwe events als MDX met `status: concept`, `bron: scraper`.
+2. **Dedup** tegen bestaande events op `saunaSlug + startDatum` (bestaande events worden nooit overschreven).
+3. **Kwaliteitspoort** (`scripts/lib/quality-gate.ts`): elk event wordt beoordeeld op harde criteria — geldige toekomstige ISO-datum, bestaande `saunaSlug`, niet-lege `titel`, geldig `type`, en een opgiet-trefwoord (opgiet/aufguss/löyly/saunaritueel/gietceremonie) in titel of beschrijving. Bij twijfel afkeuren (false negatives acceptabel, false positives niet).
+4. **Schrijft** nieuwe events als MDX met `bron: scraper`. Status: **`gepubliceerd`** als het event door de poort komt én `SCRAPE_AUTOPUBLISH=true` staat; anders **`concept`**, met de afkeurreden(en) in `keurNotitie`.
 
-Flags: `-- --limit N` (eerste N bronnen), `-- --dry-run` (mock-extractie; test dedup + MDX zonder API-keys).
+Flags: `-- --limit N` (eerste N bronnen), `-- --dry-run` (mock-extractie incl. afkeur-cases; test poort + dedup + MDX zonder API-keys). Env `SCRAPE_AUTOPUBLISH=true` schakelt auto-publiceren aan (uit = alles blijft `concept`, voor de rollout-fase).
 
-**Env / secrets:** `FIRECRAWL_API_KEY` (fetch + primaire extractie), `ANTHROPIC_API_KEY` (fallback). Lokaal via `.env`/export; in CI via GitHub Actions secrets.
+**Env / secrets:** `FIRECRAWL_API_KEY` (fetch + primaire extractie + verify-fallback), `ANTHROPIC_API_KEY` (extractie-fallback). Lokaal via `.env`/export; in CI via GitHub Actions secrets.
 
-**Automatisering:** `.github/workflows/scrape.yml` draait elke maandag 06:00 UTC (+ handmatig via `workflow_dispatch`): eerst `verify-bronnen` (actualiseert statussen/URL's), dan `scrape`. Opent een PR met de nieuwe concept-events én de bijgewerkte `bronnen.json`; de PR-beschrijving bevat een bronnenstatus-rapport met alle niet-actieve bronnen als aandachtspunten (`scripts/bronnen-report.ts`). Review → `status: gepubliceerd` → merge.
+**Automatisering (hands-off):** `.github/workflows/scrape.yml` draait elke maandag 06:00 UTC (+ handmatig via `workflow_dispatch`): eerst `verify-bronnen -- --all`, dan `scrape` met `SCRAPE_AUTOPUBLISH=true`. De resultaten (nieuwe events + bijgewerkte `bronnen.json`) worden **direct op `main` gecommit** (Vercel deployt automatisch); concept-events komen mee maar zijn onzichtbaar (loader filtert ze). Daarna bouwt `npm run scrape-report` een rapport en beheert de workflow **één** GitHub-issue met label `scraper-probleem`: bij twijfelgevallen/kapotte bronnen/ontbrekende profielen wordt het geopend of geactualiseerd (GitHub's notificatiemail = de melding); een schone run sluit het. Geen review vooraf; steekproef achteraf.
 
 > Model: de fallback-extractie gebruikt bewust `claude-haiku-4-5` (snel/goedkoop). Wijzig via `FALLBACK_MODEL` in `src/lib/scraper.ts`.
 
@@ -124,10 +126,12 @@ npm run dev             # dev-server (http://localhost:3000)
 npm run build           # productie-build (verifieer hiermee vóór commit)
 npm run start           # productie-server
 npm run lint            # eslint
+npm run test            # unit-tests (node:test via tsx) — o.a. de kwaliteitspoort
 npm run verify-bronnen  # controleer/actualiseer agendaUrl's in bronnen.json
 npm run bronnen-report  # markdown-statusrapport van alle bronnen
-npm run scrape          # scrape actieve bronnen → concept-events (API-keys nodig)
-npm run scrape -- --dry-run   # test de pipeline zonder API-keys
+npm run scrape          # scrape actieve bronnen → events via poort (API-keys nodig)
+npm run scrape -- --dry-run   # test de pipeline + poort zonder API-keys
+npm run scrape-report   # bouw scrape-issue.md + print problemen/schoon
 ```
 
 ## Fase-grenzen
