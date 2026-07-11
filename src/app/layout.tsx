@@ -58,8 +58,13 @@ export default function RootLayout({
   return (
     <html lang="nl" className={`${fraunces.variable} ${inter.variable}`}>
       <body className="min-h-dvh flex flex-col">
+        <a href="#hoofdinhoud" className="skip-link">
+          Ga naar de hoofdinhoud
+        </a>
         <SiteHeader />
-        <main className="flex-1">{children}</main>
+        <main id="hoofdinhoud" tabIndex={-1} className="flex-1">
+          {children}
+        </main>
         <SiteFooter />
       </body>
     </html>
