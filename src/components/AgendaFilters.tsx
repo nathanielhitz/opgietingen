@@ -97,6 +97,20 @@ export function AgendaFilters({
     [pathname, router]
   );
 
+  const resetFilters = useCallback(() => {
+    const emptyParams = new URLSearchParams();
+    latestParamsRef.current = emptyParams;
+    requestedParamsRef.current.add("");
+    pendingParamsRef.current = "";
+    draftRevisionRef.current += 1;
+    submittedSearchRef.current = {
+      value: "",
+      revision: draftRevisionRef.current,
+    };
+    setSearchValue("");
+    router.replace(pathname, { scroll: false });
+  }, [pathname, router]);
+
   const visibleProvinces = provinces.filter((p) => !land || p.land === land);
   const activeFilters = [
     q.trim() ? { key: "q", label: `Zoeken: “${q.trim()}”` } : null,
@@ -236,7 +250,7 @@ export function AgendaFilters({
           ))}
           <button
             type="button"
-            onClick={() => router.replace(pathname, { scroll: false })}
+            onClick={resetFilters}
             className="ml-auto min-h-11 px-2 text-sm font-medium text-ember hover:text-ember/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember focus-visible:ring-offset-2"
           >
             Wis alle filters
