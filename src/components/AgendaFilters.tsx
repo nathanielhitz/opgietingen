@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { EVENT_TYPES, COUNTRY_LABELS, type Country, type EventType } from "@/lib/site";
 
@@ -28,15 +28,50 @@ export function AgendaFilters({
   const type = params.get("type") ?? "";
   const van = params.get("van") ?? "";
   const tot = params.get("tot") ?? "";
+  const paramsKey = params.toString();
   const [searchValue, setSearchValue] = useState(q);
+  const latestParamsRef = useRef(new URLSearchParams(paramsKey));
+  const requestedParamsRef = useRef(new Set<string>());
+  const pendingParamsRef = useRef<string | null>(null);
+  const draftRevisionRef = useRef(0);
+  const submittedSearchRef = useRef<{ value: string; revision: number } | null>(null);
 
+  // Eigen router-updates kunnen in een andere volgorde renderen dan ze zijn aangevraagd.
+  // Alleen de nieuwste bevestigen we; een onbekende URL behandelen we als externe navigatie.
   useEffect(() => {
+    const pendingParams = pendingParamsRef.current;
+
+    if (pendingParams === paramsKey) {
+      latestParamsRef.current = new URLSearchParams(paramsKey);
+      pendingParamsRef.current = null;
+      requestedParamsRef.current.clear();
+
+      const submittedSearch = submittedSearchRef.current;
+      if (submittedSearch?.value === q) {
+        if (submittedSearch.revision === draftRevisionRef.current) {
+          setSearchValue(q);
+        }
+        submittedSearchRef.current = null;
+      }
+      return;
+    }
+
+    if (requestedParamsRef.current.has(paramsKey)) {
+      requestedParamsRef.current.delete(paramsKey);
+      return;
+    }
+
+    latestParamsRef.current = new URLSearchParams(paramsKey);
+    pendingParamsRef.current = null;
+    requestedParamsRef.current.clear();
+    submittedSearchRef.current = null;
+    draftRevisionRef.current += 1;
     setSearchValue(q);
-  }, [q]);
+  }, [paramsKey, q]);
 
   const update = useCallback(
     (changes: Record<string, string>) => {
-      const next = new URLSearchParams(params.toString());
+      const next = new URLSearchParams(latestParamsRef.current);
       for (const [key, value] of Object.entries(changes)) {
         if (value) next.set(key, value);
         else next.delete(key);
@@ -44,9 +79,22 @@ export function AgendaFilters({
       // Provincie wissen als het land wisselt (voorkomt onmogelijke combinatie).
       if ("land" in changes) next.delete("provincie");
       const qs = next.toString();
+      latestParamsRef.current = next;
+      requestedParamsRef.current.add(qs);
+      pendingParamsRef.current = qs;
+
+      if ("q" in changes) {
+        draftRevisionRef.current += 1;
+        submittedSearchRef.current = {
+          value: changes.q,
+          revision: draftRevisionRef.current,
+        };
+        setSearchValue(changes.q);
+      }
+
       router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
     },
-    [params, pathname, router]
+    [pathname, router]
   );
 
   const visibleProvinces = provinces.filter((p) => !land || p.land === land);
@@ -84,7 +132,10 @@ export function AgendaFilters({
             name="q"
             autoComplete="off"
             value={searchValue}
-            onChange={(event) => setSearchValue(event.target.value)}
+            onChange={(event) => {
+              draftRevisionRef.current += 1;
+              setSearchValue(event.target.value);
+            }}
             placeholder="Bijvoorbeeld Aufguss of Thermen Bussloo"
             className="min-h-11 min-w-0 flex-1 rounded-lg border border-sand bg-cream px-3 text-sm text-ink focus:border-ember focus:outline-none focus-visible:ring-2 focus-visible:ring-ember/40"
           />
@@ -168,6 +219,7 @@ export function AgendaFilters({
 
       {activeFilters.length > 0 && (
         <div
+          role="group"
           aria-label="Actieve filters"
           className="mt-4 flex flex-wrap items-center gap-2 border-t border-sand pt-3"
         >
