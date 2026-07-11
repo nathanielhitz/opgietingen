@@ -34,3 +34,6 @@ yarn-error.log*
 
 # runtime logs (affiliate klik-logging fase 1)
 /data/clicks.log
+
+# gegenereerd scraper-probleemrapport (CI-issue body)
+/scrape-issue.md

@@ -10,7 +10,8 @@
     "verify-bronnen": "tsx scripts/verify-bronnen.ts",
     "bronnen-report": "tsx scripts/bronnen-report.ts",
     "scrape": "tsx scripts/scrape-events.ts",
-    "test": "node --import tsx --test \"scripts/**/*.test.ts\""
+    "test": "node --import tsx --test \"scripts/**/*.test.ts\"",
+    "scrape-report": "tsx scripts/scrape-report.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.70.0",
