@@ -1,9 +1,11 @@
 name: Scrape opgiet-events
 
-# Draait elke maandag om 06:00 UTC (± 07:00/08:00 NL-tijd). Ook handmatig te starten.
+# Wekelijkse cron staat UIT tot de eerste lokale testrun is beoordeeld (spec §5).
+# Heractiveren: verwijder het commentaar voor het schedule-blok hieronder.
+# Voorlopig alleen handmatig te starten via de Actions-tab (workflow_dispatch).
 on:
-  schedule:
-    - cron: "0 6 * * 1"
+  # schedule:
+  #   - cron: "0 6 * * 1"   # elke maandag 06:00 UTC (± 07:00/08:00 NL-tijd)
   workflow_dispatch:
     inputs:
       limit:
