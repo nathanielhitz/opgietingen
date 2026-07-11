@@ -1,6 +1,7 @@
 // Bouwt het scraper-probleemrapport na een run (spec §3).
 // - Afgekeurde concepts (status: concept + keurNotitie) uit content/events/
-// - Niet-actieve bronnen (via bronnenReport())
+// - Niet-actieve bronnen (via bronnenReport()); alleen kapot/geen-agenda tellen
+//   als "probleem" dat het issue openhoudt
 // - Actieve bronnen zonder sauna-profiel ("profiel aanmaken" blijft handwerk)
 // Schrijft het rapport naar scrape-issue.md en print "problemen" of "schoon".
 import fs from "node:fs";
@@ -10,6 +11,14 @@ import { readBronnen, existingSaunaSlugs } from "./lib/content";
 import { bronnenReport } from "./bronnen-report";
 
 const EVENTS_DIR = path.join(process.cwd(), "content", "events");
+
+// Alleen deze niet-actieve statussen zijn "problematisch" en houden het issue
+// open (spec §3: "gewijzigde/problematische status"). De overige niet-actieve
+// statussen zijn bewuste registry-states (handmatig/opzetten/aanvullen) of
+// transiënt (te-verifieren): die verschijnen wél in het rapport-body via
+// bronnenReport(), maar mogen een schone run niet blokkeren — anders sluit het
+// issue nooit en verliest "stilte = alles goed" zijn betekenis.
+const PROBLEEM_STATUSSEN = new Set(["kapot", "geen-agenda"]);
 
 interface ConceptProbleem {
   bestand: string;
@@ -39,9 +48,10 @@ function main() {
   const concepts = afgekeurdeConcepts();
   const zonderProfiel = actieveZonderProfiel();
   const { bronnen } = readBronnen();
-  const nietActief = bronnen.filter((b) => b.status !== "actief");
+  const problematischeBronnen = bronnen.filter((b) => PROBLEEM_STATUSSEN.has(b.status));
 
-  const problemen = concepts.length > 0 || nietActief.length > 0 || zonderProfiel.length > 0;
+  const problemen =
+    concepts.length > 0 || problematischeBronnen.length > 0 || zonderProfiel.length > 0;
 
   const lines: string[] = [];
   lines.push("<!-- scraper-issue -->");

@@ -1,16 +1,19 @@
 /*
   Event-scraper. Leest content/bronnen.json, scrapet elke ACTIEVE bron via de
   Firecrawl-laag (src/lib/scraper.ts, met Claude-fallback), dedupliceert tegen
-  bestaande events (saunaSlug + startDatum) en schrijft nieuwe events als MDX
-  met status "concept".
+  bestaande events (saunaSlug + startDatum), beoordeelt elk event via de
+  kwaliteitspoort (scripts/lib/quality-gate.ts) en schrijft het als MDX. Status:
+  "gepubliceerd" als het door de poort komt én SCRAPE_AUTOPUBLISH=true staat,
+  anders "concept" (met de afkeurreden(en) in keurNotitie).
 
   Gebruik:
     npm run scrape                 # alle actieve bronnen (vereist API-keys)
     npm run scrape -- --limit 2    # alleen de eerste 2 actieve bronnen
-    npm run scrape -- --dry-run    # mock-extractie; test dedup + MDX-schrijven
+    npm run scrape -- --dry-run    # mock-extractie; test poort + dedup + MDX
                                    # zonder Firecrawl/Claude-keys
 
-  Env: FIRECRAWL_API_KEY, ANTHROPIC_API_KEY (niet nodig bij --dry-run).
+  Env: FIRECRAWL_API_KEY, ANTHROPIC_API_KEY (niet nodig bij --dry-run),
+       SCRAPE_AUTOPUBLISH=true (zet auto-publiceren aan; standaard uit).
 */
 import {
   readBronnen,
@@ -172,7 +175,7 @@ async function main() {
     if (!DRY_RUN) await sleep(REQUEST_DELAY_MS);
   }
 
-  console.log(`Klaar. ${written} nieuw concept-event(s), ${skipped} overgeslagen (dedup).`);
+  console.log(`Klaar. ${written} nieuw event(s), ${skipped} overgeslagen (dedup).`);
 }
 
 main().catch((err) => {

@@ -40,7 +40,7 @@ jobs:
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
 
       # Stap 2 — scrape alleen de actieve bronnen.
-      - name: Scrape events (nieuwe concepts naar content/events/)
+      - name: Scrape events (poort → gepubliceerd/concept in content/events/)
         env:
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
