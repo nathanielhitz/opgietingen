@@ -12,6 +12,7 @@
 */
 import { readBronnen, writeBronnen, type Bron } from "./lib/content";
 import { fetchUrl, getRobots, isPathAllowed, sleep, REQUEST_DELAY_MS } from "./lib/net";
+import { firecrawlFetchMarkdown } from "../src/lib/scraper";
 
 const KEYWORD_SCORE: Array<[RegExp, number]> = [
   [/agenda/i, 50],
@@ -151,6 +152,19 @@ async function resolveAgenda(bron: Bron): Promise<Resolution> {
     if (res.ok && CONTENT_HINT.test(res.body)) {
       const note = cand.url === bron.agendaUrl ? "Bevestigd." : `Pad bijgewerkt (score ${cand.score}).`;
       return { status: "actief", url: cand.url, notitie: note };
+    }
+  }
+
+  // Firecrawl-fallback (spec §4): kale fetch vond geen agendapagina —
+  // mogelijk JS-gerenderd. Probeer echte browser-rendering, robots blijft gelden.
+  if (check(bron.agendaUrl)) {
+    const md = await firecrawlFetchMarkdown(bron.agendaUrl);
+    if (md && CONTENT_HINT.test(md)) {
+      return {
+        status: "actief",
+        url: bron.agendaUrl,
+        notitie: "Bevestigd via Firecrawl (JS-gerenderd).",
+      };
     }
   }
 
