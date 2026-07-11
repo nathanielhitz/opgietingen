@@ -14,7 +14,7 @@ export function AgendaEventCard({ event }: { event: OpgietEvent }) {
     >
       <CoverImage
         src={event.afbeelding}
-        alt={event.titel}
+        alt=""
         className="row-span-3 h-full min-h-28 sm:row-span-1 sm:min-h-32"
         sizes="(max-width: 639px) 5.5rem, 8rem"
       />
@@ -29,7 +29,7 @@ export function AgendaEventCard({ event }: { event: OpgietEvent }) {
           {event.titel}
         </h2>
         <p className="mt-1 break-words text-sm font-medium text-ink-soft">{sauna.naam}</p>
-        <p className="break-words text-sm text-ink-faint">{sauna.plaats}</p>
+        <p className="break-words text-sm text-ink-soft">{sauna.plaats}</p>
       </div>
 
       <div className="flex min-w-0 flex-wrap items-center gap-2 px-3 pb-3 sm:flex-col sm:items-end sm:justify-center sm:px-4 sm:py-4">
