@@ -71,6 +71,37 @@ test("parseFilters accepteert alleen eigen sleutels als eventtype", () => {
   assert.equal(parseFilters({ type: "constructor" }).type, undefined);
 });
 
+test("parseFilters negeert ongeldige URL-filters en onbekende provincies", () => {
+  const provinces = [
+    { slug: "gelderland", land: "NL" as const },
+    { slug: "antwerpen", land: "BE" as const },
+  ];
+
+  assert.deepEqual(
+    parseFilters(
+      {
+        land: "XX",
+        type: "constructor",
+        van: "2026-02-30",
+        tot: "12-07-2026",
+        provincie: "onbekend",
+      },
+      provinces,
+    ),
+    {
+      q: undefined,
+      land: undefined,
+      provincie: undefined,
+      type: undefined,
+      van: undefined,
+      tot: undefined,
+      toonAfgelopen: false,
+    },
+  );
+  assert.equal(parseFilters({ land: "NL", provincie: "antwerpen" }, provinces).provincie, undefined);
+  assert.equal(parseFilters({ land: "NL", provincie: "gelderland" }, provinces).provincie, "gelderland");
+});
+
 test("filterEvents zoekt hoofdletterongevoelig op titel, sauna en plaats", () => {
   for (const q of ["MIDZOMERNACHT", "thermen bussloo", "VOORST"]) {
     assert.deepEqual(filterEvents([event], { q, toonAfgelopen: true }), [event]);

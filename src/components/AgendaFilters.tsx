@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { EventFilters } from "@/lib/filters";
 import { EVENT_TYPES, COUNTRY_LABELS, type Country, type EventType } from "@/lib/site";
 
 export interface ProvinceOption {
@@ -13,21 +14,23 @@ export interface ProvinceOption {
 
 export function AgendaFilters({
   provinces,
+  filters,
   error,
 }: {
   provinces: ProvinceOption[];
+  filters: EventFilters;
   error: string | null;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
 
-  const q = params.get("q") ?? "";
-  const land = params.get("land") ?? "";
-  const provincie = params.get("provincie") ?? "";
-  const type = params.get("type") ?? "";
-  const van = params.get("van") ?? "";
-  const tot = params.get("tot") ?? "";
+  const q = filters.q ?? "";
+  const land = filters.land ?? "";
+  const provincie = filters.provincie ?? "";
+  const type = filters.type ?? "";
+  const van = filters.van ?? "";
+  const tot = filters.tot ?? "";
   const paramsKey = params.toString();
   const [searchValue, setSearchValue] = useState(q);
   const latestParamsRef = useRef(new URLSearchParams(paramsKey));
@@ -193,7 +196,7 @@ export function AgendaFilters({
           <select
             value={provincie}
             onChange={(e) => update({ provincie: e.target.value })}
-            className="w-full rounded-lg border border-sand bg-cream px-3 py-2 text-sm text-ink focus:border-ember focus:outline-none"
+            className="min-h-11 w-full rounded-lg border border-sand bg-cream px-3 py-2 text-sm text-ink focus-visible:border-ember focus-visible:ring-2 focus-visible:ring-ember/40"
           >
             <option value="">Alle provincies</option>
             {visibleProvinces.map((p) => (
@@ -210,7 +213,7 @@ export function AgendaFilters({
             type="date"
             value={van}
             onChange={(e) => update({ van: e.target.value })}
-            className="w-full rounded-lg border border-sand bg-cream px-3 py-2 text-sm text-ink focus:border-ember focus:outline-none"
+            className="min-h-11 w-full rounded-lg border border-sand bg-cream px-3 py-2 text-sm text-ink focus-visible:border-ember focus-visible:ring-2 focus-visible:ring-ember/40"
           />
         </label>
 
@@ -220,7 +223,7 @@ export function AgendaFilters({
             type="date"
             value={tot}
             onChange={(e) => update({ tot: e.target.value })}
-            className="w-full rounded-lg border border-sand bg-cream px-3 py-2 text-sm text-ink focus:border-ember focus:outline-none"
+            className="min-h-11 w-full rounded-lg border border-sand bg-cream px-3 py-2 text-sm text-ink focus-visible:border-ember focus-visible:ring-2 focus-visible:ring-ember/40"
           />
         </label>
       </div>

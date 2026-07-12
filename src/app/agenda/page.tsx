@@ -22,14 +22,13 @@ export default async function AgendaPage({
   searchParams: Promise<SearchParams>;
 }) {
   const sp = await searchParams;
-  const filters = parseFilters(sp);
-  const filterError = validateDateRange(filters.van, filters.tot);
-  const events = filterError ? [] : filterEvents(getAllEvents(), filters);
-
   const provinceOptions: ProvinceOption[] = getProvincesWithEvents().map((p) => ({
     ...p,
     slug: slugify(p.provincie),
   }));
+  const filters = parseFilters(sp, provinceOptions);
+  const filterError = validateDateRange(filters.van, filters.tot);
+  const events = filterError ? [] : filterEvents(getAllEvents(), filters);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
@@ -41,7 +40,7 @@ export default async function AgendaPage({
       </header>
 
       <div className="mt-6">
-        <AgendaFilters provinces={provinceOptions} error={filterError} />
+        <AgendaFilters provinces={provinceOptions} filters={filters} error={filterError} />
       </div>
 
       <div className="mt-6 flex items-baseline justify-between">
@@ -78,7 +77,7 @@ export default async function AgendaPage({
         <a href="/over" className="text-ember hover:underline">
           hier
         </a>
-        .
+        . Programma en tijden kunnen wijzigen; de website van de sauna is leidend.
       </p>
     </div>
   );

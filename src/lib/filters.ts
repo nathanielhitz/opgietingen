@@ -21,6 +21,11 @@ export interface EventFilters {
 
 export type SearchParams = Record<string, string | string[] | undefined>;
 
+export interface ProvinceFilterOption {
+  slug: string;
+  land: Country;
+}
+
 function first(v: string | string[] | undefined): string | undefined {
   return Array.isArray(v) ? v[0] : v;
 }
@@ -37,16 +42,28 @@ function isRealIsoDate(value: string | undefined): value is string {
 }
 
 /** Leest EventFilters uit URL-searchparams (?land=NL&provincie=...&type=...&van=...&tot=...&toon=alles). */
-export function parseFilters(sp: SearchParams): EventFilters {
+export function parseFilters(
+  sp: SearchParams,
+  provinceOptions?: readonly ProvinceFilterOption[]
+): EventFilters {
   const land = first(sp.land);
+  const parsedLand = land === "NL" || land === "BE" ? land : undefined;
   const type = first(sp.type);
   const q = first(sp.q)?.trim() || undefined;
+  const provincie = first(sp.provincie) || undefined;
   const van = first(sp.van);
   const tot = first(sp.tot);
+  const validProvince = provinceOptions
+    ? provinceOptions.some(
+        (option) => option.slug === provincie && (!parsedLand || option.land === parsedLand)
+      )
+      ? provincie
+      : undefined
+    : provincie;
   return {
     q,
-    land: land === "NL" || land === "BE" ? land : undefined,
-    provincie: first(sp.provincie) || undefined,
+    land: parsedLand,
+    provincie: validProvince,
     type: type && Object.hasOwn(EVENT_TYPES, type) ? (type as EventType) : undefined,
     van: isRealIsoDate(van) ? van : undefined,
     tot: isRealIsoDate(tot) ? tot : undefined,
