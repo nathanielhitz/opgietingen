@@ -1,6 +1,6 @@
 {
   "$comment": "Bronnenlijst voor opgietingen.nl event-scraper. id = saunaSlug (koppelt gescrapete events aan content/saunas/). status: te-verifieren | actief | geen-agenda | handmatig | aanvullen | opzetten | kapot. Alleen 'actief' (type website) wordt gescrapet. matchToken kiest de juiste pagina op multi-locatie-sites.",
-  "laatstBijgewerkt": "2026-07-08",
+  "laatstBijgewerkt": "2026-07-12",
   "bronnen": [
     {
       "id": "thermen-bussloo",
@@ -56,10 +56,10 @@
       "land": "NL",
       "provincie": "Limburg",
       "website": "https://www.thermae.nl",
-      "agendaUrl": "https://www.thermae.nl/",
+      "agendaUrl": "https://www.thermae.nl/evenementen-en-speciale-dagen/",
       "type": "website",
       "status": "actief",
-      "notities": "Bevestigd via Firecrawl (JS-gerenderd).",
+      "notities": "AgendaUrl bijgewerkt naar evenementen-pagina. Twee openingsweekenden nieuwe opgietsauna (5-6 en 12-13 sep 2026) geverifieerd (2026-07-12).",
       "laatstGecontroleerd": "2026-07-12"
     },
     {
@@ -87,15 +87,28 @@
       "laatstGecontroleerd": "2026-07-12"
     },
     {
+      "id": "thermen-binnenmaas",
+      "naam": "Thermen Binnenmaas",
+      "land": "NL",
+      "provincie": "Zuid-Holland",
+      "website": "https://www.thermenbinnenmaas.nl",
+      "agendaUrl": "https://www.thermenbinnenmaas.nl/acties-agenda",
+      "type": "website",
+      "matchToken": "thermenbinnenmaas",
+      "status": "actief",
+      "notities": "Statische acties-/agendapagina (robots: Allow /). Löyly-opgietingen meerdere keren per dag, maar de agendapagina somt vooral acties/arrangementen op — concrete opgiet-events komen vooral via de nieuwsbrief (events@opgietingen.nl). matchToken koppelt de nieuwsbrief-afzender aan deze bron.",
+      "laatstGecontroleerd": "2026-07-12"
+    },
+    {
       "id": "sauna-drome",
       "naam": "SaunaDrôme",
       "land": "NL",
-      "provincie": "Limburg",
-      "website": "https://www.saunadrome.nl",
-      "agendaUrl": "https://www.saunadrome.nl/agenda",
+      "provincie": "Gelderland",
+      "website": "https://saunadrome-putten.nl",
+      "agendaUrl": "https://saunadrome-putten.nl/nieuws/evenementenkalender/",
       "type": "website",
-      "status": "kapot",
-      "notities": "Host onbereikbaar: fetch failed",
+      "status": "actief",
+      "notities": "Domein gecorrigeerd naar saunadrome-putten.nl (oude saunadrome.nl onbereikbaar) en provincie naar Gelderland (Putten). Evenementenkalender bereikbaar; jaartal per event onder voorbehoud — bevestig vóór publicatie.",
       "laatstGecontroleerd": "2026-07-12"
     },
     {
@@ -218,6 +231,114 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
+      "laatstGecontroleerd": "2026-07-12"
+    },
+    {
+      "id": "vitae-goes",
+      "naam": "Vitae Wellnessresort Goes",
+      "land": "NL",
+      "provincie": "Zeeland",
+      "website": "https://vitaewellnessresortgoes.nl",
+      "agendaUrl": "https://vitaewellnessresortgoes.nl/informatie/opgietingen",
+      "type": "website",
+      "status": "actief",
+      "notities": "Statische opgietdagen-pagina; opgietdagen 2026 t/m november geverifieerd (2026-07-12).",
+      "laatstGecontroleerd": "2026-07-12"
+    },
+    {
+      "id": "vitae-roosendaal",
+      "naam": "Vitae Wellnessresort Roosendaal",
+      "land": "NL",
+      "provincie": "Noord-Brabant",
+      "website": "https://vitaewellnessresortroosendaal.nl",
+      "agendaUrl": "https://vitaewellnessresortroosendaal.nl/informatie/opgietingen",
+      "type": "website",
+      "status": "actief",
+      "notities": "Statische opgietdagen-pagina; opgietdagen 2026 (aug-dec) geverifieerd (2026-07-12).",
+      "laatstGecontroleerd": "2026-07-12"
+    },
+    {
+      "id": "centre-du-lac",
+      "naam": "Centre du Lac",
+      "land": "NL",
+      "provincie": "Zuid-Holland",
+      "website": "https://www.centredulac.nl",
+      "agendaUrl": "https://www.centredulac.nl/agenda/",
+      "type": "website",
+      "status": "actief",
+      "notities": "Gastopgietingen (zes sessies) op meerdere data 2026 geverifieerd (2026-07-12).",
+      "laatstGecontroleerd": "2026-07-12"
+    },
+    {
+      "id": "thermen-maarssen",
+      "naam": "Thermen Maarssen",
+      "land": "NL",
+      "provincie": "Utrecht",
+      "website": "https://www.thermenmaarssen.nl",
+      "agendaUrl": "https://www.thermenmaarssen.nl/agenda",
+      "type": "website",
+      "status": "actief",
+      "notities": "Opgiet- en rituelendag (6 sep) en Viking-opgietweekend (21-22 nov) 2026 geverifieerd (2026-07-12).",
+      "laatstGecontroleerd": "2026-07-12"
+    },
+    {
+      "id": "thermen-la-mer",
+      "naam": "Thermen La Mer",
+      "land": "NL",
+      "provincie": "Flevoland",
+      "website": "https://www.thermenlamer.nl",
+      "agendaUrl": "https://www.thermenlamer.nl/event-kalender",
+      "type": "website",
+      "status": "actief",
+      "notities": "La Mer & Friends (22 aug) en Diwali (8 nov) 2026 geverifieerd (2026-07-12). Kerstspecial monitoren zodra datum verschijnt.",
+      "laatstGecontroleerd": "2026-07-12"
+    },
+    {
+      "id": "spaweesp",
+      "naam": "SpaWeesp",
+      "land": "NL",
+      "provincie": "Noord-Holland",
+      "website": "https://www.spaweesp.nl",
+      "agendaUrl": "https://bewellness.nl/aufguss-challenge",
+      "type": "website",
+      "status": "actief",
+      "notities": "BeWellness-resort; voorronde Aufguss Challenge 18 juli 2026 via bewellness.nl geverifieerd. Eigen domein spaweesp.nl nog te bevestigen.",
+      "laatstGecontroleerd": "2026-07-12"
+    },
+    {
+      "id": "spasense",
+      "naam": "SpaSense",
+      "land": "NL",
+      "provincie": "Noord-Brabant",
+      "website": "https://www.spasense.nl",
+      "agendaUrl": "https://bewellness.nl/wellness-events",
+      "type": "website",
+      "status": "actief",
+      "notities": "BeWellness-resort; opgietweekend 7-8 nov 2026 via bewellness.nl geverifieerd. Eigen domein spasense.nl nog te bevestigen.",
+      "laatstGecontroleerd": "2026-07-12"
+    },
+    {
+      "id": "leeuwerikhoeve",
+      "naam": "Thermen & Beauty LeeuwerikHoeve",
+      "land": "NL",
+      "provincie": "Friesland",
+      "website": "https://leeuwerikhoeve.nl",
+      "agendaUrl": "https://leeuwerikhoeve.nl/info-en-contact/agenda/",
+      "type": "website",
+      "status": "actief",
+      "notities": "Exclusieve opgietdag met gastopgieters (1 aug) op agenda; jaartal niet expliciet bij datum — bevestigen vóór publicatie.",
+      "laatstGecontroleerd": "2026-07-12"
+    },
+    {
+      "id": "sauna-flevo-natuur",
+      "naam": "Sauna Flevo Natuur",
+      "land": "NL",
+      "provincie": "Flevoland",
+      "website": "https://www.flevonatuur.nl",
+      "agendaUrl": "https://www.flevonatuur.nl/assets/uploads/Flevo-Natuur/PDF/Jaarkalender-2026-Flevo-Natuur.pdf",
+      "type": "handmatig",
+      "status": "handmatig",
+      "notities": "Jaarkalender is een beeld-gebaseerde PDF (scraper leest tekst niet). 10 themadagen/wedstrijden 2026 handmatig geverifieerd (2026-07-12). Kalender onder voorbehoud; wijzigingen via Facebook/app.",
       "laatstGecontroleerd": "2026-07-12"
     },
     {
