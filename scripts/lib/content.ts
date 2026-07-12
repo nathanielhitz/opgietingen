@@ -56,6 +56,36 @@ export function writeBronnen(data: BronnenFile): void {
   fs.writeFileSync(BRONNEN_PATH, `${JSON.stringify(data, null, 2)}\n`);
 }
 
+/**
+ * Koppelt een nieuwsbrief-afzender aan een sauna-bron (→ saunaSlug).
+ * Match-volgorde:
+ *   1. expliciete `matchToken` die als substring in het afzenderadres zit
+ *      (bv. matchToken "@thermenbussloo.nl");
+ *   2. host van `website` die overeenkomt met het afzenderdomein (automatisch).
+ * Retourneert de gematchte bron, of undefined als geen bron past.
+ */
+export function matchBronBySender(bronnen: Bron[], fromAddress: string): Bron | undefined {
+  const from = fromAddress.toLowerCase().trim();
+  if (!from) return undefined;
+  const domain = from.split("@")[1] ?? "";
+
+  const byToken = bronnen.find(
+    (b) => b.matchToken && from.includes(b.matchToken.toLowerCase()),
+  );
+  if (byToken) return byToken;
+
+  if (!domain) return undefined;
+  return bronnen.find((b) => {
+    if (!b.website) return false;
+    try {
+      const host = new URL(b.website).hostname.replace(/^www\./, "");
+      return host && (domain === host || domain.endsWith(`.${host}`));
+    } catch {
+      return false;
+    }
+  });
+}
+
 /* ---------- Bestaande events (voor dedup) ---------- */
 
 /** YAML parseert kale datums als Date; normaliseer naar ISO YYYY-MM-DD. */
@@ -107,26 +137,9 @@ export function slugify(input: string): string {
     .slice(0, 60);
 }
 
-/** Ruwe HTML → leesbare tekst; verwijdert scripts/styles en comprimeert witruimte. */
-export function htmlToText(html: string, maxChars = 60000): string {
-  const text = html
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ")
-    .replace(/<svg[\s\S]*?<\/svg>/gi, " ")
-    .replace(/<head[\s\S]*?<\/head>/gi, " ")
-    .replace(/<\/(p|div|li|h[1-6]|tr|section|article)>/gi, "\n")
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/&euro;/gi, "€")
-    .replace(/&[a-z]+;/gi, " ")
-    .replace(/[ \t]+/g, " ")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-  return text.length > maxChars ? `${text.slice(0, maxChars)}\n…[ingekort]` : text;
-}
+// htmlToText is verhuisd naar src/lib/html.ts (gedeeld met de scraper-laag);
+// re-export zodat script-side importeurs (mail.ts, verify-bronnen) hier blijven werken.
+export { htmlToText } from "../../src/lib/html";
 
 /* ---------- Event wegschrijven ---------- */
 

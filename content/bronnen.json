@@ -251,7 +251,7 @@
       "agendaUrl": "",
       "type": "nieuwsbrief",
       "status": "opzetten",
-      "notities": "Apart mailadres aanmaken en aanmelden bij alle bronnen. Fase 2: mail-forward naar verwerkings-endpoint."
+      "notities": "Gedeelde inbox events@opgietingen.nl; aanmelden bij nieuwsbrieven van sauna's. Verwerkt door 'npm run scrape-mail' (IMAP → poort → concept). Afzender wordt op website-domein of matchToken aan een sauna-bron gekoppeld; onbekende afzenders blijven concept voor handmatige toewijzing. Zet status op 'actief' zodra de IMAP-secrets in CI staan."
     }
   ]
 }

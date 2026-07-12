@@ -51,6 +51,19 @@ jobs:
             npm run scrape
           fi
 
+      # Stap 3 — verwerk nieuwsbrieven uit de gedeelde inbox (events@opgietingen.nl).
+      # Slaat zichzelf over als de IMAP-secrets nog niet gezet zijn.
+      - name: Scrape nieuwsbrieven (IMAP → poort → concept/gepubliceerd)
+        env:
+          MAIL_IMAP_HOST: ${{ secrets.MAIL_IMAP_HOST }}
+          MAIL_IMAP_PORT: ${{ secrets.MAIL_IMAP_PORT }}
+          MAIL_IMAP_USER: ${{ secrets.MAIL_IMAP_USER }}
+          MAIL_IMAP_PASS: ${{ secrets.MAIL_IMAP_PASS }}
+          MAIL_IMAP_TLS: ${{ secrets.MAIL_IMAP_TLS }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SCRAPE_AUTOPUBLISH: "true"
+        run: npm run scrape-mail
+
       - name: Commit resultaten op main
         run: |
           git config user.name "opgietingen-bot"

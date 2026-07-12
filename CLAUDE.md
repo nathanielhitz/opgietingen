@@ -106,14 +106,16 @@ Statusbetekenis:
 **Verifiëren** (`npm run verify-bronnen`) — fetcht elke `agendaUrl` (redirects, correcte robots.txt-naleving incl. `*`/`$`-wildcards), zoekt via sitemap + homepage-links de juiste agendapagina als het pad afwijkt (scoort op trefwoorden, sluit blog/nieuws/zakelijk uit, verkiest ondiepe sectiepagina's), en schrijft de juiste status + URL + notitie terug. Als de kale fetch geen agendapagina oplevert (JS-gerenderd), volgt een **Firecrawl-fallback** (echte browser-rendering; robots blijft gelden) via `firecrawlFetchMarkdown` — vereist `FIRECRAWL_API_KEY`. `-- --all` her-verifieert alles (behalve `handmatig`). `npm run bronnen-report` print een markdown-statusrapport.
 
 **Scrapen** (`npm run scrape`) — per actieve bron:
-1. **Fetch + extractie via `src/lib/scraper.ts`** (de enige, vervangbare fetch-laag): Firecrawl haalt de pagina als markdown op én doet structured extraction met het event-datamodel als JSON-schema. Valt dat tegen (geen bruikbare output) → fallback op eigen extractie via de Claude API (`claude-haiku-4-5`) op dezelfde markdown.
+1. **Fetch + extractie via `src/lib/scraper.ts`** (de enige, vervangbare fetch-laag), goedkoopste route eerst omdat Firecrawl-credits de schaarse resource zijn: **(a)** kale fetch (gratis) — levert die ≥ `MIN_STATIC_TEXT_CHARS` statische tekst op, dan extraheert `claude-haiku-4-5` daaruit direct en wordt Firecrawl overgeslagen (ook bij 0 events: liever een false negative dan credits verbranden); **(b)** JS-shell of kale route faalt → Firecrawl haalt de pagina als markdown op én doet structured extraction met het event-datamodel als JSON-schema; **(c)** valt dat tegen → Claude-extractie op de Firecrawl-markdown.
 2. **Dedup** tegen bestaande events op `saunaSlug + startDatum` (bestaande events worden nooit overschreven).
 3. **Kwaliteitspoort** (`scripts/lib/quality-gate.ts`): elk event wordt beoordeeld op harde criteria — geldige toekomstige ISO-datum, bestaande `saunaSlug`, niet-lege `titel`, geldig `type`, en een opgiet-trefwoord (opgiet/aufguss/löyly/saunaritueel/gietceremonie) in titel of beschrijving. Bij twijfel afkeuren (false negatives acceptabel, false positives niet).
 4. **Schrijft** nieuwe events als MDX met `bron: scraper`. Status: **`gepubliceerd`** als het event door de poort komt én `SCRAPE_AUTOPUBLISH=true` staat; anders **`concept`**, met de afkeurreden(en) in `keurNotitie`.
 
 Flags: `-- --limit N` (eerste N bronnen), `-- --dry-run` (mock-extractie incl. afkeur-cases; test poort + dedup + MDX zonder API-keys). Env `SCRAPE_AUTOPUBLISH=true` schakelt auto-publiceren aan (uit = alles blijft `concept`, voor de rollout-fase).
 
-**Env / secrets:** `FIRECRAWL_API_KEY` (fetch + primaire extractie + verify-fallback), `ANTHROPIC_API_KEY` (extractie-fallback). Lokaal via `.env`/export; in CI via GitHub Actions secrets.
+**Nieuwsbrief-kanaal (`events@opgietingen.nl`)** — tweede fetch-laag naast de website-scraper, met identieke verwerking (extractie → dedup → poort → MDX). `npm run scrape-mail` leest **ongelezen** mails uit een gedeelde IMAP-inbox (`scripts/lib/mail.ts`), extraheert events uit de mailinhoud via Claude (`extractEventsFromText` in `src/lib/scraper.ts` — geen Firecrawl, de mail levert de inhoud al), en koppelt elke mail op **afzender → sauna** (`matchBronBySender`: expliciete `matchToken` of het `website`-domein van een bron). Onbekende afzenders blijven `concept` met de afzender in `keurNotitie` voor handmatige toewijzing. Verwerkte mails worden als gelezen (`\Seen`) gemarkeerd zodat een volgende run ze overslaat; dedup op `saunaSlug + startDatum` blijft de tweede vangnet. Env: `MAIL_IMAP_HOST`/`MAIL_IMAP_USER`/`MAIL_IMAP_PASS` (+ optioneel `MAIL_IMAP_PORT`/`MAIL_IMAP_TLS`/`MAIL_IMAP_MAILBOX`). Zonder `MAIL_IMAP_HOST` slaat de stap zichzelf netjes over. De wekelijkse workflow draait dit als stap 3.
+
+**Env / secrets:** `FIRECRAWL_API_KEY` (fetch + primaire extractie + verify-fallback), `ANTHROPIC_API_KEY` (extractie-fallback + nieuwsbrief-extractie), `MAIL_IMAP_*` (nieuwsbrief-inbox). Lokaal via `.env`/export; in CI via GitHub Actions secrets.
 
 **Automatisering (hands-off):** `.github/workflows/scrape.yml` draait elke maandag 06:00 UTC (+ handmatig via `workflow_dispatch`): eerst `verify-bronnen -- --all`, dan `scrape` met `SCRAPE_AUTOPUBLISH=true`. De resultaten (nieuwe events + bijgewerkte `bronnen.json`) worden **direct op `main` gecommit** (Vercel deployt automatisch); concept-events komen mee maar zijn onzichtbaar (loader filtert ze). Daarna bouwt `npm run scrape-report` een rapport en beheert de workflow **één** GitHub-issue met label `scraper-probleem`: bij twijfelgevallen/kapotte bronnen/ontbrekende profielen wordt het geopend of geactualiseerd (GitHub's notificatiemail = de melding); een schone run sluit het. Geen review vooraf; steekproef achteraf.
 
@@ -131,6 +133,8 @@ npm run verify-bronnen  # controleer/actualiseer agendaUrl's in bronnen.json
 npm run bronnen-report  # markdown-statusrapport van alle bronnen
 npm run scrape          # scrape actieve bronnen → events via poort (API-keys nodig)
 npm run scrape -- --dry-run   # test de pipeline + poort zonder API-keys
+npm run scrape-mail     # verwerk ongelezen nieuwsbrieven uit de inbox (IMAP + ANTHROPIC_API_KEY)
+npm run scrape-mail -- --dry-run  # mock-inbox; test matching + poort zonder keys
 npm run scrape-report   # bouw scrape-issue.md + print problemen/schoon
 ```
 

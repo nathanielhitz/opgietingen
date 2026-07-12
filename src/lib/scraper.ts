@@ -4,18 +4,22 @@
   Zo is de fetch-/extractielaag vervangbaar zonder de rest van de pipeline
   (dedup, MDX-schrijven, CLI, workflow) te raken.
 
-  Strategie:
-    1. Firecrawl haalt de pagina op als markdown én doet structured extraction
-       met ons event-datamodel als JSON-schema.
-    2. Valt die structured extraction tegen (geen/onbruikbare output), dan
-       vallen we terug op eigen extractie via de Claude API (claude-haiku-4-5)
-       op basis van dezelfde markdown.
+  Strategie (goedkoopste eerst — Firecrawl-credits zijn de schaarse resource):
+    1. Kale fetch van de pagina (gratis). Levert dat substantiële statische
+       tekst op, dan extraheert Claude (claude-haiku-4-5) daaruit direct en
+       wordt Firecrawl volledig overgeslagen.
+    2. Blijkt de pagina een JS-shell (nauwelijks statische tekst) of faalt de
+       kale route, dan haalt Firecrawl de pagina op als markdown én doet
+       structured extraction met ons event-datamodel als JSON-schema.
+    3. Valt die structured extraction tegen (geen/onbruikbare output), dan
+       vallen we terug op Claude-extractie op de Firecrawl-markdown.
 
-  Vereist env: FIRECRAWL_API_KEY (fetch + primaire extractie),
-               ANTHROPIC_API_KEY (fallback-extractie).
+  Vereist env: ANTHROPIC_API_KEY (goedkope route + fallback-extractie),
+               FIRECRAWL_API_KEY (alleen nodig voor JS-gerenderde pagina's).
 */
 import Firecrawl from "@mendable/firecrawl-js";
 import Anthropic from "@anthropic-ai/sdk";
+import { htmlToText } from "./html";
 
 /** Model voor de fallback-extractie (bewust een snel/goedkoop model). */
 const FALLBACK_MODEL = "claude-haiku-4-5";
@@ -45,7 +49,13 @@ export interface ScrapeContext {
   jaar: number;
 }
 
-export type ExtractionMethod = "firecrawl-json" | "claude-fallback" | "none";
+export type ExtractionMethod = "plain-claude" | "firecrawl-json" | "claude-fallback" | "none";
+
+/**
+ * Minimale hoeveelheid statische tekst om een pagina als "echt gerenderd" te
+ * beschouwen. Daaronder gaan we uit van een JS-shell en is Firecrawl nodig.
+ */
+export const MIN_STATIC_TEXT_CHARS = 800;
 
 export interface ScrapeOutcome {
   events: ScrapedEvent[];
@@ -155,6 +165,36 @@ export function sanitizeEvents(raw: unknown): ScrapedEvent[] {
   return out;
 }
 
+/* ---------- Kale fetch (gratis route) ---------- */
+
+/**
+ * Haalt een pagina op met een gewone fetch en geeft de leesbare tekst terug,
+ * of null bij een fout/lege respons. Robots-naleving is de verantwoordelijkheid
+ * van de aanroeper (scrape-events checkt vooraf via isAllowed).
+ */
+async function plainFetchText(url: string): Promise<string | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 20000);
+  try {
+    const res = await fetch(url, {
+      redirect: "follow",
+      signal: controller.signal,
+      headers: {
+        "User-Agent": USER_AGENT,
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "nl,nl-NL;q=0.9,en;q=0.8",
+      },
+    });
+    if (!res.ok) return null;
+    const text = htmlToText(await res.text());
+    return text || null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /* ---------- Firecrawl: markdown + structured extraction ---------- */
 
 async function firecrawlScrape(
@@ -232,13 +272,59 @@ async function claudeExtract(markdown: string, ctx: ScrapeContext): Promise<Scra
 /* ---------- Orkestratie ---------- */
 
 /**
+ * Extraheert events uit reeds opgehaalde tekst/markdown (bv. een nieuwsbrief-mail)
+ * via de Claude-extractie — zonder fetch-stap. De e-mailbron levert de inhoud al
+ * aan, dus Firecrawl is hier niet van toepassing. Gebruikt dezelfde ScrapedEvent-
+ * output als scrapeAgenda, zodat de rest van de pipeline identiek blijft.
+ */
+export async function extractEventsFromText(
+  markdown: string,
+  ctx: ScrapeContext
+): Promise<ScrapeOutcome> {
+  const warnings: string[] = [];
+  if (!markdown.trim()) {
+    return { events: [], markdown, method: "none", warnings: ["Lege inhoud; niets te extraheren."] };
+  }
+  try {
+    const events = await claudeExtract(markdown, ctx);
+    return { events, markdown, method: events.length ? "claude-fallback" : "none", warnings };
+  } catch (err) {
+    warnings.push(`Claude-extractie-fout: ${err instanceof Error ? err.message : String(err)}`);
+    return { events: [], markdown, method: "none", warnings };
+  }
+}
+
+/**
  * Haalt één agendapagina op en levert gestructureerde events.
- * Primair via Firecrawl structured extraction; valt terug op Claude (haiku)
- * wanneer Firecrawl geen bruikbare events oplevert.
+ * Goedkoopste route eerst: kale fetch + Claude (haiku). Alleen wanneer de
+ * pagina een JS-shell blijkt (te weinig statische tekst) of de kale route
+ * faalt, wordt Firecrawl gebruikt (structured extraction, met Claude-fallback).
  */
 export async function scrapeAgenda(url: string, ctx: ScrapeContext): Promise<ScrapeOutcome> {
   const warnings: string[] = [];
 
+  // Route 1 — kale fetch (gratis) + Claude-extractie op de statische tekst.
+  const staticText = await plainFetchText(url);
+  if (staticText && staticText.length >= MIN_STATIC_TEXT_CHARS) {
+    try {
+      const events = await claudeExtract(staticText, ctx);
+      // Substantiële statische pagina → vertrouw dit resultaat, ook bij 0
+      // events (liever een false negative dan onnodig Firecrawl-credits).
+      return { events, markdown: staticText, method: "plain-claude", warnings };
+    } catch (err) {
+      warnings.push(
+        `Kale route mislukt (${err instanceof Error ? err.message : String(err)}); door naar Firecrawl.`,
+      );
+    }
+  } else {
+    warnings.push(
+      staticText
+        ? `Te weinig statische tekst (${staticText.length} tekens) — vermoedelijk JS-gerenderd; Firecrawl nodig.`
+        : "Kale fetch mislukt; Firecrawl nodig.",
+    );
+  }
+
+  // Route 2 — Firecrawl (browser-rendering + structured extraction).
   let markdown = "";
   let firecrawlEvents: ScrapedEvent[] = [];
   try {
