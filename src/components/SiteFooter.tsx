@@ -32,8 +32,19 @@ export function SiteFooter() {
       </div>
 
       <div className="border-t border-sand/70">
-        <div className="mx-auto max-w-6xl px-4 py-5 text-xs text-ink-faint sm:px-6">
-          © {year} {site.name} · Gemaakt voor saunaliefhebbers in NL &amp; BE.
+        <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-5 text-xs text-ink-faint sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <span>© {year} {site.name} · Gemaakt voor saunaliefhebbers in NL &amp; BE.</span>
+          <span>
+            Built by{" "}
+            <a
+              href="https://www.hitzdigital.nl/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-ink-soft transition-colors hover:text-ember"
+            >
+              HitzDigital
+            </a>
+          </span>
         </div>
       </div>
     </footer>
