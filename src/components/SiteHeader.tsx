@@ -33,6 +33,16 @@ export function SiteHeader() {
   }, [pathname]);
 
   useEffect(() => {
+    const desktopViewport = window.matchMedia("(min-width: 640px)");
+    const closeMenuOnDesktop = (event: MediaQueryListEvent) => {
+      if (event.matches) setMenuOpen(false);
+    };
+
+    desktopViewport.addEventListener("change", closeMenuOnDesktop);
+    return () => desktopViewport.removeEventListener("change", closeMenuOnDesktop);
+  }, []);
+
+  useEffect(() => {
     document.body.classList.toggle("menu-open", menuOpen);
 
     return () => document.body.classList.remove("menu-open");
