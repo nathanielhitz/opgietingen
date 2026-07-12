@@ -94,25 +94,29 @@ export async function fetchUnseenMail(
   await client.connect();
   const lock = await client.getMailboxLock(cfg.mailbox);
   try {
-    const uids = (await client.search({ seen: false })) || [];
+    // Zoek op UID (niet op sequence-nummer) zodat fetch/flag consistent blijven.
+    const uids = (await client.search({ seen: false }, { uid: true })) || [];
     const targets = uids.slice(0, limit === Infinity ? uids.length : limit);
 
-    for (const uid of targets) {
-      const msg = await client.fetchOne(String(uid), { source: true }, { uid: true });
-      if (!msg || !msg.source) continue;
-      try {
-        const parsed = await simpleParser(msg.source);
-        const markdown = bodyToMarkdown(parsed.text, parsed.html);
-        if (!markdown) continue;
-        out.push({
-          uid,
-          from: senderAddress(parsed.from),
-          subject: parsed.subject?.trim() ?? "",
-          markdown,
-        });
-      } catch {
-        // Onparsebaar bericht — overslaan, niet als gelezen markeren.
-        continue;
+    if (targets.length) {
+      // De fetch-generator is betrouwbaarder dan fetchOne (die op sommige servers
+      // false teruggeeft). source levert het ruwe MIME-bericht voor mailparser.
+      for await (const msg of client.fetch(targets, { source: true }, { uid: true })) {
+        if (!msg.source) continue;
+        try {
+          const parsed = await simpleParser(msg.source);
+          const markdown = bodyToMarkdown(parsed.text, parsed.html);
+          if (!markdown) continue;
+          out.push({
+            uid: msg.uid,
+            from: senderAddress(parsed.from),
+            subject: parsed.subject?.trim() ?? "",
+            markdown,
+          });
+        } catch {
+          // Onparsebaar bericht — overslaan, niet als gelezen markeren.
+          continue;
+        }
       }
     }
 
