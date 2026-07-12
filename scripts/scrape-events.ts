@@ -21,7 +21,6 @@ import {
   existingSaunaSlugs,
   dedupKey,
   writeEventMdx,
-  type Bron,
   type NewEvent,
 } from "./lib/content";
 import { evaluateEvent } from "./lib/quality-gate";
@@ -40,7 +39,7 @@ const TODAY = new Date().toISOString().slice(0, 10);
 const AUTO_PUBLISH = process.env.SCRAPE_AUTOPUBLISH === "true";
 
 /** Mock-extractie voor --dry-run: twee toekomstige events per bron. */
-function mockOutcome(bron: Bron): ScrapeOutcome {
+function mockOutcome(): ScrapeOutcome {
   const events: ScrapedEvent[] = [
     // Geldig — moet slagen (gepubliceerd bij AUTO_PUBLISH).
     {
@@ -108,7 +107,7 @@ async function main() {
     let outcome: ScrapeOutcome;
     try {
       outcome = DRY_RUN
-        ? mockOutcome(bron)
+        ? mockOutcome()
         : await scrapeAgenda(bron.agendaUrl, {
             saunaNaam: bron.naam,
             land: bron.land === "BE" ? "BE" : "NL",

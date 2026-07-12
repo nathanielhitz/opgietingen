@@ -127,7 +127,7 @@ export default async function SaunaPage({
 
       <div className="mt-10 flex gap-4 text-sm font-medium">
         <Link href="/saunas" className="text-ember hover:underline">
-          ← Alle sauna's
+          ← Alle sauna’s
         </Link>
         <Link href="/agenda" className="text-ember hover:underline">
           Volledige agenda →

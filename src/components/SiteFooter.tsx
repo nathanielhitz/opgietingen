@@ -16,14 +16,14 @@ export function SiteFooter() {
 
         <FooterCol title="Ontdekken">
           <FooterLink href="/agenda">Agenda</FooterLink>
-          <FooterLink href="/saunas">Sauna's</FooterLink>
+          <FooterLink href="/saunas">Sauna’s</FooterLink>
           <FooterLink href="/opgietingen/gelderland">Per provincie</FooterLink>
         </FooterCol>
 
         <FooterCol title="Over ons">
           <FooterLink href="/over">Over Opgietingen.nl</FooterLink>
           <FooterLink href="/contact">Contact</FooterLink>
-          <FooterLink href="/voor-saunas">Voor sauna's</FooterLink>
+          <FooterLink href="/voor-saunas">Voor sauna’s</FooterLink>
         </FooterCol>
 
         <FooterCol title="Meer">

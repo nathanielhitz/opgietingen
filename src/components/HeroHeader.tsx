@@ -37,7 +37,7 @@ export default function HeroHeader({
 
       {/* Inhoud */}
       {/* De site-header zweeft transparant over de foto; pt compenseert zijn hoogte. */}
-      <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-32 sm:px-6 sm:pb-28 sm:pt-40">
+      <div className="relative mx-auto max-w-6xl px-4 pb-14 pt-28 sm:px-6 sm:pb-20 sm:pt-32">
         <p className="text-sm font-semibold uppercase tracking-wider text-ember-soft">
           Opgietingen · Aufguss · NL &amp; BE
         </p>
@@ -53,13 +53,24 @@ export default function HeroHeader({
             hij in de herofoto opgaat in plaats van er als wit blok op te liggen. */}
         <form
           action="/agenda"
-          className="mt-8 flex max-w-2xl flex-col gap-3 rounded-[--radius-card] border border-white/15 bg-white/10 p-3 shadow-lg backdrop-blur-md sm:flex-row sm:items-end"
+          className="mt-8 grid max-w-4xl gap-3 rounded-[--radius-card] border border-white/15 bg-white/10 p-3 shadow-lg backdrop-blur-md sm:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end"
         >
+          <label className="sm:col-span-2 lg:col-span-1">
+            <span className="mb-1 block px-1 text-xs font-medium text-cream/80">
+              Zoek op event, sauna of plaats
+            </span>
+            <input
+              type="search"
+              name="q"
+              placeholder="Bijv. Aufguss, Thermen of Utrecht"
+              className="h-11 w-full rounded-lg border border-white/20 bg-white/10 px-3 text-sm text-white placeholder:text-cream/55 focus:border-ember-soft focus:outline-none"
+            />
+          </label>
           <label className="flex-1">
             <span className="mb-1 block px-1 text-xs font-medium text-cream/80">Provincie</span>
             <select
               name="provincie"
-              className="select-glass w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2.5 text-sm text-white focus:border-ember-soft focus:outline-none"
+              className="select-glass h-11 w-full rounded-lg border border-white/20 bg-white/10 px-3 text-sm text-white focus:border-ember-soft focus:outline-none"
             >
               <option value="">Alle provincies</option>
               {provinces.map((p) => (
@@ -73,7 +84,7 @@ export default function HeroHeader({
             <span className="mb-1 block px-1 text-xs font-medium text-cream/80">Type</span>
             <select
               name="type"
-              className="select-glass w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2.5 text-sm text-white focus:border-ember-soft focus:outline-none"
+              className="select-glass h-11 w-full rounded-lg border border-white/20 bg-white/10 px-3 text-sm text-white focus:border-ember-soft focus:outline-none"
             >
               <option value="">Alle types</option>
               {(Object.keys(EVENT_TYPES) as EventType[]).map((t) => (
@@ -85,7 +96,7 @@ export default function HeroHeader({
           </label>
           <button
             type="submit"
-            className="rounded-full bg-ember px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-ember/90"
+            className="h-11 rounded-full bg-ember px-6 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-ember/90"
           >
             Zoek opgietingen
           </button>

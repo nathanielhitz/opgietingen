@@ -24,9 +24,9 @@ export default function SaunasPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
       <header className="max-w-2xl">
-        <h1 className="font-display text-3xl font-semibold text-ink sm:text-4xl">Sauna's</h1>
+        <h1 className="font-display text-3xl font-semibold text-ink sm:text-4xl">Sauna’s</h1>
         <p className="mt-2 text-ink-soft">
-          Sauna's in Nederland en België met opgietingen en Aufguss-events. Bekijk faciliteiten, locatie en de komende
+          Sauna’s in Nederland en België met opgietingen en Aufguss-events. Bekijk faciliteiten, locatie en de komende
           agenda per sauna.
         </p>
       </header>
@@ -48,7 +48,7 @@ export default function SaunasPage() {
       ))}
 
       <p className="mt-10 text-xs text-ink-faint">
-        Een interactieve overzichtskaart met alle sauna's volgt. Locatie per sauna vind je nu op de saunapagina zelf.
+        Een interactieve overzichtskaart met alle sauna’s volgt. Locatie per sauna vind je nu op de saunapagina zelf.
       </p>
     </div>
   );

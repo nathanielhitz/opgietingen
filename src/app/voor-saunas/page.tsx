@@ -30,7 +30,7 @@ const voordelen = [
 export default function VoorSaunasPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
-      <p className="text-sm font-semibold uppercase tracking-wider text-ember">Voor sauna's</p>
+      <p className="text-sm font-semibold uppercase tracking-wider text-ember">Voor sauna’s</p>
       <h1 className="mt-3 font-display text-3xl font-semibold text-ink sm:text-4xl">
         Zet jouw opgietingen in de spotlight
       </h1>

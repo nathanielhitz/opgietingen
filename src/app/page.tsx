@@ -83,15 +83,15 @@ export default function HomePage() {
           )}
         </section>
 
-        {/* Uitgelichte sauna's */}
+        {/* Uitgelichte sauna’s */}
         <section className="border-t border-sand py-14">
           <div className="flex items-end justify-between">
             <div>
-              <h2 className="font-display text-2xl font-semibold text-ink sm:text-3xl">Sauna's</h2>
+              <h2 className="font-display text-2xl font-semibold text-ink sm:text-3xl">Sauna’s</h2>
               <p className="mt-1 text-ink-soft">De adressen achter de opgietingen.</p>
             </div>
             <Link href="/saunas" className="hidden shrink-0 text-sm font-medium text-ember hover:underline sm:block">
-              Alle sauna's →
+              Alle sauna’s →
             </Link>
           </div>
           <ul className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -114,7 +114,7 @@ export default function HomePage() {
               href="/voor-saunas"
               className="mt-6 inline-block rounded-full bg-ember px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-ember/90"
             >
-              Meer voor sauna's
+              Meer voor sauna’s
             </Link>
           </div>
         </section>

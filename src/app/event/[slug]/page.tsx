@@ -111,6 +111,9 @@ export default async function EventPage({
             <div className="mt-5">
               <AffiliateButton slug={event.slug} label={`Bekijk bij ${sauna.naam}`} />
               <p className="mt-2 text-center text-xs text-ink-faint">Je gaat naar de website van de sauna.</p>
+              <p className="mt-2 text-center text-xs text-ink-faint">
+                Programma en tijden kunnen wijzigen. Controleer de actuele informatie op de website van de sauna.
+              </p>
             </div>
           </div>
 

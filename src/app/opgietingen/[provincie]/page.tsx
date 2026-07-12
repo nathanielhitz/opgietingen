@@ -52,7 +52,7 @@ export default async function ProvincePage({ params }: { params: Params }) {
           Opgietingen in {found.provincie}
         </h1>
         <p className="mt-2 text-ink-soft">
-          Komende opgietingen en Aufguss-events in sauna's in {found.provincie} ({COUNTRY_LABELS[found.land]}).
+          Komende opgietingen en Aufguss-events in sauna’s in {found.provincie} ({COUNTRY_LABELS[found.land]}).
         </p>
       </header>
 
@@ -79,7 +79,7 @@ export default async function ProvincePage({ params }: { params: Params }) {
 
       {saunas.length > 0 && (
         <section className="mt-12">
-          <h2 className="font-display text-2xl font-semibold text-ink">Sauna's in {found.provincie}</h2>
+          <h2 className="font-display text-2xl font-semibold text-ink">Sauna’s in {found.provincie}</h2>
           <ul className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {saunas.map((sauna) => (
               <li key={sauna.slug}>
