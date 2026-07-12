@@ -63,14 +63,14 @@ export default function HeroHeader({
               type="search"
               name="q"
               placeholder="Bijv. Aufguss, Thermen of Utrecht"
-              className="h-11 w-full rounded-lg border border-white/20 bg-white/10 px-3 text-sm text-white placeholder:text-cream/55 focus:border-ember-soft focus:outline-none"
+              className="h-11 w-full rounded-lg border border-white/20 bg-white/10 px-3 text-sm text-white placeholder:text-cream/55 focus:border-ember-soft"
             />
           </label>
           <label className="flex-1">
             <span className="mb-1 block px-1 text-xs font-medium text-cream/80">Provincie</span>
             <select
               name="provincie"
-              className="select-glass h-11 w-full rounded-lg border border-white/20 bg-white/10 px-3 text-sm text-white focus:border-ember-soft focus:outline-none"
+              className="select-glass h-11 w-full rounded-lg border border-white/20 bg-white/10 px-3 text-sm text-white focus:border-ember-soft"
             >
               <option value="">Alle provincies</option>
               {provinces.map((p) => (
@@ -84,7 +84,7 @@ export default function HeroHeader({
             <span className="mb-1 block px-1 text-xs font-medium text-cream/80">Type</span>
             <select
               name="type"
-              className="select-glass h-11 w-full rounded-lg border border-white/20 bg-white/10 px-3 text-sm text-white focus:border-ember-soft focus:outline-none"
+              className="select-glass h-11 w-full rounded-lg border border-white/20 bg-white/10 px-3 text-sm text-white focus:border-ember-soft"
             >
               <option value="">Alle types</option>
               {(Object.keys(EVENT_TYPES) as EventType[]).map((t) => (
