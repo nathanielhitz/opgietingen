@@ -37,3 +37,6 @@ yarn-error.log*
 
 # gegenereerd scraper-probleemrapport (CI-issue body)
 /scrape-issue.md
+
+# Onderzoeks-input (ChatGPT sauna-events pack) — lokaal houden, niet in repo
+opgietingen_research_pack_2026/
