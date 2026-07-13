@@ -16,6 +16,16 @@ partners eigen beeldmateriaal aanleveren.
 | saunas/lago.jpg | https://www.pexels.com/photo/7587816/ |
 | saunas/spawell.jpg | https://www.pexels.com/photo/19955732/ |
 | saunas/thermae-grimbergen.jpg | https://www.pexels.com/photo/7598363/ |
+| saunas/vitae-goes.jpg | https://www.pexels.com/photo/36420270/ |
+| saunas/vitae-roosendaal.jpg | https://www.pexels.com/photo/37816600/ |
+| saunas/centre-du-lac.jpg | https://www.pexels.com/photo/25358307/ |
+| saunas/thermae-2000.jpg | https://www.pexels.com/photo/37816601/ |
+| saunas/thermen-maarssen.jpg | https://www.pexels.com/photo/34097625/ |
+| saunas/thermen-la-mer.jpg | https://www.pexels.com/photo/32504769/ |
+| saunas/spaweesp.jpg | https://www.pexels.com/photo/32504788/ |
+| saunas/spasense.jpg | https://www.pexels.com/photo/7587822/ |
+| saunas/leeuwerikhoeve.jpg | https://www.pexels.com/photo/5582215/ |
+| saunas/sauna-flevo-natuur.jpg | https://www.pexels.com/photo/8285560/ |
 | events/nk-aufguss.jpg | https://www.pexels.com/photo/18285439/ |
 | events/bk-opgieten.jpg | https://www.pexels.com/photo/18285438/ |
 | events/zomeravond-boetfort.jpg | https://www.pexels.com/photo/31092906/ |
