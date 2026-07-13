@@ -27,6 +27,8 @@ export function SiteFooter() {
         </FooterCol>
 
         <FooterCol title="Meer">
+          <FooterLink href="/privacybeleid">Privacybeleid</FooterLink>
+          <FooterLink href="/cookiebeleid">Cookiebeleid</FooterLink>
           <FooterLink href="/sitemap.xml">Sitemap</FooterLink>
         </FooterCol>
       </div>

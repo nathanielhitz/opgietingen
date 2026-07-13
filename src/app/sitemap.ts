@@ -17,6 +17,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: u("/over"), changeFrequency: "yearly", priority: 0.3 },
     { url: u("/contact"), changeFrequency: "yearly", priority: 0.3 },
     { url: u("/voor-saunas"), changeFrequency: "monthly", priority: 0.4 },
+    { url: u("/privacybeleid"), changeFrequency: "yearly", priority: 0.2 },
+    { url: u("/cookiebeleid"), changeFrequency: "yearly", priority: 0.2 },
   ];
 
   const events = getAllEvents().map((e) => ({
