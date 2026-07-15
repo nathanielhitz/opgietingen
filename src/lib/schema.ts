@@ -29,11 +29,40 @@ export function siteSchema() {
         "@id": `${site.url}#organization`,
         name: site.name,
         url: site.url,
+        logo: `${site.url}/logo.svg`,
         description: site.tagline,
         areaServed: ["Nederland", "België"],
       },
     ],
   };
+}
+
+/** schema.org BreadcrumbList voor het kruimelpad (Home + items). */
+export function breadcrumbSchema(items: { href?: string; label: string }[]) {
+  const all = [{ href: "/", label: "Home" }, ...items];
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: all.map((item, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: item.label,
+      ...(item.href ? { item: absoluteUrl(item.href) } : {}),
+    })),
+  };
+}
+
+/**
+ * Parseert een prijs uit vrije tekst ("Vanaf € 49,50" → 49.50). Alleen
+ * gebruiken voor Offer.price als er precies één bedrag in de tekst staat —
+ * een verkeerd geparsede prijs is erger dan geen prijs (SEO-PLAN §7).
+ */
+export function parsePrijs(indicatie: string | undefined): number | undefined {
+  if (!indicatie) return undefined;
+  const matches = indicatie.match(/\d+(?:[.,]\d{1,2})?/g);
+  if (!matches || matches.length !== 1) return undefined;
+  const value = Number(matches[0].replace(",", "."));
+  return Number.isFinite(value) ? value : undefined;
 }
 
 function placeSchema(sauna: Sauna) {
@@ -58,6 +87,7 @@ function placeSchema(sauna: Sauna) {
 /** schema.org Event JSON-LD voor een event-detailpagina. */
 export function eventSchema(event: OpgietEvent) {
   const { sauna } = event;
+  const prijs = parsePrijs(event.prijsIndicatie);
   return {
     "@context": "https://schema.org",
     "@type": "Event",
@@ -70,6 +100,21 @@ export function eventSchema(event: OpgietEvent) {
     ...(event.afbeelding ? { image: [absoluteUrl(event.afbeelding)] } : {}),
     url: absoluteUrl(`/event/${event.slug}`),
     location: placeSchema(sauna),
+    organizer: {
+      "@type": "Organization",
+      name: sauna.naam,
+      url: absoluteUrl(`/sauna/${sauna.slug}`),
+    },
+    ...(event.ticketUrl
+      ? {
+          offers: {
+            "@type": "Offer",
+            url: event.ticketUrl,
+            availability: "https://schema.org/InStock",
+            ...(prijs !== undefined ? { price: prijs, priceCurrency: "EUR" } : {}),
+          },
+        }
+      : {}),
   };
 }
 
@@ -85,6 +130,39 @@ export function eventItemListSchema(events: OpgietEvent[], name: string) {
       position: i + 1,
       url: absoluteUrl(`/event/${e.slug}`),
       name: e.titel,
+    })),
+  };
+}
+
+/**
+ * schema.org FAQPage. NB: Google toont sinds mei 2026 geen FAQ-rich-results
+ * meer; dit schema dient de citeerbaarheid in AI-zoekmachines (GEO), niet de
+ * SERP (SEO-PLAN §7).
+ */
+export function faqSchema(items: { vraag: string; antwoord: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.vraag,
+      acceptedAnswer: { "@type": "Answer", text: item.antwoord },
+    })),
+  };
+}
+
+/** schema.org ItemList JSON-LD voor het sauna-overzicht. */
+export function saunaItemListSchema(saunas: Sauna[], name: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name,
+    numberOfItems: saunas.length,
+    itemListElement: saunas.map((s, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: absoluteUrl(`/sauna/${s.slug}`),
+      name: s.naam,
     })),
   };
 }

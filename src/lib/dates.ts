@@ -110,3 +110,29 @@ export function isUpcoming(event: { startDatum: string; eindDatum?: string }, re
   const laatste = event.eindDatum ?? event.startDatum;
   return laatste >= ref;
 }
+
+/** ISO-datum + n dagen (UTC-veilig). */
+export function addDaysISO(iso: string, days: number): string {
+  const d = parseISO(iso);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+/**
+ * Het (eerstvolgende) weekend t.o.v. referentiedatum: vrijdag t/m zondag.
+ * Valt de referentie zelf in het weekend, dan loopt het bereik van vandaag
+ * t/m zondag (voor /opgietingen/dit-weekend).
+ */
+export function weekendRange(ref: string): { van: string; tot: string } {
+  const day = parseISO(ref).getUTCDay(); // 0 = zondag ... 6 = zaterdag
+  if (day === 0) return { van: ref, tot: ref }; // zondag: alleen vandaag nog
+  const totVrijdag = (5 - day + 7) % 7; // dagen tot komende vrijdag (0 op vrijdag)
+  const van = day === 6 ? ref : addDaysISO(ref, totVrijdag);
+  const zondag = day === 6 ? addDaysISO(ref, 1) : addDaysISO(van, 2);
+  return { van, tot: zondag };
+}
+
+/** "juli-2026"-slug van de huidige maand (voor het sitemap-venster). */
+export function currentMonthSlug(ref: string = todayISO()): string {
+  return monthYearSlug(ref);
+}

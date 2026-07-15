@@ -10,9 +10,22 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 
 type Params = Promise<{ "maand-jaar": string }>;
 
+// Alleen maanden met events bestaan; elke andere maand-URL is een echte 404.
+// Zonder deze grens is /agenda/maart-2031 een indexeerbare lege pagina
+// (oneindige crawl-ruimte, SEO-PLAN §9).
+export const dynamicParams = false;
+
+/** Maandslugs met events, chronologisch gesorteerd. */
+function monthSlugsChronological(): string[] {
+  const byMonth = new Map<string, string>(); // "YYYY-MM" -> slug
+  for (const e of getAllEvents()) {
+    byMonth.set(e.startDatum.slice(0, 7), monthYearSlug(e.startDatum));
+  }
+  return [...byMonth.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([, slug]) => slug);
+}
+
 export function generateStaticParams() {
-  const slugs = new Set(getAllEvents().map((e) => monthYearSlug(e.startDatum)));
-  return [...slugs].map((slug) => ({ "maand-jaar": slug }));
+  return monthSlugsChronological().map((slug) => ({ "maand-jaar": slug }));
 }
 
 /** Events die (deels) in de opgegeven maand vallen. */
@@ -74,11 +87,39 @@ export default async function MonthPage({ params }: { params: Params }) {
         </ul>
       )}
 
+      {/* Maand-navigatie: alleen naar maanden die echt events hebben */}
+      <MaandNav huidige={slug} />
+
       <div className="mt-10">
         <Link href="/agenda" className="text-sm font-medium text-ember hover:underline">
           ← Volledige agenda
         </Link>
       </div>
     </div>
+  );
+}
+
+function MaandNav({ huidige }: { huidige: string }) {
+  const slugs = monthSlugsChronological();
+  const i = slugs.indexOf(huidige);
+  const vorige = i > 0 ? slugs[i - 1] : null;
+  const volgende = i >= 0 && i < slugs.length - 1 ? slugs[i + 1] : null;
+  if (!vorige && !volgende) return null;
+
+  return (
+    <nav aria-label="Maandnavigatie" className="mt-10 flex justify-between gap-4 text-sm font-medium">
+      {vorige ? (
+        <Link href={`/agenda/${vorige}`} className="text-ember hover:underline">
+          ← Opgietingen in {monthYearLabel(vorige)}
+        </Link>
+      ) : (
+        <span />
+      )}
+      {volgende && (
+        <Link href={`/agenda/${volgende}`} className="text-ember hover:underline">
+          Opgietingen in {monthYearLabel(volgende)} →
+        </Link>
+      )}
+    </nav>
   );
 }

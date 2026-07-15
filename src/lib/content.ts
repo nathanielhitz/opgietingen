@@ -14,6 +14,7 @@ import type { Country, EventType } from "@/lib/site";
 const CONTENT_DIR = path.join(process.cwd(), "content");
 const SAUNAS_DIR = path.join(CONTENT_DIR, "saunas");
 const EVENTS_DIR = path.join(CONTENT_DIR, "events");
+const PROVINCIES_DIR = path.join(CONTENT_DIR, "provincies");
 
 export type EventStatus = "concept" | "gepubliceerd" | "afgelopen";
 
@@ -170,3 +171,78 @@ export const getProvincesWithEvents = cache((): { land: Country; provincie: stri
   }
   return [...map.values()].sort((a, b) => a.provincie.localeCompare(b.provincie, "nl"));
 });
+
+/**
+ * Alle unieke provincies waar sauna's staan (met sauna- en eventtelling).
+ * SEO-basis voor /opgietingen/[provincie]: een provinciepagina bestaat zolang
+ * er een sauna staat — ook als het laatste event verlopen is — zodat de URL
+ * (en de opgebouwde ranking) nooit verdwijnt (SEO-PLAN §9).
+ */
+export const getProvincesWithSaunas = cache(
+  (): { land: Country; provincie: string; saunaCount: number; eventCount: number }[] => {
+    const map = new Map<string, { land: Country; provincie: string; saunaCount: number; eventCount: number }>();
+    for (const s of getAllSaunas()) {
+      const key = `${s.land}:${s.provincie}`;
+      const existing = map.get(key);
+      if (existing) existing.saunaCount += 1;
+      else map.set(key, { land: s.land, provincie: s.provincie, saunaCount: 1, eventCount: 0 });
+    }
+    for (const e of getAllEvents()) {
+      const entry = map.get(`${e.sauna.land}:${e.sauna.provincie}`);
+      if (entry) entry.eventCount += 1;
+    }
+    return [...map.values()].sort((a, b) => a.provincie.localeCompare(b.provincie, "nl"));
+  },
+);
+
+/**
+ * Optionele, handgeschreven intro voor een provinciepagina
+ * (content/provincies/<provincie-slug>.mdx, alleen de body wordt gebruikt).
+ * Bestaat het bestand niet, dan valt de pagina terug op een generieke intro.
+ * Zo is het toevoegen van unieke regiocopy (SEO-PLAN fase 3) puur contentwerk.
+ */
+export const getProvincieIntro = cache((provincieSlug: string): string | undefined => {
+  const file = path.join(PROVINCIES_DIR, `${provincieSlug}.mdx`);
+  if (!fs.existsSync(file)) return undefined;
+  const { content } = matter(fs.readFileSync(file, "utf-8"));
+  const body = content.trim();
+  return body || undefined;
+});
+
+/**
+ * Zoekt voor een (verlopen) event de eerstvolgende nieuwe editie: het eerste
+ * komende event bij dezelfde sauna met hetzelfde type. Gebruikt om oude
+ * event-pagina's naar de nieuwe editie te laten doorverwijzen zonder redirect
+ * (SEO-PLAN §9: editie-koppeling).
+ */
+export function findNextEdition(event: OpgietEvent, ref: string): OpgietEvent | undefined {
+  return getAllEvents().find(
+    (e) =>
+      e.slug !== event.slug &&
+      e.saunaSlug === event.saunaSlug &&
+      e.type === event.type &&
+      (e.eindDatum ?? e.startDatum) >= ref &&
+      e.startDatum > event.startDatum,
+  );
+}
+
+/**
+ * Vergelijkbare komende events voor een event-pagina: eerst zelfde sauna, dan
+ * zelfde provincie, dan zelfde type — zonder duplicaten, max `limit`.
+ */
+export function getRelatedEvents(event: OpgietEvent, ref: string, limit = 3): OpgietEvent[] {
+  const upcoming = getAllEvents().filter(
+    (e) => e.slug !== event.slug && (e.eindDatum ?? e.startDatum) >= ref,
+  );
+  const picked: OpgietEvent[] = [];
+  const add = (matches: (e: OpgietEvent) => boolean) => {
+    for (const e of upcoming) {
+      if (picked.length >= limit) return;
+      if (!picked.includes(e) && matches(e)) picked.push(e);
+    }
+  };
+  add((e) => e.saunaSlug === event.saunaSlug);
+  add((e) => e.sauna.provincie === event.sauna.provincie);
+  add((e) => e.type === event.type);
+  return picked;
+}

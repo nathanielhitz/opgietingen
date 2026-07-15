@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAllEvents, getEventBySlug } from "@/lib/content";
+import { getAllEvents, getEventBySlug, findNextEdition, getRelatedEvents, slugify } from "@/lib/content";
 import { COUNTRY_LABELS } from "@/lib/site";
-import { formatDateRange } from "@/lib/dates";
+import { formatDateRange, isUpcoming, todayISO, monthYearSlug, monthYearLabel } from "@/lib/dates";
 import { plainSummary } from "@/lib/text";
 import { eventSchema, absoluteUrl } from "@/lib/schema";
 import { JsonLd } from "@/components/JsonLd";
@@ -13,10 +13,15 @@ import { Mdx } from "@/components/Mdx";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { AffiliateButton } from "@/components/AffiliateButton";
 import { InfoRow } from "@/components/InfoRow";
+import { RelatedEvents } from "@/components/RelatedEvents";
 
 export function generateStaticParams() {
   return getAllEvents().map((e) => ({ slug: e.slug }));
 }
+
+// ISR zodat een event vanzelf de "afgelopen"-staat krijgt zodra de datum
+// verstrijkt, zonder te wachten op de volgende deploy.
+export const revalidate = 3600;
 
 export async function generateMetadata({
   params,
@@ -53,6 +58,11 @@ export default async function EventPage({
   if (!event) notFound();
 
   const { sauna } = event;
+  const vandaag = todayISO();
+  const afgelopen = !isUpcoming(event, vandaag);
+  const nieuweEditie = afgelopen ? findNextEdition(event, vandaag) : undefined;
+  const vergelijkbaar = getRelatedEvents(event, vandaag);
+  const maandSlug = monthYearSlug(event.startDatum);
 
   return (
     <article className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
@@ -64,6 +74,36 @@ export default async function EventPage({
           { label: event.titel },
         ]}
       />
+
+      {/* Afgelopen: duidelijk melden en doorverwijzen (SEO-PLAN §9) */}
+      {afgelopen && (
+        <div className="mt-4 rounded-[--radius-card] border border-sand bg-ember-tint p-4 text-sm text-ink-soft">
+          <p className="font-semibold text-ink">Dit event is geweest.</p>
+          <p className="mt-1">
+            {nieuweEditie ? (
+              <>
+                Er staat een nieuwe editie gepland:{" "}
+                <Link href={`/event/${nieuweEditie.slug}`} className="font-medium text-ember hover:underline">
+                  {nieuweEditie.titel} ({formatDateRange(nieuweEditie.startDatum, nieuweEditie.eindDatum)})
+                </Link>
+                .
+              </>
+            ) : (
+              <>
+                Bekijk de{" "}
+                <Link href={`/sauna/${sauna.slug}`} className="font-medium text-ember hover:underline">
+                  komende opgietingen bij {sauna.naam}
+                </Link>{" "}
+                of de{" "}
+                <Link href="/agenda" className="font-medium text-ember hover:underline">
+                  volledige agenda
+                </Link>
+                .
+              </>
+            )}
+          </p>
+        </div>
+      )}
 
       {/* Hero */}
       <div className="relative mt-4 overflow-hidden rounded-[--radius-card]">
@@ -109,11 +149,22 @@ export default async function EventPage({
             </dl>
 
             <div className="mt-5">
-              <AffiliateButton slug={event.slug} label={`Bekijk bij ${sauna.naam}`} />
-              <p className="mt-2 text-center text-xs text-ink-faint">Je gaat naar de website van de sauna.</p>
-              <p className="mt-2 text-center text-xs text-ink-faint">
-                Programma en tijden kunnen wijzigen. Controleer de actuele informatie op de website van de sauna.
-              </p>
+              {afgelopen ? (
+                <Link
+                  href={`/sauna/${sauna.slug}`}
+                  className="flex min-h-12 w-full items-center justify-center rounded-lg bg-ember px-4 text-sm font-semibold text-white transition-colors hover:bg-ember/90"
+                >
+                  Komende opgietingen bij {sauna.naam}
+                </Link>
+              ) : (
+                <>
+                  <AffiliateButton slug={event.slug} label={`Bekijk bij ${sauna.naam}`} />
+                  <p className="mt-2 text-center text-xs text-ink-faint">Je gaat naar de website van de sauna.</p>
+                  <p className="mt-2 text-center text-xs text-ink-faint">
+                    Programma en tijden kunnen wijzigen. Controleer de actuele informatie op de website van de sauna.
+                  </p>
+                </>
+              )}
             </div>
           </div>
 
@@ -130,7 +181,25 @@ export default async function EventPage({
         </aside>
       </div>
 
-      <div className="mt-10">
+      <RelatedEvents events={vergelijkbaar} />
+
+      {/* Contextlinks naar maand- en provinciepagina (interne linking, SEO-PLAN §8) */}
+      <nav aria-label="Meer opgietingen" className="mt-10 flex flex-wrap gap-2 text-sm font-medium">
+        <Link
+          href={`/agenda/${maandSlug}`}
+          className="rounded-full border border-sand bg-surface px-4 py-2 text-ink-soft transition-colors hover:border-ember hover:text-ember"
+        >
+          Opgietingen in {monthYearLabel(maandSlug)}
+        </Link>
+        <Link
+          href={`/opgietingen/${slugify(sauna.provincie)}`}
+          className="rounded-full border border-sand bg-surface px-4 py-2 text-ink-soft transition-colors hover:border-ember hover:text-ember"
+        >
+          Opgietingen in {sauna.provincie}
+        </Link>
+      </nav>
+
+      <div className="mt-8">
         <Link href="/agenda" className="text-sm font-medium text-ember hover:underline">
           ← Terug naar de agenda
         </Link>

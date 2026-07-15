@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Fragment } from "react";
+import { JsonLd } from "@/components/JsonLd";
+import { breadcrumbSchema } from "@/lib/schema";
 
 export interface Crumb {
   href?: string;
@@ -9,6 +11,7 @@ export interface Crumb {
 export function Breadcrumb({ items }: { items: Crumb[] }) {
   return (
     <nav aria-label="Kruimelpad" className="flex flex-wrap items-center gap-1.5 text-sm text-ink-faint">
+      <JsonLd data={breadcrumbSchema(items)} />
       <Link href="/" className="hover:text-ember">
         Home
       </Link>

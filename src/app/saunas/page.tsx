@@ -3,6 +3,8 @@ import { getAllSaunas, getEventsForSauna } from "@/lib/content";
 import { COUNTRY_LABELS, type Country } from "@/lib/site";
 import { isUpcoming } from "@/lib/dates";
 import { SaunaCard } from "@/components/SaunaCard";
+import { JsonLd } from "@/components/JsonLd";
+import { saunaItemListSchema } from "@/lib/schema";
 
 export const metadata: Metadata = {
   title: "Sauna's met opgietingen in NL & BE",
@@ -23,6 +25,7 @@ export default function SaunasPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+      <JsonLd data={saunaItemListSchema(saunas, "Sauna's met opgietingen in Nederland en België")} />
       <header className="max-w-2xl">
         <h1 className="font-display text-3xl font-semibold text-ink sm:text-4xl">Sauna’s</h1>
         <p className="mt-2 text-ink-soft">

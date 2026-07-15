@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { todayISOInTimeZone } from "../../src/lib/dates";
+import { todayISOInTimeZone, weekendRange, addDaysISO } from "../../src/lib/dates";
+import { parsePrijs } from "../../src/lib/schema";
 import {
   activeFilterCount,
   filterEvents,
@@ -123,8 +124,40 @@ test("activeFilterCount telt de zoekopdracht mee", () => {
   assert.equal(activeFilterCount({ q: "bussloo", land: "NL" }), 2);
 });
 
-test("eventSchema bevat geen organizer of offers", () => {
-  const schema = eventSchema(event);
-  assert.equal("organizer" in schema, false);
-  assert.equal("offers" in schema, false);
+test("eventSchema koppelt organizer aan de sauna en offers aan de ticketUrl", () => {
+  const schema = eventSchema(event) as Record<string, unknown>;
+  assert.deepEqual(schema.organizer, {
+    "@type": "Organization",
+    name: "Thermen Bussloo",
+    url: "https://opgietingen.nl/sauna/thermen-bussloo",
+  });
+  const offers = schema.offers as Record<string, unknown>;
+  assert.equal(offers.url, "https://example.com/tickets");
+  // "Vanaf € 49,50" bevat precies één bedrag → parsebaar
+  assert.equal(offers.price, 49.5);
+  assert.equal(offers.priceCurrency, "EUR");
+});
+
+test("parsePrijs parseert alleen ondubbelzinnige bedragen", () => {
+  assert.equal(parsePrijs("Vanaf € 49,50"), 49.5);
+  assert.equal(parsePrijs("€ 25"), 25);
+  assert.equal(parsePrijs("€ 25 - € 40"), undefined); // twee bedragen: niet gokken
+  assert.equal(parsePrijs("Inbegrepen bij entree"), undefined);
+  assert.equal(parsePrijs(undefined), undefined);
+});
+
+test("weekendRange pakt het eerstvolgende weekend (vr t/m zo)", () => {
+  // 2026-07-15 is een woensdag → vr 17 t/m zo 19
+  assert.deepEqual(weekendRange("2026-07-15"), { van: "2026-07-17", tot: "2026-07-19" });
+  // vrijdag: vandaag t/m zondag
+  assert.deepEqual(weekendRange("2026-07-17"), { van: "2026-07-17", tot: "2026-07-19" });
+  // zaterdag: vandaag t/m zondag
+  assert.deepEqual(weekendRange("2026-07-18"), { van: "2026-07-18", tot: "2026-07-19" });
+  // zondag: alleen vandaag nog
+  assert.deepEqual(weekendRange("2026-07-19"), { van: "2026-07-19", tot: "2026-07-19" });
+});
+
+test("addDaysISO telt over maandgrenzen heen", () => {
+  assert.equal(addDaysISO("2026-07-30", 3), "2026-08-02");
+  assert.equal(addDaysISO("2026-12-31", 1), "2027-01-01");
 });
