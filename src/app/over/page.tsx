@@ -14,8 +14,8 @@ export default function OverPage() {
       <h1 className="font-display text-3xl font-semibold text-ink sm:text-4xl">Over {site.name}</h1>
       <div className="mt-6 space-y-4 leading-relaxed text-ink-soft">
         <p>
-          {site.name} is dé agenda voor <strong className="text-ink">opgietingen</strong> — Aufguss-sessies,
-          opgietweekenden, thema-avonden en kampioenschappen — in sauna’s in Nederland en België.
+          {site.name} is dé agenda voor <strong className="text-ink">opgietingen</strong> (Aufguss-sessies,
+          opgietweekenden, thema-avonden en kampioenschappen) in sauna’s in Nederland en België.
         </p>
         <p>
           We verzamelen op één plek waar en wanneer er bijzondere opgietingen zijn, zodat je nooit meer een sessie van

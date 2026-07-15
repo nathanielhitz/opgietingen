@@ -3,7 +3,7 @@ import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Contact",
-  description: `Neem contact op met ${site.name} — tip een opgieting aan, meld een fout of stel een vraag.`,
+  description: `Neem contact op met ${site.name}: tip een opgieting aan, meld een fout of stel een vraag.`,
   alternates: { canonical: "/contact" },
 };
 

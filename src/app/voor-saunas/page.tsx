@@ -3,7 +3,7 @@ import Link from "next/link";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Voor sauna's — plaats jouw opgietingen",
+  title: "Voor sauna's: plaats jouw opgietingen",
   description: `Zet jouw sauna en opgiet-events in de spotlight bij saunaliefhebbers in NL & BE. Ontdek de mogelijkheden op ${site.name}.`,
   alternates: { canonical: "/voor-saunas" },
 };
@@ -15,7 +15,7 @@ const voordelen = [
   },
   {
     titel: "SEO-first vindbaarheid",
-    tekst: "Elk event en elke sauna krijgt een eigen, geoptimaliseerde pagina met structured data — sterk voor Google.",
+    tekst: "Elk event en elke sauna krijgt een eigen, geoptimaliseerde pagina met structured data, sterk voor Google.",
   },
   {
     titel: "Meetbare doorklikken",
@@ -51,7 +51,7 @@ export default function VoorSaunasPage() {
       <div className="mt-10 rounded-[--radius-card] bg-wood-dark warmth-gradient p-8 sm:p-10">
         <h2 className="font-display text-2xl font-semibold text-white">Interesse?</h2>
         <p className="mt-2 max-w-lg text-cream/85">
-          Neem contact op en we zetten jouw sauna en events snel live. In de MVP-fase voegen we events handmatig toe —
+          Neem contact op en we zetten jouw sauna en events snel live. In de MVP-fase voegen we events handmatig toe,
           later kun je ze zelf beheren.
         </p>
         <Link

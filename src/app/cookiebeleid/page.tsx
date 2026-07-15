@@ -24,7 +24,7 @@ export default function CookiebeleidPage() {
           <h2 className="font-display text-xl font-semibold text-ink">Statistieken zonder cookies</h2>
           <p className="mt-3">
             Voor bezoekcijfers gebruiken we Vercel Web Analytics. Dit werkt <strong className="text-ink">cookieloos</strong>{" "}
-            en meet geanonimiseerd — er worden geen cookies op je apparaat geplaatst en geen persoonsgegevens opgeslagen.
+            en meet geanonimiseerd: er worden geen cookies op je apparaat geplaatst en geen persoonsgegevens opgeslagen.
           </p>
         </section>
 

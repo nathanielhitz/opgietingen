@@ -28,7 +28,7 @@ export async function generateMetadata({
   if (!sauna) return {};
 
   const description = plainSummary(sauna.body);
-  const title = `${sauna.naam} — opgietingen & Aufguss in ${sauna.plaats}`;
+  const title = `${sauna.naam}: opgietingen & Aufguss in ${sauna.plaats}`;
   return {
     title,
     description,

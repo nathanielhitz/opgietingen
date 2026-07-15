@@ -28,7 +28,7 @@ export async function generateMetadata({
   if (!event) return {};
 
   const description = plainSummary(event.body);
-  const title = `${event.titel} — ${event.sauna.naam}`;
+  const title = `${event.titel} bij ${event.sauna.naam}`;
   return {
     title,
     description,

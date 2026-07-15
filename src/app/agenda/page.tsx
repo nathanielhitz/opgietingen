@@ -7,7 +7,7 @@ import { AgendaEventCard } from "@/components/AgendaEventCard";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Agenda — alle opgietingen in NL & BE",
+  title: "Agenda: alle opgietingen in NL & BE",
   description:
     "Bekijk alle komende opgietingen, opgietweekenden en Aufguss-events in Nederland en België. Filter op land, provincie, datum en type.",
   alternates: { canonical: "/agenda" },
@@ -73,7 +73,7 @@ export default async function AgendaPage({
       )}
 
       <p className="mt-10 text-xs text-ink-faint">
-        Tip: sla een gefilterde weergave op door de URL te bewaren — filters staan in de link. Meer over {site.name} lees je{" "}
+        Tip: sla een gefilterde weergave op door de URL te bewaren, filters staan in de link. Meer over {site.name} lees je{" "}
         <a href="/over" className="text-ember hover:underline">
           hier
         </a>

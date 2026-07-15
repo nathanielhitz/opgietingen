@@ -75,7 +75,7 @@ export default function HeroHeader({
               <option value="">Alle provincies</option>
               {provinces.map((p) => (
                 <option key={p.provincie} value={slugify(p.provincie)}>
-                  {p.provincie} — {COUNTRY_LABELS[p.land]}
+                  {p.provincie}, {COUNTRY_LABELS[p.land]}
                 </option>
               ))}
             </select>
