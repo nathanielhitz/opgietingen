@@ -141,6 +141,34 @@ export function slugify(input: string): string {
 // re-export zodat script-side importeurs (mail.ts, verify-bronnen) hier blijven werken.
 export { htmlToText } from "../../src/lib/html";
 
+/* ---------- Tekstnormalisatie ---------- */
+
+/**
+ * Verwijdert em-streepjes (—) uit vrije proza-tekst (titel, beschrijving).
+ * Die lezen als 'AI-achtig'; we vervangen ze context-neutraal maar
+ * grammaticaal veilig:
+ *   - een ingesloten/aanhangend streepje met spaties (" — ") wordt een komma;
+ *   - een streepje zonder spaties (woord—woord) wordt een gewoon koppelteken;
+ *   - overtollige spaties vóór komma's en dubbele komma's worden opgeruimd.
+ * En-streepjes (–) blijven ongemoeid: die zijn de nette bereikscheiding.
+ */
+export function normalizeProseDashes(text: string): string {
+  return text
+    .replace(/\s+—\s+/g, ", ")
+    .replace(/—/g, "-")
+    .replace(/\s+,/g, ",")
+    .replace(/,\s*,/g, ",");
+}
+
+/**
+ * Voor bereikvelden (tijden, prijsindicatie): een em-streepje is vrijwel altijd
+ * een bereikscheiding, dus wordt het het halve streepje zonder spaties dat de
+ * rest van de content ook gebruikt (bv. "11:00–18:00").
+ */
+export function normalizeRangeDashes(text: string): string {
+  return text.replace(/\s*—\s*/g, "–");
+}
+
 /* ---------- Event wegschrijven ---------- */
 
 export interface NewEvent {
@@ -172,22 +200,26 @@ export function writeEventMdx(ev: NewEvent): string | null {
   const filePath = path.join(EVENTS_DIR, `${slug}.mdx`);
   if (fs.existsSync(filePath)) return null;
 
+  // Normaliseer em-streepjes weg vóór het wegschrijven: dit is het enige
+  // schrijfpunt, dus zo komt er nooit een — in gescrapete content terecht.
+  const titel = normalizeProseDashes(ev.titel);
+
   const frontmatter: Record<string, unknown> = {
     slug,
     saunaSlug: ev.saunaSlug,
-    titel: ev.titel,
+    titel,
     type: ev.type,
     startDatum: ev.startDatum,
     ...(ev.eindDatum ? { eindDatum: ev.eindDatum } : {}),
-    ...(ev.tijden ? { tijden: ev.tijden } : {}),
-    ...(ev.prijsIndicatie ? { prijsIndicatie: ev.prijsIndicatie } : {}),
+    ...(ev.tijden ? { tijden: normalizeRangeDashes(ev.tijden) } : {}),
+    ...(ev.prijsIndicatie ? { prijsIndicatie: normalizeRangeDashes(ev.prijsIndicatie) } : {}),
     ...(ev.ticketUrl ? { ticketUrl: ev.ticketUrl } : {}),
     status: ev.status,
     bron: "scraper",
     ...(ev.keurNotitie ? { keurNotitie: ev.keurNotitie } : {}),
   };
 
-  const body = ev.beschrijving?.trim() || `${ev.titel} bij deze sauna.`;
+  const body = normalizeProseDashes(ev.beschrijving?.trim() || `${titel} bij deze sauna.`);
   const file = matter.stringify(`\n${body}\n`, frontmatter);
   fs.writeFileSync(filePath, file);
   return filePath;
