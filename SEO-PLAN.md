@@ -2,11 +2,16 @@
 
 > Opgesteld 15 juli 2026 op basis van codebase-analyse (20 sauna's, 52 gepubliceerde
 > events waarvan 51 toekomstig, 19 concepts, 31 scraper-bronnen waarvan 21 actief).
-> Status: goedgekeurd door Nathaniel; implementatie gefaseerd uitvoeren.
-> **Implementatie-instructie:** voer fases in volgorde uit, verifieer per fase de
-> acceptatiecriteria (§12), draai `npm run build` + `npm run test` vóór elke commit,
-> en committeer per logisch blok. Sla fase-onderdelen die een open beslissing (§14)
-> vereisen over zolang die beslissing niet is ingevuld.
+>
+> **STATUS (15 juli 2026): Fase 0, 1 en 2 zijn geïmplementeerd** (op de handmatige
+> stappen na, zie hieronder). Fase 3 = doorlopend redactiewerk; fase 4 = na
+> GSC-tractie. Acceptatiecriteria van fase 0–2 zijn geverifieerd (maand-guard 404,
+> sitemap-venster, verlopen-event-banner, BreadcrumbList, OG-images, alle routes 200).
+>
+> **Nog handmatig te doen (Nathaniel):**
+> 1. Google Search Console + Bing Webmaster Tools verifiëren en `/sitemap.xml` indienen.
+> 2. In Vercel checken: www→apex-redirect en `NEXT_PUBLIC_SITE_URL=https://opgietingen.nl`.
+> 3. Open beslissingen §14 nalopen (defaults zijn ingevuld; pas aan waar gewenst).
 
 ---
 
@@ -336,13 +341,13 @@ Bewuste keuzes:
 - Alle validatie loopt via Search Console → fase 0 blokkeert de rest.
 - `todayISO()` in ISR-paden: bewust ISR (revalidate 3600), documenteren.
 
-**Open beslissingen (invullen vóór de betreffende fase):**
-1. Verlopen events: akkoord met "behouden + banner + na 12 mnd opschonen o.b.v. data"? → **[BESLISSING: ____]**
-2. Wie staat op /over (naam/gezicht)? → **[BESLISSING: ____]**
-3. Socials: bestaat `@opgietingen`? Welke kanalen komen er (voor `sameAs`)? → **[BESLISSING: ____]**
-4. Provincie-intro's: zelf schrijven of laten schrijven met review? → **[BESLISSING: ____]**
-5. Telefoonnummers/openingstijden sauna's verzamelen voor rijker LocalBusiness-schema? → **[BESLISSING: ____]**
-6. NK/BK: contact met organisaties voor officiële vermelding/link? → **[BESLISSING: ____]**
+**Open beslissingen (defaults gekozen bij implementatie op 15 juli 2026 — pas aan waar gewenst):**
+1. Verlopen events → **[DEFAULT GEKOZEN: behouden + banner + editie-koppeling; uit sitemap; na 12 mnd opschonen o.b.v. GSC-data]** — geïmplementeerd.
+2. Wie staat op /over (naam/gezicht)? → **[OPEN — vereist Nathaniel; /over-upgrade staat daarom nog uit (fase 3)]**
+3. Socials / `sameAs` → **[DEFAULT: niets toegevoegd — bestaan van `@opgietingen` onbekend; vul aan zodra kanalen echt bestaan]**
+4. Provincie-intro's → **[DEFAULT: infrastructuur klaar — maak `content/provincies/<provincie-slug>.mdx` aan en de tekst verschijnt automatisch boven de lijst; teksten zelf nog schrijven (fase 3)]**
+5. Telefoonnummers/openingstijden sauna's → **[OPEN — niet gedaan; datamodel-uitbreiding pas na besluit]**
+6. NK/BK-contact voor vermelding/link → **[OPEN — handmatige outreach, fase 4]**
 
 **Ontbrekende data/content:** provincie-copy, pillar-copy, echte saunafoto's,
 telefoonnummers, gestructureerde prijzen, socials, logo-bestand.
