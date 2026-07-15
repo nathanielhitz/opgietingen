@@ -27,15 +27,6 @@ export const metadata: Metadata = {
     template: `%s · ${site.name}`,
   },
   description: site.description,
-  keywords: [
-    "opgietingen",
-    "aufguss",
-    "opgietweekend",
-    "sauna agenda",
-    "sauna evenementen",
-    "opgieting Nederland",
-    "opgieting België",
-  ],
   openGraph: {
     type: "website",
     locale: site.locale,

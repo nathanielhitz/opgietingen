@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Favicon: drie stoomwolkjes (het opgiet-motief uit CoverImage) op ember. -->
+  <rect width="64" height="64" rx="14" fill="#c1592a"/>
+  <g fill="none" stroke="#f7f2ea" stroke-width="4.5" stroke-linecap="round">
+    <path d="M21 16c0 5-5 6.5-5 11.5S21 34 21 39"/>
+    <path d="M33 13c0 5.5-5.5 7.5-5.5 13S33 33.5 33 39.5"/>
+    <path d="M45 16c0 5-5 6.5-5 11.5S45 34 45 39"/>
+  </g>
+  <path d="M14 47h36" stroke="#f7f2ea" stroke-width="4.5" stroke-linecap="round"/>
+</svg>

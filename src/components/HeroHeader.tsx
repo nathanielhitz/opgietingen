@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { getImageProps } from "next/image";
 import { getProvincesWithEvents, slugify } from "@/lib/content";
 import { EVENT_TYPES, COUNTRY_LABELS, type EventType } from "@/lib/site";
 
@@ -10,27 +10,40 @@ export default function HeroHeader({
 }: {
   provinces: ReturnType<typeof getProvincesWithEvents>;
 }) {
+  // Eén <picture> i.p.v. twee <Image priority>-lagen: de browser kiest per
+  // breakpoint één bron en preloadt er dus maar één (LCP).
+  const {
+    props: { srcSet: mobielSrcSet },
+  } = getImageProps({
+    alt: "",
+    width: 941,
+    height: 1672,
+    quality: 75,
+    sizes: "100vw",
+    src: "/images/hero/hero-mobiel.jpg",
+  });
+  const { props: desktopProps } = getImageProps({
+    alt: "",
+    width: 1916,
+    height: 821,
+    quality: 75,
+    sizes: "100vw",
+    src: "/images/hero/hero-desktop.jpg",
+  });
+
   return (
     <section className="relative isolate overflow-hidden border-b border-wood-dark">
-      {/* Foto-lagen: art-direction per breakpoint (staand mobiel, liggend desktop) */}
-      <Image
-        src="/images/hero/hero-mobiel.png"
-        alt=""
-        aria-hidden
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover md:hidden"
-      />
-      <Image
-        src="/images/hero/hero-desktop.png"
-        alt=""
-        aria-hidden
-        fill
-        priority
-        sizes="100vw"
-        className="hidden object-cover md:block"
-      />
+      {/* Foto-laag: art-direction per breakpoint (staand mobiel, liggend desktop) */}
+      <picture>
+        <source media="(max-width: 767px)" srcSet={mobielSrcSet} />
+        <img
+          {...desktopProps}
+          alt=""
+          aria-hidden
+          fetchPriority="high"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      </picture>
 
       {/* Donkere scrim voor leesbaarheid */}
       <div className="hero-overlay absolute inset-0" aria-hidden />
