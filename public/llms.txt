@@ -1,0 +1,24 @@
+# Opgietingen.nl
+
+> Dé agenda voor opgiet-evenementen (Aufguss-sessies, opgietweekenden,
+> thema-events en kampioenschappen) in sauna's in Nederland en België.
+> Nederlandstalig. Events worden verzameld via sauna-websites en
+> nieuwsbrieven en redactioneel gecontroleerd vóór publicatie.
+
+Een opgieting (Aufguss) is een saunaritueel waarbij de saunameester water met
+etherische olie op de hete saunastenen giet en de stoom met handdoekbewegingen
+door de sauna verdeelt.
+
+## Kernpagina's
+
+- [Wat is een opgieting?](https://opgietingen.nl/wat-is-een-opgieting): uitleg, etiquette, soorten en veelgestelde vragen
+- [Agenda](https://opgietingen.nl/agenda): alle komende opgietingen in Nederland en België
+- [Opgietingen vandaag](https://opgietingen.nl/opgietingen/vandaag)
+- [Opgietingen dit weekend](https://opgietingen.nl/opgietingen/dit-weekend)
+- [Opgietweekenden](https://opgietingen.nl/opgietweekenden)
+- [Aufguss-kampioenschappen](https://opgietingen.nl/aufguss-kampioenschappen): NK en BK Aufguss
+- [Sauna's](https://opgietingen.nl/saunas): sauna's met opgietingen, per land en provincie
+
+## Voor sauna's
+
+- [Event aanmelden](https://opgietingen.nl/voor-saunas): sauna's kunnen events aanleveren via events@opgietingen.nl

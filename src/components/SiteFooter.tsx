@@ -1,12 +1,18 @@
 import Link from "next/link";
 import { site } from "@/lib/site";
+import { getProvincesWithEvents, slugify } from "@/lib/content";
 
 export function SiteFooter() {
   const year = 2026; // statisch: geen Date() in build om SSG-determinisme te bewaren
+  // Top-provincies op event-aantal: sitewide interne links naar de
+  // regiopagina's met het meeste aanbod (SEO-PLAN §8).
+  const topProvincies = [...getProvincesWithEvents()]
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 6);
 
   return (
     <footer className="mt-20 border-t border-sand bg-surface">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-5">
         <div className="sm:col-span-2 lg:col-span-1">
           <p className="font-display text-lg font-semibold text-ink">
             Opgietingen<span className="text-ember">.nl</span>
@@ -16,11 +22,23 @@ export function SiteFooter() {
 
         <FooterCol title="Ontdekken">
           <FooterLink href="/agenda">Agenda</FooterLink>
+          <FooterLink href="/opgietingen/vandaag">Opgietingen vandaag</FooterLink>
+          <FooterLink href="/opgietingen/dit-weekend">Dit weekend</FooterLink>
+          <FooterLink href="/opgietweekenden">Opgietweekenden</FooterLink>
+          <FooterLink href="/aufguss-kampioenschappen">Kampioenschappen</FooterLink>
           <FooterLink href="/saunas">Sauna’s</FooterLink>
-          <FooterLink href="/opgietingen/gelderland">Per provincie</FooterLink>
+        </FooterCol>
+
+        <FooterCol title="Per provincie">
+          {topProvincies.map((p) => (
+            <FooterLink key={p.provincie} href={`/opgietingen/${slugify(p.provincie)}`}>
+              Opgietingen in {p.provincie}
+            </FooterLink>
+          ))}
         </FooterCol>
 
         <FooterCol title="Over ons">
+          <FooterLink href="/wat-is-een-opgieting">Wat is een opgieting?</FooterLink>
           <FooterLink href="/over">Over Opgietingen.nl</FooterLink>
           <FooterLink href="/contact">Contact</FooterLink>
           <FooterLink href="/voor-saunas">Voor sauna’s</FooterLink>
