@@ -15,6 +15,7 @@ const CONTENT_DIR = path.join(process.cwd(), "content");
 const SAUNAS_DIR = path.join(CONTENT_DIR, "saunas");
 const EVENTS_DIR = path.join(CONTENT_DIR, "events");
 const PROVINCIES_DIR = path.join(CONTENT_DIR, "provincies");
+const GIDSEN_DIR = path.join(CONTENT_DIR, "gidsen");
 
 export type EventStatus = "concept" | "gepubliceerd" | "afgelopen";
 
@@ -52,6 +53,37 @@ export interface OpgietEvent {
   body: string;
   /** Gejoinde sauna. */
   sauna: Sauna;
+}
+
+/**
+ * Een affiliate-product bij een gidsartikel (bv. een saunahoed op bol.com).
+ * `bolUrl` mag een gewone bol.com-productlink zijn óf een kant-en-klare
+ * partner-deeplink; de redirect (/uit/product/<id>) wikkelt een gewone
+ * productlink zo nodig in het partner-clickformat en logt de klik.
+ */
+export interface GidsProduct {
+  id: string;
+  naam: string;
+  bolUrl: string;
+  afbeelding?: string;
+  prijsIndicatie?: string;
+  beschrijving?: string;
+}
+
+/**
+ * SEO-gidsartikel (content/gidsen/<slug>.mdx). Draagt informatieve content én
+ * optionele affiliate-producten die inline in de MDX-body geplaatst kunnen
+ * worden via <Product id="..." /> of <ProductGrid />.
+ */
+export interface Gids {
+  slug: string;
+  titel: string;
+  samenvatting: string;
+  afbeelding?: string;
+  bijgewerkt?: string;
+  producten: GidsProduct[];
+  /** Rauwe MDX-body. */
+  body: string;
 }
 
 /**
@@ -208,6 +240,64 @@ export const getProvincieIntro = cache((provincieSlug: string): string | undefin
   const body = content.trim();
   return body || undefined;
 });
+
+/* ---------- Gidsen ---------- */
+
+function parseProducten(value: unknown): GidsProduct[] {
+  if (!Array.isArray(value)) return [];
+  const producten: GidsProduct[] = [];
+  for (const raw of value) {
+    const p = raw as Record<string, unknown>;
+    const id = p.id as string | undefined;
+    const naam = p.naam as string | undefined;
+    const bolUrl = p.bolUrl as string | undefined;
+    // Zonder id/naam/link is een product onbruikbaar -> overslaan.
+    if (!id || !naam || !bolUrl) continue;
+    producten.push({
+      id,
+      naam,
+      bolUrl,
+      afbeelding: p.afbeelding as string | undefined,
+      prijsIndicatie: p.prijsIndicatie as string | undefined,
+      beschrijving: p.beschrijving as string | undefined,
+    });
+  }
+  return producten;
+}
+
+/** Alle gidsartikelen, gesorteerd op titel. */
+export const getAllGidsen = cache((): Gids[] => {
+  return readMdxFiles(GIDSEN_DIR)
+    .map(({ slug, data, body }) => ({
+      slug: (data.slug as string) ?? slug,
+      titel: data.titel as string,
+      samenvatting: (data.samenvatting as string) ?? "",
+      afbeelding: data.afbeelding as string | undefined,
+      bijgewerkt: toISODate(data.bijgewerkt),
+      producten: parseProducten(data.producten),
+      body,
+    }))
+    .sort((a, b) => a.titel.localeCompare(b.titel, "nl"));
+});
+
+export const getGidsBySlug = cache((slug: string): Gids | undefined => {
+  return getAllGidsen().find((g) => g.slug === slug);
+});
+
+/**
+ * Zoekt een affiliate-product op id over alle gidsen heen (product-ids zijn
+ * globaal uniek). Retourneert het product plus de gids-slug, zodat de redirect
+ * een subid kan meesturen voor bol-statistieken.
+ */
+export const getProductById = cache(
+  (id: string): { product: GidsProduct; gidsSlug: string } | undefined => {
+    for (const gids of getAllGidsen()) {
+      const product = gids.producten.find((p) => p.id === id);
+      if (product) return { product, gidsSlug: gids.slug };
+    }
+    return undefined;
+  },
+);
 
 /**
  * Zoekt voor een (verlopen) event de eerstvolgende nieuwe editie: het eerste

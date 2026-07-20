@@ -27,6 +27,7 @@ export function SiteFooter() {
           <FooterLink href="/opgietweekenden">Opgietweekenden</FooterLink>
           <FooterLink href="/aufguss-kampioenschappen">Kampioenschappen</FooterLink>
           <FooterLink href="/saunas">Sauna’s</FooterLink>
+          <FooterLink href="/gids">Saunagids</FooterLink>
         </FooterCol>
 
         <FooterCol title="Per provincie">

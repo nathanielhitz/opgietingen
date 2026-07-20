@@ -1,6 +1,6 @@
 import { site, COUNTRY_LABELS } from "@/lib/site";
 import { plainSummary } from "@/lib/text";
-import type { OpgietEvent, Sauna } from "@/lib/content";
+import type { Gids, OpgietEvent, Sauna } from "@/lib/content";
 
 /** Maakt van een pad een absolute URL op basis van de site-URL. */
 export function absoluteUrl(pathOrUrl: string): string {
@@ -163,6 +163,43 @@ export function saunaItemListSchema(saunas: Sauna[], name: string) {
       position: i + 1,
       url: absoluteUrl(`/sauna/${s.slug}`),
       name: s.naam,
+    })),
+  };
+}
+
+/** schema.org Article JSON-LD voor een gidsartikel. */
+export function articleSchema(gids: Gids) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: gids.titel,
+    description: gids.samenvatting || plainSummary(gids.body, 300),
+    ...(gids.afbeelding ? { image: [absoluteUrl(gids.afbeelding)] } : {}),
+    ...(gids.bijgewerkt ? { dateModified: gids.bijgewerkt } : {}),
+    url: absoluteUrl(`/gids/${gids.slug}`),
+    inLanguage: "nl-NL",
+    author: { "@type": "Organization", name: site.name, url: site.url },
+    publisher: {
+      "@type": "Organization",
+      name: site.name,
+      url: site.url,
+      logo: { "@type": "ImageObject", url: `${site.url}/logo.svg` },
+    },
+  };
+}
+
+/** schema.org ItemList JSON-LD voor het gids-overzicht. */
+export function gidsItemListSchema(gidsen: Gids[], name: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name,
+    numberOfItems: gidsen.length,
+    itemListElement: gidsen.map((g, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: absoluteUrl(`/gids/${g.slug}`),
+      name: g.titel,
     })),
   };
 }

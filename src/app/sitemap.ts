@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { site } from "@/lib/site";
-import { getAllEvents, getProvincesWithSaunas, getAllSaunas, slugify } from "@/lib/content";
+import { getAllEvents, getProvincesWithSaunas, getAllSaunas, getAllGidsen, slugify } from "@/lib/content";
 import { isUpcoming, monthYearSlug, todayISO } from "@/lib/dates";
 
 /**
@@ -25,6 +25,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: u("/opgietweekenden"), changeFrequency: "weekly", priority: 0.7 },
     { url: u("/aufguss-kampioenschappen"), changeFrequency: "weekly", priority: 0.7 },
     { url: u("/saunas"), changeFrequency: "weekly", priority: 0.7 },
+    { url: u("/gids"), changeFrequency: "weekly", priority: 0.6 },
     { url: u("/over"), changeFrequency: "yearly", priority: 0.3 },
     { url: u("/contact"), changeFrequency: "yearly", priority: 0.3 },
     { url: u("/voor-saunas"), changeFrequency: "monthly", priority: 0.4 },
@@ -68,5 +69,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  return [...statics, ...events, ...saunas, ...provinces, ...months];
+  const gidsen = getAllGidsen().map((g) => ({
+    url: u(`/gids/${g.slug}`),
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
+
+  return [...statics, ...events, ...saunas, ...provinces, ...months, ...gidsen];
 }

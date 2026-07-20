@@ -13,7 +13,7 @@ const LOG_FILE = path.join(LOG_DIR, "clicks.log");
 
 export interface ClickEntry {
   slug: string;
-  kind: "event" | "sauna";
+  kind: "event" | "sauna" | "product";
   destination: string;
   referer?: string;
   userAgent?: string;

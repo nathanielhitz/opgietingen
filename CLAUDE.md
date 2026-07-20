@@ -58,6 +58,8 @@ data/
 
 Optioneel veld `bron: scraper` markeert automatisch gescrapete events. Optioneel veld `keurNotitie` bevat de afkeurreden(en) van de kwaliteitspoort wanneer een gescrapet event als `concept` blijft staan.
 
+**Gids** (`content/gidsen/<slug>.mdx` frontmatter): `slug`, `titel`, `samenvatting`, `afbeelding`, `bijgewerkt`, en `producten[]` — affiliate-producten met `id` (uniek, gebruikt in `/uit/product/[id]`), `naam`, `bolUrl`, `afbeelding`, `prijsIndicatie`, `beschrijving`. `bolUrl` is een **gewone bol.com-productlink** (of, optioneel, een kant-en-klare partner-deeplink); de redirect `/uit/product/[id]` wikkelt een gewone link zelf in het partner-clickformat via `toBolAffiliateUrl` met `BOL_SITE_ID` (env, default `1533193`) en hangt `subid=gids-<slug>` aan voor herkomst-tracking. MDX-body = het artikel; producten plaatsbaar via `<Product id="..." />` of `<ProductGrid />` (geïnjecteerd door `Mdx` wanneer `producten` meekomt). Zonder inline-plaatsing tonen gidsen de producten onderaan. Affiliate-disclosure (`AffiliateDisclosure`) verplicht bij producten; bol.com-afbeeldingen via `**.s-bol.com` remote pattern.
+
 > Events joinen aan sauna's via `saunaSlug`. Alleen `status: gepubliceerd` events zijn zichtbaar (concepts worden gefilterd in de loader). Gescrapete events komen binnen als `concept` en worden pas zichtbaar na handmatige review + `status: gepubliceerd`.
 
 ## Routes (PRD §6)
@@ -71,7 +73,10 @@ Optioneel veld `bron: scraper` markeert automatisch gescrapete events. Optioneel
 | `/event/[slug]` | Event-detail + `Event` structured data |
 | `/saunas` | Overzicht sauna's (lijst; kaart volgt) |
 | `/sauna/[slug]` | Sauna-profiel + `LocalBusiness` structured data |
-| `/uit/[slug]` | Affiliate-redirect met klik-logging |
+| `/gids` | SEO: overzicht gidsartikelen (`ItemList`) |
+| `/gids/[slug]` | Gidsartikel + `Article` structured data + bol.com affiliate-producten |
+| `/uit/[slug]` | Affiliate-redirect (event/sauna) met klik-logging |
+| `/uit/product/[id]` | Affiliate-redirect (bol.com-product) met klik-logging + subid |
 | `/over`, `/contact`, `/voor-saunas` | Statische pagina's (B2B-pitch) |
 
 Kalenderweergave en nieuwsbrief-opt-in zijn **uitgesteld** naar een latere sessie.

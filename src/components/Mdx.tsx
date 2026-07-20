@@ -1,10 +1,16 @@
 import { MDXRemote } from "next-mdx-remote/rsc";
 import Link from "next/link";
 import type { ComponentProps } from "react";
+import type { GidsProduct } from "@/lib/content";
+import { ProductCard } from "@/components/ProductCard";
 
 /*
-  Rendert de MDX-body van events en sauna's als server component.
+  Rendert de MDX-body van events, sauna's en gidsen als server component.
   Styling via component-overrides (geen typography-plugin nodig).
+
+  Gidsen kunnen affiliate-producten inline plaatsen via <Product id="..." /> of
+  alle producten tegelijk via <ProductGrid />. Beide componenten worden alleen
+  geïnjecteerd wanneer `producten` is meegegeven (zie buildComponents).
 */
 
 const components = {
@@ -35,10 +41,42 @@ const components = {
   hr: () => <hr className="my-8 border-sand" />,
 };
 
-export function Mdx({ source }: { source: string }) {
+function ProductGrid({ producten }: { producten: GidsProduct[] }) {
+  if (producten.length === 0) return null;
+  return (
+    <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      {producten.map((p) => (
+        <ProductCard key={p.id} product={p} />
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Bouwt de components-map. Bij gidsen worden <Product id="..." /> en
+ * <ProductGrid /> toegevoegd, gebonden aan de producten van díe gids.
+ */
+function buildComponents(producten?: GidsProduct[]) {
+  if (!producten) return components;
+  return {
+    ...components,
+    Product: ({ id }: { id?: string }) => {
+      const product = producten.find((p) => p.id === id);
+      if (!product) return null;
+      return (
+        <div className="mt-6 sm:max-w-sm">
+          <ProductCard product={product} />
+        </div>
+      );
+    },
+    ProductGrid: () => <ProductGrid producten={producten} />,
+  };
+}
+
+export function Mdx({ source, producten }: { source: string; producten?: GidsProduct[] }) {
   return (
     <div className="text-[0.975rem]">
-      <MDXRemote source={source} components={components} />
+      <MDXRemote source={source} components={buildComponents(producten)} />
     </div>
   );
 }
