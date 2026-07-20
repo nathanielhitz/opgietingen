@@ -12,7 +12,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-13"
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "fortuna-wellness",
@@ -24,7 +24,7 @@
       "type": "website",
       "status": "kapot",
       "notities": "Host onbereikbaar: fetch failed",
-      "laatstGecontroleerd": "2026-07-13"
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "spasereen",
@@ -36,7 +36,7 @@
       "type": "website",
       "status": "kapot",
       "notities": "Host onbereikbaar: fetch failed",
-      "laatstGecontroleerd": "2026-07-13"
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "sauna-elysium",
@@ -48,7 +48,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-13"
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "thermae-2000",
@@ -56,11 +56,11 @@
       "land": "NL",
       "provincie": "Limburg",
       "website": "https://www.thermae.nl",
-      "agendaUrl": "https://www.thermae.nl/evenementen-en-speciale-dagen/",
+      "agendaUrl": "https://www.thermae.nl/beleef-opgietsauna-eir-special/",
       "type": "website",
       "status": "actief",
-      "notities": "Bevestigd via Firecrawl (JS-gerenderd).",
-      "laatstGecontroleerd": "2026-07-13"
+      "notities": "Pad bijgewerkt (score 40).",
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "thermen-berendonck",
@@ -72,7 +72,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-13"
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "thermen-soesterberg",
@@ -84,7 +84,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-13"
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "thermen-binnenmaas",
@@ -92,12 +92,12 @@
       "land": "NL",
       "provincie": "Zuid-Holland",
       "website": "https://www.thermenbinnenmaas.nl",
-      "agendaUrl": "https://www.thermenbinnenmaas.nl/acties-agenda",
+      "agendaUrl": "https://www.thermenbinnenmaas.nl/",
       "type": "website",
       "matchToken": "thermenbinnenmaas",
-      "status": "actief",
-      "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-13"
+      "status": "geen-agenda",
+      "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) (opgegeven pad gaf HTTP 404) — handmatig controleren.",
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "sauna-drome",
@@ -108,8 +108,8 @@
       "agendaUrl": "https://saunadrome-putten.nl/opgietingen/",
       "type": "website",
       "status": "actief",
-      "notities": "Pad bijgewerkt (score 40).",
-      "laatstGecontroleerd": "2026-07-13"
+      "notities": "Bevestigd.",
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "sauna-zwaluwhoeve",
@@ -121,7 +121,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-13"
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "veluwse-bron",
@@ -133,7 +133,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-13"
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "spawell",
@@ -145,7 +145,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-13"
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "waer-waters",
@@ -157,7 +157,7 @@
       "type": "website",
       "status": "geen-agenda",
       "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) — handmatig controleren.",
-      "laatstGecontroleerd": "2026-07-13"
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "thermen-dilbeek",
@@ -169,7 +169,7 @@
       "type": "website",
       "status": "geen-agenda",
       "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) — handmatig controleren.",
-      "laatstGecontroleerd": "2026-07-13"
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "thermen-katara",
@@ -181,7 +181,7 @@
       "type": "website",
       "status": "kapot",
       "notities": "Host onbereikbaar: fetch failed",
-      "laatstGecontroleerd": "2026-07-13"
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "thermen-londerzeel",
@@ -193,7 +193,7 @@
       "type": "website",
       "status": "geen-agenda",
       "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) — handmatig controleren.",
-      "laatstGecontroleerd": "2026-07-13"
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "thermae-boetfort",
@@ -206,7 +206,7 @@
       "matchToken": "boetfort",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-13"
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "thermae-grimbergen",
@@ -219,7 +219,7 @@
       "matchToken": "grimbergen",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-13"
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "lago",
@@ -231,7 +231,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-13"
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "vitae-goes",
@@ -243,7 +243,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-13"
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "vitae-roosendaal",
@@ -255,7 +255,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-13"
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "centre-du-lac",
@@ -267,7 +267,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-13"
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "thermen-maarssen",
@@ -279,7 +279,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-13"
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "thermen-la-mer",
@@ -290,8 +290,8 @@
       "agendaUrl": "https://www.thermenlamer.nl/thermen-spa/opgietingen-en-rituelen/",
       "type": "website",
       "status": "actief",
-      "notities": "Pad bijgewerkt (score 30).",
-      "laatstGecontroleerd": "2026-07-13"
+      "notities": "Bevestigd.",
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "spaweesp",
@@ -303,7 +303,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-13"
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "spasense",
@@ -314,8 +314,8 @@
       "agendaUrl": "https://bewellness.nl/aufguss-challenge",
       "type": "website",
       "status": "actief",
-      "notities": "Pad bijgewerkt (score 40).",
-      "laatstGecontroleerd": "2026-07-13"
+      "notities": "Bevestigd.",
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "leeuwerikhoeve",
@@ -326,8 +326,8 @@
       "agendaUrl": "https://leeuwerikhoeve.nl/opgietingen/",
       "type": "website",
       "status": "actief",
-      "notities": "Pad bijgewerkt (score 40).",
-      "laatstGecontroleerd": "2026-07-13"
+      "notities": "Bevestigd.",
+      "laatstGecontroleerd": "2026-07-20"
     },
     {
       "id": "sauna-flevo-natuur",
