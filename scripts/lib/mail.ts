@@ -88,6 +88,11 @@ export async function fetchUnseenMail(
     secure: cfg.secure,
     auth: { user: cfg.user, pass: cfg.pass },
     logger: false,
+    // Snel falen i.p.v. 90s hangen wanneer de host onbereikbaar is (firewall,
+    // verkeerde poort). De aanroeper vangt de fout op en slaat de stap netjes over.
+    connectionTimeout: 20_000,
+    greetingTimeout: 15_000,
+    socketTimeout: 60_000,
   });
 
   const out: MailMessage[] = [];

@@ -88,7 +88,16 @@ async function main() {
     console.log("IMAP niet geconfigureerd (MAIL_IMAP_HOST ontbreekt) — mail-scrape overgeslagen.");
     return;
   } else {
-    mails = await fetchUnseenMail(readMailConfig(), { limit: LIMIT });
+    try {
+      mails = await fetchUnseenMail(readMailConfig(), { limit: LIMIT });
+    } catch (err) {
+      // Verbindings-/inboxfout (timeout, firewall, verkeerde poort, auth) mag de
+      // wekelijkse workflow niet blokkeren: de website-scrape-resultaten moeten nog
+      // gecommit worden. Log duidelijk en sla de mail-stap netjes over (exit 0).
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`Mail-scrape overgeslagen — kon de inbox niet bereiken: ${msg}`);
+      return;
+    }
   }
 
   console.log(
