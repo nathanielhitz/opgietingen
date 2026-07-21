@@ -65,8 +65,8 @@ export default function PrivacybeleidPage() {
           <p className="mt-3">
             Je hebt recht op inzage, correctie of verwijdering van gegevens die we van je hebben. Omdat we vrijwel niets
             opslaan, is dit meestal snel geregeld. Mail ons via{" "}
-            <a href="mailto:hallo@opgietingen.nl" className="font-medium text-ember hover:underline">
-              hallo@opgietingen.nl
+            <a href="mailto:info@opgietingen.nl" className="font-medium text-ember hover:underline">
+              info@opgietingen.nl
             </a>
             .
           </p>

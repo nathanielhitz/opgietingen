@@ -16,7 +16,7 @@ export default function ContactPage() {
       </p>
 
       <div className="mt-8 space-y-4">
-        <ContactItem label="E-mail" value="hallo@opgietingen.nl" href="mailto:hallo@opgietingen.nl" />
+        <ContactItem label="E-mail" value="info@opgietingen.nl" href="mailto:info@opgietingen.nl" />
         <ContactItem label="Voor sauna's" value="Bekijk de mogelijkheden" href="/voor-saunas" />
       </div>
 

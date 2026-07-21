@@ -7,7 +7,7 @@
 */
 
 export const USER_AGENT =
-  "Opgietingen.nl-bot/1.0 (+https://opgietingen.nl/over; agenda voor opgietingen; contact: hallo@opgietingen.nl)";
+  "Opgietingen.nl-bot/1.0 (+https://opgietingen.nl/over; agenda voor opgietingen; contact: info@opgietingen.nl)";
 
 /** Token waarmee wij onszelf in robots.txt herkennen. */
 const ROBOT_NAME = "opgietingen.nl-bot";

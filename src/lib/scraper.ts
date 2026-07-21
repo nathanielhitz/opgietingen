@@ -25,7 +25,7 @@ import { htmlToText } from "./html";
 const FALLBACK_MODEL = "claude-haiku-4-5";
 
 const USER_AGENT =
-  "Opgietingen.nl-bot/1.0 (+https://opgietingen.nl/over; agenda voor opgietingen; contact: hallo@opgietingen.nl)";
+  "Opgietingen.nl-bot/1.0 (+https://opgietingen.nl/over; agenda voor opgietingen; contact: info@opgietingen.nl)";
 
 export const EVENT_TYPES = ["opgietweekend", "thema", "kampioenschap", "regulier"] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
