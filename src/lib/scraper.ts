@@ -90,7 +90,11 @@ const EVENT_JSON_SCHEMA = {
           tijden: { type: "string", description: "Tijden/programma, bv. '19:00 – 23:00'" },
           prijsIndicatie: { type: "string", description: "Prijsindicatie of lege string" },
           ticketUrl: { type: "string", description: "Directe ticket-/info-URL of lege string" },
-          beschrijving: { type: "string", description: "Korte beschrijving (1-3 zinnen)" },
+          beschrijving: {
+            type: "string",
+            description:
+              "Beschrijving van 60-120 woorden op basis van de paginatekst: wat het event inhoudt, wat de bezoeker kan verwachten en voor wie het is. Alleen feiten die op de pagina staan; niets verzinnen.",
+          },
         },
         required: ["titel", "type", "startDatum", "beschrijving"],
       },
@@ -106,6 +110,7 @@ function extractionPrompt(ctx: ScrapeContext): string {
     `Gebruik ${ctx.jaar} als jaartal wanneer een datum geen jaar vermeldt (kies het eerstvolgende voorkomen).`,
     `Datums in formaat YYYY-MM-DD. Vertaal maanden vanuit het Nederlands.`,
     `Bepaal het type: opgietweekend, thema, kampioenschap of regulier.`,
+    `Schrijf per event een beschrijving van 60-120 woorden in vloeiend Nederlands op basis van wat de pagina vermeldt: wat het event inhoudt, wat de bezoeker kan verwachten en voor wie het leuk is. Gebruik uitsluitend feiten van de pagina; verzin geen tijden, prijzen, geuren of programmaonderdelen. Staat er weinig op de pagina, houd de beschrijving dan korter in plaats van te speculeren.`,
   ].join(" ");
 }
 
