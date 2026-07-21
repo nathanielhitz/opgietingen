@@ -96,9 +96,12 @@ export default function WatIsEenOpgietingPage() {
         </p>
         <ol className="list-decimal space-y-2 pl-5">
           <li>
-            <strong className="text-ink">Het opgieten.</strong> Water met etherische olie (bijvoorbeeld
-            eucalyptus, den of citrus) gaat met een houten lepel op de stenen van de saunakachel. De
-            luchtvochtigheid stijgt en de warmte wordt direct voelbaarder.
+            <strong className="text-ink">Het opgieten.</strong> Water met{" "}
+            <Link href="/gids/beste-saunageuren-2026" className="font-medium text-ember hover:underline">
+              etherische olie
+            </Link>{" "}
+            (bijvoorbeeld eucalyptus, den of citrus) gaat met een houten lepel op de stenen van de
+            saunakachel. De luchtvochtigheid stijgt en de warmte wordt direct voelbaarder.
           </li>
           <li>
             <strong className="text-ink">Het wapperen.</strong> Met een grote handdoek, waaier of vlag
