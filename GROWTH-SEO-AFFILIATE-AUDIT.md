@@ -1,7 +1,22 @@
 # Growth-, SEO- & affiliate-audit — Opgietingen.nl
 
-_Opgesteld 21 juli 2026. Uitsluitend onderzoek/analyse — er is niets in de codebase gewijzigd._
+_Opgesteld 21 juli 2026._
 _Versie 2: aangevuld met een parallel, geverifieerd onderzoek (6 onderzoekstromen + verificatiepass + completeness-critic; 61 findings, alle web-/marktclaims onafhankelijk getoetst)._
+_Versie 3 (21 juli 2026): implementatiestatus toegevoegd — de top-prioriteiten zijn inmiddels uitgevoerd, zie het statusblok hieronder en de statuskolom in de top-15-tabel._
+
+## ✅ Implementatiestatus (bijgewerkt 21 juli 2026)
+
+**Afgerond en gecommit:**
+
+| Commit | Inhoud |
+|---|---|
+| `37d231f` | Eerste drie acties + quick wins: gids-links op pillar/event/sauna/provincie, `track()` op AffiliateButton + ProductCard, Veluwse Bron-profiel (2 onzichtbare events hersteld), 4 duplicaat-events → concept/dedup-anker, LCP-fix hero, 3 meta descriptions <160, /agenda breadcrumb + alt-teksten, fallback-meta-description events |
+| `dc5bd80` | Nieuwe gids **Beste saunageuren & opgietmiddel 2026** (4 geverifieerde bol.com-producten) + inbound links vanuit pillar en wat-neem-je-mee |
+| `ed35238` | **Alle 48 gepubliceerde event-bodies verrijkt** van 2–75 woorden (mediaan 14) naar 103–147 woorden (mediaan 128); scraper vraagt bij nieuwe scrapes voortaan 60–120 woorden beschrijving; feitfout "grootste van Brabant" gecorrigeerd |
+
+**Concept-review uitgevoerd:** geen van de 21 concepts publiceerbaar (14 verlopen, 6 bewust afgekeurd, 2 nieuwsbrief-testartefacten) — kwaliteitspoort werkt zoals bedoeld.
+
+**Nog open (hoogste prioriteit eerst):** Booking.com-affiliate voor de ~10 sauna's met overnachting (vereist aanmelding programma), kampioenschap-hubs + WK-2026-content (tijdgevoelig: WM-playoffs eind aug), restant technische-hygiëne-batch (Event-schema op lijstpagina's, sitemap lastMod, noindex afgelopen events, OG-image-fix), extra gidsen (handdoek/badjas/opgietset), kerst-/winterlanding (vóór nov), sponsored-propositie, info-cluster + llms.txt-verrijking, retentie & off-page (nieuwsbrief, ICS, digital PR).
 
 > **Over de tijdsinschattingen:** dit zijn schattingen van de **implementatie-inspanning** (hands-on werk + review voor een competente ontwikkelaar/redacteur), **niet** van denktijd van de agent. Een AI-agent kan veel hiervan sneller doen; gebruik ze als menselijke effort-/review-richtlijn.
 
@@ -119,23 +134,23 @@ _Alle intenties: aannemelijk/hypothese — valideren met GSC + keyword-onderzoek
 
 ## 8. Top 15 aanbevelingen op ROI (hoogste eerst)
 
-| # | Aanbeveling | Org. | Affil. | Moeite | Tijd | Bron |
-|---|---|---|---|---|---|---|
-| 1 | Contextuele interne links → de 3 gidsen (pillar/event/sauna/agenda/provincie) | gemiddeld | **hoog** | zeer laag | 1 u | codebase + consensus |
-| 2 | `track()` op `/uit` + `/uit/product` (randvoorwaarde meetbaarheid) | zeer laag | **hoog** | laag | 1–2 u | codebase |
-| 3 | `veluwse-bron.mdx` aanmaken (fix bug: 2 onzichtbare events) | gemiddeld | laag | zeer laag | 20–30 min | codebase |
-| 4 | Nieuwe gids "Beste saunageuren & opgietmiddel" | hoog | **hoog** | laag | ½ dag | zoekresultaten |
-| 5 | Hero-LCP fix (`loading:eager`) | gemiddeld | laag | zeer laag | 15–30 min | live |
-| 6 | Scraper-duplicaten ontdubbelen + generieke titels verrijken | gemiddeld | laag | gemiddeld | 1–2 u | live + codebase |
-| 7 | Technische-hygiëne-batch: Event-objecten in lijst-ItemList · sitemap lastMod · meta's inkorten · alt/breadcrumb `/agenda` · noindex+eventStatus afgelopen · OG-image fix | gemiddeld | laag | gemiddeld | ½–1 dag | codebase + live |
-| 8 | Event-bodies verrijken (52 gepubliceerd; grootste indexeerbare set) | **hoog** | gemiddeld | gemiddeld | 3–5 u | codebase |
-| 9 | Booking.com-affiliate voor ~10 sauna's met overnachting | zeer laag | **hoog** | gemiddeld | 3–5 u | codebase + hypothese |
-| 10 | Kampioenschap-hubs (NK/MCC/Herbal/BK/WK) + NK/BK/WK-recaps | hoog | laag | laag–gem. | 1–2 dagen | concurrentie |
-| 11 | Gidsencluster uitbreiden (handdoek/hamamdoek, badjas, opgietset) + saunahoed-gids differentiëren | gemiddeld | **hoog** | laag | ½ dag/gids | concurrentie |
-| 12 | Kerst-/winteropgietingen-landing (evergreen) + WK-2026-hub (tijdgevoelig) | hoog | gemiddeld | gemiddeld | 1 dag | zoekresultaten |
-| 13 | Sponsored-propositie op `/voor-saunas` + sponsored-first sortering | zeer laag | gemiddeld | gemiddeld | 2–3 u | codebase |
-| 14 | Info-cluster (aufguss/opgieting/löyly · geuren · etiquette · gezond) + `llms.txt` verrijken | gemiddeld | laag | laag | ½ dag/artikel | concurrentie |
-| 15 | Retentie & off-page: nieuwsbrief/agenda-digest + ICS "toevoegen aan agenda"; digital-PR-plan (neutrale NK/BK/WK-databron; 20 thermen om agenda-link vragen) | hoog (LT) | gemiddeld | gemiddeld–hoog | doorlopend | critic |
+| # | Aanbeveling | Org. | Affil. | Moeite | Tijd | Bron | Status |
+|---|---|---|---|---|---|---|---|
+| 1 | Contextuele interne links → de gidsen (pillar/event/sauna/agenda/provincie) | gemiddeld | **hoog** | zeer laag | 1 u | codebase + consensus | ✅ `37d231f` |
+| 2 | `track()` op `/uit` + `/uit/product` (randvoorwaarde meetbaarheid) | zeer laag | **hoog** | laag | 1–2 u | codebase | ✅ `37d231f` |
+| 3 | `veluwse-bron.mdx` aanmaken (fix bug: 2 onzichtbare events) | gemiddeld | laag | zeer laag | 20–30 min | codebase | ✅ `37d231f` |
+| 4 | Nieuwe gids "Beste saunageuren & opgietmiddel" | hoog | **hoog** | laag | ½ dag | zoekresultaten | ✅ `dc5bd80` |
+| 5 | Hero-LCP fix (`loading:eager`) | gemiddeld | laag | zeer laag | 15–30 min | live | ✅ `37d231f` |
+| 6 | Scraper-duplicaten ontdubbelen + generieke titels verrijken | gemiddeld | laag | gemiddeld | 1–2 u | live + codebase | ✅ `37d231f`/`ed35238` |
+| 7 | Technische-hygiëne-batch: Event-objecten in lijst-ItemList · sitemap lastMod · meta's inkorten · alt/breadcrumb `/agenda` · noindex+eventStatus afgelopen · OG-image fix | gemiddeld | laag | gemiddeld | ½–1 dag | codebase + live | ◐ meta's/alt/breadcrumb ✅; schema/lastMod/noindex/OG ⬜ |
+| 8 | Event-bodies verrijken (48 gepubliceerd; grootste indexeerbare set) | **hoog** | gemiddeld | gemiddeld | 3–5 u | codebase | ✅ `ed35238` |
+| 9 | Booking.com-affiliate voor ~10 sauna's met overnachting | zeer laag | **hoog** | gemiddeld | 3–5 u | codebase + hypothese | ⬜ wacht op aanmelding |
+| 10 | Kampioenschap-hubs (NK/MCC/Herbal/BK/WK) + NK/BK/WK-recaps | hoog | laag | laag–gem. | 1–2 dagen | concurrentie | ⬜ |
+| 11 | Gidsencluster uitbreiden (handdoek/hamamdoek, badjas, opgietset) + saunahoed-gids differentiëren | gemiddeld | **hoog** | laag | ½ dag/gids | concurrentie | ◐ saunageuren ✅; rest ⬜ |
+| 12 | Kerst-/winteropgietingen-landing (evergreen) + WK-2026-hub (tijdgevoelig) | hoog | gemiddeld | gemiddeld | 1 dag | zoekresultaten | ⬜ vóór eind aug (WK) / nov (kerst) |
+| 13 | Sponsored-propositie op `/voor-saunas` + sponsored-first sortering | zeer laag | gemiddeld | gemiddeld | 2–3 u | codebase | ⬜ |
+| 14 | Info-cluster (aufguss/opgieting/löyly · geuren · etiquette · gezond) + `llms.txt` verrijken | gemiddeld | laag | laag | ½ dag/artikel | concurrentie | ⬜ |
+| 15 | Retentie & off-page: nieuwsbrief/agenda-digest + ICS "toevoegen aan agenda"; digital-PR-plan (neutrale NK/BK/WK-databron; 20 thermen om agenda-link vragen) | hoog (LT) | gemiddeld | gemiddeld–hoog | doorlopend | critic | ⬜ |
 
 ---
 
