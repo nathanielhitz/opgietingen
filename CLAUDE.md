@@ -2,6 +2,8 @@
 
 Context voor toekomstige sessies. De volledige spec staat in [opgietingen-nl-PRD.md](opgietingen-nl-PRD.md); dit bestand vat de kern samen en legt de conventies van deze codebase vast.
 
+> Beeld-prompts voor sfeerbeelden (event-afbeeldingen e.d.) staan in [docs/image-prompts.md](docs/image-prompts.md) — kant-en-klare ChatGPT-prompts per event-type, afgestemd op het kleurpalet van de site.
+
 ## Wat is dit
 
 Opgietingen.nl is dé agenda voor opgiet-evenementen (Aufguss-sessies, opgietweekenden, thema-events, kampioenschappen) in sauna's in **Nederland en België**. Bezoekers vinden snel komende opgietingen, filteren op locatie/datum/type, en klikken door naar de sauna via affiliate-links.
