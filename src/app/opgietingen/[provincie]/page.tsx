@@ -113,7 +113,7 @@ export default async function ProvincePage({ params }: { params: Params }) {
           <>
             <p className="mt-3 max-w-2xl text-ink-soft">
               Er staan op dit moment geen opgietingen gepland in {found.provincie}. Nieuwe events worden
-              wekelijks toegevoegd — kom binnenkort terug, of bekijk de{" "}
+              wekelijks toegevoegd, kom binnenkort terug, of bekijk de{" "}
               <Link href="/agenda" className="font-medium text-ember hover:underline">
                 volledige agenda
               </Link>

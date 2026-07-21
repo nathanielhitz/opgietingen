@@ -8,7 +8,7 @@ import { GidsCard } from "@/components/GidsCard";
 
 export const revalidate = 3600;
 
-const TITLE = "Saunagids — tips & spullen voor de opgieting";
+const TITLE = "Saunagids: tips & spullen voor de opgieting";
 const DESCRIPTION =
   "Praktische gidsen over opgietingen en de saunacultuur: wat neem je mee, welke saunahoed kies je, en hoe haal je het meeste uit een Aufguss-sessie.";
 
@@ -46,7 +46,7 @@ export default function GidsIndexPage() {
         </div>
       ) : (
         <p className="mt-8 rounded-[--radius-card] border border-sand bg-surface p-6 text-ink-soft">
-          Er staan nog geen gidsen online. Kom binnenkort terug — of bekijk de{" "}
+          Er staan nog geen gidsen online. Kom binnenkort terug, of bekijk de{" "}
           <Link href="/agenda" className="font-medium text-ember hover:underline">
             agenda
           </Link>

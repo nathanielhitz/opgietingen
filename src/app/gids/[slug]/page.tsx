@@ -86,12 +86,6 @@ export default async function GidsPage({
         </div>
       )}
 
-      {heeftProducten && (
-        <div className="mt-6">
-          <AffiliateDisclosure />
-        </div>
-      )}
-
       <div className="mt-6 min-w-0">
         <Mdx source={gids.body} producten={gids.producten} />
       </div>
@@ -105,6 +99,12 @@ export default async function GidsPage({
             ))}
           </div>
         </section>
+      )}
+
+      {heeftProducten && (
+        <div className="mt-10">
+          <AffiliateDisclosure />
+        </div>
       )}
 
       <nav aria-label="Meer op Opgietingen.nl" className="mt-10 flex flex-wrap gap-2 text-sm font-medium">

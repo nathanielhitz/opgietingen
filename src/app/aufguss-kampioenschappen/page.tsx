@@ -48,7 +48,7 @@ export default function KampioenschappenPage() {
           </p>
           <p>
             In Nederland wordt jaarlijks het <strong className="text-ink">NK Aufguss</strong>{" "}
-            gehouden en in België het <strong className="text-ink">BK</strong> — spektakelstukken
+            gehouden en in België het <strong className="text-ink">BK</strong>, spektakelstukken
             die je ook als bezoeker kunt bijwonen. Ook zonder verstand van wedstrijdopgieten is het
             een indrukwekkende ervaring;{" "}
             <Link href="/wat-is-een-opgieting" className="font-medium text-ember hover:underline">
@@ -89,8 +89,8 @@ export default function KampioenschappenPage() {
               <li key={event.slug}>
                 <Link href={`/event/${event.slug}`} className="font-medium text-ember hover:underline">
                   {event.titel}
-                </Link>{" "}
-                — {event.sauna.naam}, {formatDateRange(event.startDatum, event.eindDatum)}
+                </Link>
+                , {event.sauna.naam}, {formatDateRange(event.startDatum, event.eindDatum)}
               </li>
             ))}
           </ul>

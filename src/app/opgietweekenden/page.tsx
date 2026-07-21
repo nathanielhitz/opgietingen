@@ -64,7 +64,7 @@ export default function OpgietweekendenPage() {
         ) : (
           <p className="mt-3 max-w-2xl text-ink-soft">
             Er staan op dit moment geen opgietweekenden in de agenda. Nieuwe events worden wekelijks
-            toegevoegd — bekijk intussen de{" "}
+            toegevoegd, bekijk intussen de{" "}
             <Link href="/agenda" className="font-medium text-ember hover:underline">
               volledige agenda
             </Link>

@@ -44,7 +44,7 @@ export default function DitWeekendPage() {
           {events.length > 0
             ? `${events.length === 1 ? "Dit opgiet-event staat" : `Deze ${events.length} opgiet-events staan`} dit weekend (${formatDateRange(van, tot)}) op de agenda in Nederland en België.`
             : `Voor dit weekend (${formatDateRange(van, tot)}) staan er geen bijzondere opgiet-events op de agenda.`}{" "}
-          Veel sauna&rsquo;s verzorgen in het weekend extra reguliere opgietingen — check daarvoor het
+          Veel sauna&rsquo;s verzorgen in het weekend extra reguliere opgietingen, check daarvoor het
           opgietschema van de sauna zelf.
         </p>
       </header>

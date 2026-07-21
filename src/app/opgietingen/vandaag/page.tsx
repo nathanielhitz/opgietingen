@@ -42,7 +42,7 @@ export default function VandaagPage() {
             ? `${events.length === 1 ? "Dit opgiet-event is" : `Deze ${events.length} opgiet-events zijn`} er vandaag (${formatDate(vandaag)}) in Nederland en België.`
             : `Er staan vandaag (${formatDate(vandaag)}) geen bijzondere opgiet-events op de agenda.`}{" "}
           Los van deze events verzorgen veel sauna&rsquo;s dagelijks reguliere opgietingen volgens hun
-          eigen schema — nieuw met opgieten?{" "}
+          eigen schema. Nieuw met opgieten?{" "}
           <Link href="/wat-is-een-opgieting" className="font-medium text-ember hover:underline">
             Lees eerst wat een opgieting is
           </Link>

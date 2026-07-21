@@ -47,7 +47,7 @@ const FAQ = [
   {
     vraag: "Mag je tijdens een opgieting de sauna in of uit?",
     antwoord:
-      "Binnenkomen tijdens een opgieting is niet de bedoeling: de deur open laten verstoort het ritueel en laat de hitte ontsnappen. Weggaan mag altijd — als de hitte te veel wordt, verlaat je rustig en zonder schuldgevoel de sauna. Gezondheid gaat boven etiquette.",
+      "Binnenkomen tijdens een opgieting is niet de bedoeling: de deur open laten verstoort het ritueel en laat de hitte ontsnappen. Weggaan mag altijd: als de hitte te veel wordt, verlaat je rustig en zonder schuldgevoel de sauna. Gezondheid gaat boven etiquette.",
   },
   {
     vraag: "Hoe vaak zijn er opgietingen?",
@@ -79,19 +79,19 @@ export default function WatIsEenOpgietingPage() {
         {/* Citeerbare definitie direct onder de H1 (GEO) */}
         <p className="text-lg">
           <strong className="text-ink">
-            Een opgieting — internationaal bekend als Aufguss — is een saunaritueel waarbij de
+            Een opgieting, internationaal bekend als Aufguss, is een saunaritueel waarbij de
             saunameester water met etherische olie op de hete saunastenen giet en de vrijgekomen
             stoom met zwaaiende handdoekbewegingen door de sauna verdeelt.
           </strong>{" "}
           De hitte komt daardoor in golven over je huid, de geur van de olie vult de ruimte en de
-          temperatuurbeleving stijgt flink — zonder dat de sauna zelf heter wordt. Een sessie duurt
+          temperatuurbeleving stijgt flink, zonder dat de sauna zelf heter wordt. Een sessie duurt
           meestal 10 tot 15 minuten en is bij de meeste sauna&rsquo;s inbegrepen bij de entree.
         </p>
 
         <h2 className="pt-4 font-display text-2xl font-semibold text-ink">Hoe verloopt een opgieting?</h2>
         <p>
           Een opgieting volgt bijna overal hetzelfde ritme. De saunameester kondigt de sessie aan en
-          bezoekers zoeken een plek — hoe hoger de bank, hoe heter. De deur gaat dicht en gaat pas
+          bezoekers zoeken een plek: hoe hoger de bank, hoe heter. De deur gaat dicht en gaat pas
           weer open als de sessie klaar is. Daarna volgen meestal drie opgietrondes:
         </p>
         <ol className="list-decimal space-y-2 pl-5">
@@ -102,7 +102,7 @@ export default function WatIsEenOpgietingPage() {
           </li>
           <li>
             <strong className="text-ink">Het wapperen.</strong> Met een grote handdoek, waaier of vlag
-            verdeelt de saunameester de hete stoom door de ruimte — van sierlijke draaibewegingen tot
+            verdeelt de saunameester de hete stoom door de ruimte: van sierlijke draaibewegingen tot
             spectaculaire technieken bij showopgietingen.
           </li>
           <li>
@@ -113,10 +113,10 @@ export default function WatIsEenOpgietingPage() {
 
         <h2 className="pt-4 font-display text-2xl font-semibold text-ink">Etiquette: zo doe je mee</h2>
         <ul className="list-disc space-y-2 pl-5">
-          <li>Kom op tijd — tijdens de sessie blijft de deur dicht en kun je niet meer naar binnen.</li>
+          <li>Kom op tijd: tijdens de sessie blijft de deur dicht en kun je niet meer naar binnen.</li>
           <li>Neem een handdoek mee om volledig op te zitten (geen zweet op het hout).</li>
           <li>Praat niet tijdens de sessie; de opgieting is voor veel bezoekers een moment van rust.</li>
-          <li>Te heet? Ga rustig weg. Dat is nooit onbeleefd — gezondheid gaat voor.</li>
+          <li>Te heet? Ga rustig weg. Dat is nooit onbeleefd: gezondheid gaat voor.</li>
           <li>Volg de aanwijzingen van de saunameester; die kent de sauna en de sessie het best.</li>
         </ul>
 
@@ -127,11 +127,11 @@ export default function WatIsEenOpgietingPage() {
         </p>
         <ul className="list-disc space-y-2 pl-5">
           <li>
-            <strong className="text-ink">Reguliere opgieting</strong> — de dagelijkse sessie volgens het
+            <strong className="text-ink">Reguliere opgieting:</strong> de dagelijkse sessie volgens het
             opgietschema van de sauna, meestal inbegrepen bij de entree.
           </li>
           <li>
-            <strong className="text-ink">Thema-opgieting</strong> — een sessie rond een verhaal, seizoen
+            <strong className="text-ink">Thema-opgieting:</strong> een sessie rond een verhaal, seizoen
             of muziekstijl, vaak met bijpassende geuren en verlichting. Zie de{" "}
             <Link href="/agenda?type=thema" className="font-medium text-ember hover:underline">
               agenda met thema-events
@@ -139,7 +139,7 @@ export default function WatIsEenOpgietingPage() {
             .
           </li>
           <li>
-            <strong className="text-ink">Opgietweekend</strong> — een heel weekend met extra veel
+            <strong className="text-ink">Opgietweekend:</strong> een heel weekend met extra veel
             (gast)opgietingen. Bekijk de{" "}
             <Link href="/opgietweekenden" className="font-medium text-ember hover:underline">
               komende opgietweekenden
@@ -147,7 +147,7 @@ export default function WatIsEenOpgietingPage() {
             .
           </li>
           <li>
-            <strong className="text-ink">Show- en wedstrijdopgieting</strong> — choreografie, muziek en
+            <strong className="text-ink">Show- en wedstrijdopgieting:</strong> choreografie, muziek en
             verhaal komen samen; het hoogtepunt zijn het NK en BK Aufguss. Lees meer over{" "}
             <Link href="/aufguss-kampioenschappen" className="font-medium text-ember hover:underline">
               Aufguss-kampioenschappen
