@@ -32,7 +32,13 @@ export async function generateMetadata({
   const event = getEventBySlug(slug);
   if (!event) return {};
 
-  const description = plainSummary(event.body);
+  // Gescrapete events hebben vaak een (te) korte body; val dan terug op een
+  // beschrijvende template zodat de meta description nooit dun is.
+  const samenvatting = plainSummary(event.body);
+  const description =
+    samenvatting.length >= 70
+      ? samenvatting
+      : `${event.titel} bij ${event.sauna.naam} in ${event.sauna.plaats} op ${formatDateRange(event.startDatum, event.eindDatum)}. Bekijk tijden, programma en praktische informatie.`;
   const title = `${event.titel} bij ${event.sauna.naam}`;
   return {
     title,
@@ -178,6 +184,28 @@ export default async function EventPage({
               <span className="block truncate font-medium text-ink">{sauna.naam}</span>
             </span>
           </Link>
+
+          {/* Brug naar de saunagids: voorbereiding + affiliate-gidsen (interne links) */}
+          <div className="mt-4 rounded-[--radius-card] border border-sand bg-surface p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-ink-faint">Goed voorbereid</p>
+            <ul className="mt-2 space-y-1.5 text-sm">
+              <li>
+                <Link href="/gids/wat-neem-je-mee-naar-een-opgieting" className="font-medium text-ember hover:underline">
+                  Wat neem je mee naar een opgieting?
+                </Link>
+              </li>
+              <li>
+                <Link href="/gids/beste-saunahoed-2026" className="font-medium text-ember hover:underline">
+                  Welke saunahoed kies je?
+                </Link>
+              </li>
+              <li>
+                <Link href="/gids/zo-werkt-een-opgieting-voor-beginners" className="font-medium text-ember hover:underline">
+                  Eerste keer? Zo werkt een opgieting
+                </Link>
+              </li>
+            </ul>
+          </div>
         </aside>
       </div>
 

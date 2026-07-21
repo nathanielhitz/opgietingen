@@ -14,7 +14,7 @@ export function AgendaEventCard({ event }: { event: OpgietEvent }) {
     >
       <CoverImage
         src={event.afbeelding}
-        alt=""
+        alt={`${event.titel} bij ${sauna.naam}`}
         className="row-span-3 h-full min-h-28 sm:row-span-1 sm:min-h-32"
         sizes="(max-width: 639px) 5.5rem, 8rem"
       />

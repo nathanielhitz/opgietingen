@@ -36,10 +36,13 @@ export default function HeroHeader({
       {/* Foto-laag: art-direction per breakpoint (staand mobiel, liggend desktop) */}
       <picture>
         <source media="(max-width: 767px)" srcSet={mobielSrcSet} />
+        {/* loading="eager" ná de spread: getImageProps() geeft zonder priority
+            loading="lazy" mee, en het LCP-element mag nooit lazy laden. */}
         <img
           {...desktopProps}
           alt=""
           aria-hidden
+          loading="eager"
           fetchPriority="high"
           className="absolute inset-0 h-full w-full object-cover"
         />

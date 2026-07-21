@@ -167,6 +167,22 @@ export default async function ProvincePage({ params }: { params: Params }) {
         </nav>
       )}
 
+      {/* Brug naar de saunagids: voorbereiding + affiliate-gidsen (interne links) */}
+      <nav aria-label="Saunagids" className="mt-12 flex flex-wrap gap-2 text-sm font-medium">
+        <Link
+          href="/gids/zo-werkt-een-opgieting-voor-beginners"
+          className="rounded-full border border-sand bg-surface px-4 py-2 text-ink-soft transition-colors hover:border-ember hover:text-ember"
+        >
+          Eerste keer? Zo werkt een opgieting
+        </Link>
+        <Link
+          href="/gids/wat-neem-je-mee-naar-een-opgieting"
+          className="rounded-full border border-sand bg-surface px-4 py-2 text-ink-soft transition-colors hover:border-ember hover:text-ember"
+        >
+          Wat neem je mee?
+        </Link>
+      </nav>
+
       <div className="mt-10">
         <Link href="/agenda" className="text-sm font-medium text-ember hover:underline">
           ← Volledige agenda

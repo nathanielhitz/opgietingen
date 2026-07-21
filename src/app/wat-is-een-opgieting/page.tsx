@@ -14,7 +14,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 export const metadata: Metadata = {
   title: "Wat is een opgieting (Aufguss)? Alles over het saunaritueel",
   description:
-    "Een opgieting (Aufguss) is een saunaritueel waarbij de saunameester water met etherische olie op de hete stenen giet en de hitte met een handdoek verdeelt. Lees hoe een opgieting verloopt, wat de etiquette is en welke soorten er zijn.",
+    "Een opgieting (Aufguss) is een saunaritueel: geurwater op de hete stenen, stoom verdeeld met een handdoek. Lees hoe het verloopt, de etiquette en de soorten.",
   alternates: { canonical: "/wat-is-een-opgieting" },
 };
 
@@ -114,7 +114,13 @@ export default function WatIsEenOpgietingPage() {
         <h2 className="pt-4 font-display text-2xl font-semibold text-ink">Etiquette: zo doe je mee</h2>
         <ul className="list-disc space-y-2 pl-5">
           <li>Kom op tijd: tijdens de sessie blijft de deur dicht en kun je niet meer naar binnen.</li>
-          <li>Neem een handdoek mee om volledig op te zitten (geen zweet op het hout).</li>
+          <li>
+            Neem een{" "}
+            <Link href="/gids/wat-neem-je-mee-naar-een-opgieting" className="font-medium text-ember hover:underline">
+              handdoek
+            </Link>{" "}
+            mee om volledig op te zitten (geen zweet op het hout).
+          </li>
           <li>Praat niet tijdens de sessie; de opgieting is voor veel bezoekers een moment van rust.</li>
           <li>Te heet? Ga rustig weg. Dat is nooit onbeleefd: gezondheid gaat voor.</li>
           <li>Volg de aanwijzingen van de saunameester; die kent de sauna en de sessie het best.</li>
@@ -187,6 +193,26 @@ export default function WatIsEenOpgietingPage() {
             </Link>
           ))}
         </div>
+
+        {/* Brug naar de saunagids: van uitleg naar voorbereiding (en de affiliate-gidsen) */}
+        <h2 className="pt-4 font-display text-2xl font-semibold text-ink">
+          Goed voorbereid naar je eerste opgieting
+        </h2>
+        <p>
+          Ga je binnenkort voor het eerst? In de saunagids lees je{" "}
+          <Link href="/gids/zo-werkt-een-opgieting-voor-beginners" className="font-medium text-ember hover:underline">
+            hoe een opgieting stap voor stap verloopt
+          </Link>
+          ,{" "}
+          <Link href="/gids/wat-neem-je-mee-naar-een-opgieting" className="font-medium text-ember hover:underline">
+            wat je meeneemt
+          </Link>{" "}
+          en{" "}
+          <Link href="/gids/beste-saunahoed-2026" className="font-medium text-ember hover:underline">
+            welke saunahoed je hoofd tegen de hitte beschermt
+          </Link>
+          .
+        </p>
 
         <h2 className="pt-6 font-display text-2xl font-semibold text-ink">Veelgestelde vragen</h2>
         <dl className="space-y-5">

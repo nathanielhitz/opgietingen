@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAllSaunas, getSaunaBySlug, getEventsForSauna } from "@/lib/content";
+import { getAllSaunas, getSaunaBySlug, getEventsForSauna, slugify } from "@/lib/content";
 import { COUNTRY_LABELS } from "@/lib/site";
 import { isUpcoming } from "@/lib/dates";
 import { plainSummary } from "@/lib/text";
@@ -106,6 +106,23 @@ export default async function SaunaPage({
             </div>
           </div>
           <MapEmbed lat={sauna.lat} lng={sauna.lng} label={sauna.naam} />
+
+          {/* Brug naar de saunagids: voorbereiding + affiliate-gidsen (interne links) */}
+          <div className="rounded-[--radius-card] border border-sand bg-surface p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-ink-faint">Goed voorbereid</p>
+            <ul className="mt-2 space-y-1.5 text-sm">
+              <li>
+                <Link href="/gids/wat-neem-je-mee-naar-een-opgieting" className="font-medium text-ember hover:underline">
+                  Wat neem je mee naar een opgieting?
+                </Link>
+              </li>
+              <li>
+                <Link href="/gids/zo-werkt-een-opgieting-voor-beginners" className="font-medium text-ember hover:underline">
+                  Eerste keer? Zo werkt een opgieting
+                </Link>
+              </li>
+            </ul>
+          </div>
         </aside>
       </div>
 
@@ -125,9 +142,13 @@ export default async function SaunaPage({
         )}
       </section>
 
-      <div className="mt-10 flex gap-4 text-sm font-medium">
+      <div className="mt-10 flex flex-wrap gap-4 text-sm font-medium">
         <Link href="/saunas" className="text-ember hover:underline">
           ← Alle sauna’s
+        </Link>
+        {/* Hub-and-spoke: sauna → eigen provinciepagina (interne linking, SEO-PLAN §8) */}
+        <Link href={`/opgietingen/${slugify(sauna.provincie)}`} className="text-ember hover:underline">
+          Opgietingen in {sauna.provincie}
         </Link>
         <Link href="/agenda" className="text-ember hover:underline">
           Volledige agenda →

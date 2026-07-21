@@ -19,7 +19,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Aufguss-kampioenschappen: NK & BK opgieten",
   description:
-    "Alles over de Aufguss-kampioenschappen in Nederland en België: wat wedstrijd-opgieten is, en waar en wanneer het NK en BK Aufguss plaatsvinden. Bekijk de komende edities.",
+    "Alles over Aufguss-kampioenschappen in Nederland en België: wat wedstrijd-opgieten is en waar en wanneer het NK en BK plaatsvinden. Bekijk de komende edities.",
   alternates: { canonical: "/aufguss-kampioenschappen" },
 };
 

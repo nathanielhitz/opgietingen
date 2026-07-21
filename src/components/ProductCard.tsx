@@ -1,3 +1,6 @@
+"use client";
+
+import { track } from "@vercel/analytics";
 import type { GidsProduct } from "@/lib/content";
 import { CoverImage } from "@/components/CoverImage";
 
@@ -5,6 +8,10 @@ import { CoverImage } from "@/components/CoverImage";
   Affiliate-productkaart voor gidsartikelen. Linkt via de redirect
   (/uit/product/<id>) zodat kliks meetbaar zijn; rel="sponsored nofollow
   noopener" markeert de affiliate-relatie voor zoekmachines (bol.com-compliance).
+
+  Naast de serverside redirect-log sturen we een Vercel Analytics-event
+  ("uit-product-klik") voor kliks per product in het dashboard. track() is
+  fire-and-forget en mag de navigatie nooit blokkeren.
 */
 export function ProductCard({ product }: { product: GidsProduct }) {
   return (
@@ -12,6 +19,7 @@ export function ProductCard({ product }: { product: GidsProduct }) {
       href={`/uit/product/${product.id}`}
       rel="sponsored nofollow noopener"
       target="_blank"
+      onClick={() => track("uit-product-klik", { product: product.id })}
       className="group flex flex-col overflow-hidden rounded-[--radius-card] border border-sand bg-surface shadow-sm transition-shadow hover:shadow-md"
     >
       <CoverImage

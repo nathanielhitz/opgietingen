@@ -7,7 +7,7 @@ export const site = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://opgietingen.nl",
   tagline: "Dé agenda voor opgiet-evenementen in Nederland en België",
   description:
-    "Ontdek waar en wanneer er opgietingen (Aufguss-sessies), opgietweekenden en thema-events zijn in sauna's in Nederland en België. Filter op provincie, datum en type.",
+    "Ontdek waar en wanneer er opgietingen (Aufguss), opgietweekenden en thema-events zijn in sauna's in Nederland en België. Filter op provincie, datum en type.",
   locale: "nl_NL",
   twitter: "@opgietingen",
 } as const;

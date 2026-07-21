@@ -4,6 +4,7 @@ import { getAllEvents, getProvincesWithEvents, slugify } from "@/lib/content";
 import { parseFilters, filterEvents, validateDateRange, activeFilterCount, type SearchParams } from "@/lib/filters";
 import { AgendaFilters, type ProvinceOption } from "@/components/AgendaFilters";
 import { AgendaEventCard } from "@/components/AgendaEventCard";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { JsonLd } from "@/components/JsonLd";
 import { eventItemListSchema } from "@/lib/schema";
 import { site } from "@/lib/site";
@@ -38,7 +39,9 @@ export default async function AgendaPage({
       {!filterError && activeFilterCount(filters) === 0 && (
         <JsonLd data={eventItemListSchema(events, "Alle komende opgietingen in Nederland en België")} />
       )}
-      <header className="max-w-2xl">
+      <Breadcrumb items={[{ label: "Agenda" }]} />
+
+      <header className="mt-4 max-w-2xl">
         <h1 className="font-display text-3xl font-semibold text-ink sm:text-4xl">Agenda</h1>
         <p className="mt-2 text-ink-soft">
           Alle komende opgietingen en Aufguss-events in Nederland en België. Filter op land, provincie, datum of type.
