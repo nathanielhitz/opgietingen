@@ -36,7 +36,7 @@ export function SiteHeader() {
   }, [pathname]);
 
   useEffect(() => {
-    const desktopViewport = window.matchMedia("(min-width: 640px)");
+    const desktopViewport = window.matchMedia("(min-width: 768px)");
     const closeMenuOnDesktop = (event: MediaQueryListEvent) => {
       if (event.matches) setMenuOpen(false);
     };
@@ -114,7 +114,7 @@ export function SiteHeader() {
               key={item.href}
               href={item.href}
               aria-current={isActive(item.href) ? "page" : undefined}
-              className={`hidden rounded-full px-3 py-1.5 font-medium transition-colors sm:inline-block ${
+              className={`hidden rounded-full px-3 py-1.5 font-medium transition-colors md:inline-block ${
                 isActive(item.href)
                   ? overlay
                     ? "bg-white/15 text-white"
@@ -130,7 +130,7 @@ export function SiteHeader() {
           <Link
             href="/agenda"
             aria-current={isActive("/agenda") ? "page" : undefined}
-            className="hidden rounded-full bg-ember px-4 py-1.5 font-medium text-white shadow-sm transition-colors hover:bg-ember/90 sm:inline-block"
+            className="hidden rounded-full bg-ember px-4 py-1.5 font-medium text-white shadow-sm transition-colors hover:bg-ember/90 md:inline-block"
           >
             Bekijk agenda
           </Link>
@@ -141,7 +141,7 @@ export function SiteHeader() {
             aria-controls="mobiele-navigatie"
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((open) => !open)}
-            className={`grid h-11 w-11 place-items-center rounded-full transition-colors sm:hidden ${
+            className={`grid h-11 w-11 place-items-center rounded-full transition-colors md:hidden ${
               overlay
                 ? "text-white hover:bg-white/10"
                 : "text-ink hover:bg-sand"
@@ -177,7 +177,7 @@ export function SiteHeader() {
           ref={mobileMenuRef}
           id="mobiele-navigatie"
           aria-label="Mobiele navigatie"
-          className="border-t border-sand bg-cream px-4 py-3 shadow-lg sm:hidden"
+          className="border-t border-sand bg-cream px-4 py-3 shadow-lg md:hidden"
         >
           <div className="mx-auto flex max-w-6xl flex-col gap-1">
             {navItems.map((item) => (
