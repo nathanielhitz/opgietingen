@@ -65,8 +65,8 @@ test("isBestelbaar alleen bij leverbaar met betaallink", () => {
 });
 
 test("formatEuro formatteert nl-NL met vaste spatie", () => {
-  assert.equal(formatEuro(34.95), "€ 34,95");
-  assert.equal(formatEuro(5), "€ 5,00");
+  assert.equal(formatEuro(34.95), "€\u00A034,95");
+  assert.equal(formatEuro(5), "€\u00A05,00");
 });
 
 test("getMerchProduct leest het echte saunahoed-bestand", () => {
