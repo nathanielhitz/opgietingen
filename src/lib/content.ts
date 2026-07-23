@@ -95,6 +95,8 @@ export interface Gids {
   afbeelding?: string;
   bijgewerkt?: string;
   producten: GidsProduct[];
+  /** Slug van een eigen merch-product (content/merch) dat bovenaan de gids uitgelicht wordt. */
+  eigenProduct?: string;
   /** Rauwe MDX-body. */
   body: string;
 }
@@ -303,6 +305,7 @@ export const getAllGidsen = cache((): Gids[] => {
       afbeelding: data.afbeelding as string | undefined,
       bijgewerkt: toISODate(data.bijgewerkt),
       producten: parseProducten(data.producten),
+      eigenProduct: data.eigenProduct as string | undefined,
       body,
     }))
     .sort((a, b) => a.titel.localeCompare(b.titel, "nl"));

@@ -11,6 +11,8 @@ import { Mdx } from "@/components/Mdx";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { AffiliateDisclosure } from "@/components/AffiliateDisclosure";
 import { ProductCard } from "@/components/ProductCard";
+import { getMerchProduct } from "@/lib/merch";
+import { EigenProductCta } from "@/components/EigenProductCta";
 
 export function generateStaticParams() {
   return getAllGidsen().map((g) => ({ slug: g.slug }));
@@ -52,6 +54,7 @@ export default async function GidsPage({
   const gids = getGidsBySlug(slug);
   if (!gids) notFound();
 
+  const eigenProduct = gids.eigenProduct ? getMerchProduct(gids.eigenProduct) : undefined;
   const heeftProducten = gids.producten.length > 0;
   // Plaatst de auteur zelf geen producten in de body, dan tonen we ze onderaan.
   const productenInBody = /<Product\b|<ProductGrid\b/.test(gids.body);
@@ -74,6 +77,8 @@ export default async function GidsPage({
           <p className="mt-2 text-xs text-ink-faint">Bijgewerkt op {formatDate(gids.bijgewerkt)}</p>
         )}
       </header>
+
+      {eigenProduct && <EigenProductCta product={eigenProduct} />}
 
       {gids.afbeelding && (
         <div className="relative mt-5 overflow-hidden rounded-[--radius-card]">
