@@ -19,6 +19,12 @@ const GIDSEN_DIR = path.join(CONTENT_DIR, "gidsen");
 
 export type EventStatus = "concept" | "gepubliceerd" | "afgelopen";
 
+/** Eén regel uit het vaste opgietrooster van een sauna (bv. "za & zo" / "elk uur"). */
+export interface OpgietRoosterRegel {
+  dag: string;
+  tijden: string;
+}
+
 export interface Sauna {
   slug: string;
   naam: string;
@@ -33,6 +39,13 @@ export interface Sauna {
   affiliateUrl: string;
   sponsored: boolean;
   afbeelding?: string;
+  /**
+   * Vaste opgiettijden zoals vermeld op de sauna-website (uniek datapunt,
+   * audit §6 kans 10). Alleen opnemen wat daar letterlijk staat.
+   */
+  opgietRooster?: OpgietRoosterRegel[];
+  /** Datum waarop het rooster op de sauna-website is gecontroleerd. */
+  roosterGecheckt?: string;
   /** Rauwe MDX-body (beschrijving). */
   body: string;
 }
@@ -121,6 +134,19 @@ function readMdxFiles(dir: string): { slug: string; data: Record<string, unknown
 
 /* ---------- Sauna's ---------- */
 
+/** Parseert het opgietRooster-frontmatterveld; regels zonder dag/tijden vervallen. */
+function parseOpgietRooster(value: unknown): OpgietRoosterRegel[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const regels: OpgietRoosterRegel[] = [];
+  for (const raw of value) {
+    const r = raw as Record<string, unknown>;
+    if (typeof r.dag === "string" && typeof r.tijden === "string" && r.dag && r.tijden) {
+      regels.push({ dag: r.dag, tijden: r.tijden });
+    }
+  }
+  return regels.length > 0 ? regels : undefined;
+}
+
 export const getAllSaunas = cache((): Sauna[] => {
   return readMdxFiles(SAUNAS_DIR)
     .map(({ slug, data, body }) => ({
@@ -137,6 +163,8 @@ export const getAllSaunas = cache((): Sauna[] => {
       affiliateUrl: data.affiliateUrl as string,
       sponsored: Boolean(data.sponsored),
       afbeelding: data.afbeelding as string | undefined,
+      opgietRooster: parseOpgietRooster(data.opgietRooster),
+      roosterGecheckt: toISODate(data.roosterGecheckt),
       body,
     }))
     .sort((a, b) => a.naam.localeCompare(b.naam, "nl"));

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllSaunas, getSaunaBySlug, getEventsForSauna, slugify } from "@/lib/content";
 import { COUNTRY_LABELS } from "@/lib/site";
-import { isUpcoming } from "@/lib/dates";
+import { isUpcoming, formatDate } from "@/lib/dates";
 import { plainSummary } from "@/lib/text";
 import { saunaSchema, absoluteUrl } from "@/lib/schema";
 import { JsonLd } from "@/components/JsonLd";
@@ -82,6 +82,34 @@ export default async function SaunaPage({
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_320px]">
         <div className="min-w-0">
           <Mdx source={sauna.body} />
+
+          {/* Vaste opgiettijden: uniek datapunt voor long-tail zoekverkeer
+              ("opgietingen tijden {sauna}"); alleen wat de sauna-site vermeldt. */}
+          {sauna.opgietRooster && (
+            <section className="mt-8">
+              <h2 className="font-display text-xl font-semibold text-ink">
+                Vaste opgiettijden bij {sauna.naam}
+              </h2>
+              <dl className="mt-4 overflow-hidden rounded-[--radius-card] border border-sand bg-surface">
+                {sauna.opgietRooster.map((regel, i) => (
+                  <div
+                    key={regel.dag}
+                    className={`flex flex-col gap-1 p-4 sm:flex-row sm:items-baseline sm:gap-6 ${i > 0 ? "border-t border-sand" : ""}`}
+                  >
+                    <dt className="w-40 flex-none text-sm font-semibold text-ink">{regel.dag}</dt>
+                    <dd className="text-sm text-ink-soft">{regel.tijden}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="mt-2 text-xs text-ink-faint">
+                {sauna.roosterGecheckt
+                  ? `Gecontroleerd op ${formatDate(sauna.roosterGecheckt)} via de website van de sauna. `
+                  : ""}
+                Roosters wijzigen per seizoen; raadpleeg de website van de sauna voor het actuele
+                programma.
+              </p>
+            </section>
+          )}
 
           {sauna.faciliteiten.length > 0 && (
             <section className="mt-8">
