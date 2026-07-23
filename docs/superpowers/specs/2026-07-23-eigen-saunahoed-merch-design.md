@@ -1,7 +1,7 @@
 # Ontwerp: eigen saunahoed (merch) naast affiliate
 
 **Datum:** 2026-07-23
-**Status:** goedgekeurd door Nathaniel (aanpassingen: startvoorraad 10–20 stuks; lancering in twee stappen — de pagina gaat direct live als "binnenkort beschikbaar", verkoop start na KvK-inschrijving + Mollie-account, gepland over 2–3 weken)
+**Status:** goedgekeurd door Nathaniel (aanpassingen: startvoorraad 10–20 stuks; lancering in twee stappen — de pagina gaat direct live als "binnenkort beschikbaar", verkoop start na KvK-inschrijving + Mollie-account, gepland over 3–4 weken)
 
 ## Doel en context
 
@@ -28,7 +28,7 @@ Nieuw contenttype **merch-product**, zelfde repo-based patroon als events en gid
 
 Loader: nieuwe functie(s) in de stijl van `src/lib/content.ts` (bijv. `getMerchProduct(slug)` / `getMerchProducten()`), zodat de databron later vervangbaar blijft. De status wordt **handmatig** geschakeld via `productStatus` in de frontmatter; er is geen voorraadteller.
 
-**Lancering in twee stappen (KvK-constraint):** Mollie accepteert alleen geregistreerde bedrijven; Nathaniel schrijft zich over 2–3 weken in bij de KvK. Daarom gaat de pagina direct live met `productStatus: binnenkort` (geen bestelknop, wel volledige pagina) en schakelt hij na KvK + Mollie-account + voorraad om naar `leverbaar` door alleen de frontmatter aan te passen (`productStatus` + `betaalUrl` invullen). Er is geen aparte "pre-orderbouw"; het is dezelfde pagina in een andere stand.
+**Lancering in twee stappen (KvK-constraint):** Mollie accepteert alleen geregistreerde bedrijven; Nathaniel schrijft zich over 3–4 weken in bij de KvK. Daarom gaat de pagina direct live met `productStatus: binnenkort` (geen bestelknop, wel volledige pagina) en schakelt hij na KvK + Mollie-account + voorraad om naar `leverbaar` door alleen de frontmatter aan te passen (`productStatus` + `betaalUrl` invullen). Er is geen aparte "pre-orderbouw"; het is dezelfde pagina in een andere stand.
 
 ## Productpagina `/saunahoed`
 
@@ -59,7 +59,7 @@ Conversie is af te lezen door kliks in `data/clicks.log` te vergelijken met beta
 
 ## Bestelflow (operationeel, buiten de code)
 
-- **Stap 0 (nu):** pagina live in `binnenkort`-stand; Nathaniel regelt intussen KvK-inschrijving (~€80 eenmalig), Mollie-account en inkoop van 10–20 blanks + borduring. Beoogd: over 2–3 weken.
+- **Stap 0 (nu):** pagina live in `binnenkort`-stand; Nathaniel regelt intussen KvK-inschrijving (~€80 eenmalig), Mollie-account en inkoop van 10–20 blanks + borduring. Beoogd: over 3–4 weken.
 - **Stap 1 (na KvK):** `betaalUrl` invullen en `productStatus` op `leverbaar` zetten; vanaf dan geldt de flow hieronder.
 - Klant klikt "Bestel" → Mollie-betaallink → betaalt (iDEAL/Bancontact voor NL+BE).
 - Nathaniel ziet betaling + klantgegevens in het Mollie-dashboard en verstuurt zelf per brievenbuspakket.
