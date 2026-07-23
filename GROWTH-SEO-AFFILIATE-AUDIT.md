@@ -114,7 +114,7 @@ _Versie 3 (21 juli 2026): implementatiestatus toegevoegd — de top-prioriteiten
 | 7 | Beste saunahanddoek & hamamdoek | commercieel | gids | **bol.com** | Gemiddeld |
 | 8 | Sauna-/opgieting cadeau geven (cadeaubon) | commercieel/seizoen | gids | Bongo/Smartbox e.d. — **valideren** | Gemiddeld |
 | 9 | Info-cluster: aufguss vs opgieting vs löyly · opgietgeuren · etiquette · "zijn opgietingen gezond?" | informatief | pillar-spokes | laag (GEO/links) | Gemiddeld |
-| 10 | Vaste opgiettijden/-rooster op sauna-profielen (unieke long-tail; geen aggregator heeft dit) | lokaal/informatief | sauna-veld | sauna-doorklik | Gemiddeld |
+| 10 | Vaste opgiettijden/-rooster op sauna-profielen (unieke long-tail; geen aggregator heeft dit) | lokaal/informatief | sauna-veld | sauna-doorklik | ✅ 24-07 (`7e76e9e`): 15/21 profielen, websites geverifieerd |
 
 _Alle intenties: aannemelijk/hypothese — valideren met GSC + keyword-onderzoek._
 
