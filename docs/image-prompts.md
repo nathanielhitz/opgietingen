@@ -96,6 +96,18 @@ Winter/kerst-variant:
   window light, calm and minimal.*
 - **Buitenkant/architectuur:** *a modern wooden sauna cabin by a quiet lake at golden
   hour, warm reflections, serene.*
+- **Gids saunahanddoek** (`/gids/beste-saunahanddoek-2026`, bestandsnaam-suggestie
+  `saunahanddoek-hamamdoek.jpg`): *a neatly rolled oversized bamboo sauna towel and a
+  thin striped hammam towel side by side on a warm wooden sauna bench, soft steam in
+  the background, minimal and tactile.*
+- **Gids badjas** (`/gids/beste-sauna-badjas-2026`, bestandsnaam-suggestie
+  `sauna-badjas-rustruimte.jpg`): *a soft waffle-cotton bathrobe hanging on a wooden
+  hook next to a terry bathrobe, warm spa relaxation room with loungers softly blurred
+  behind, golden light.*
+- **Gids opgietset** (`/gids/beste-opgietset-2026`, bestandsnaam-suggestie
+  `opgietset-emmer-lepel.jpg`): *a wooden sauna bucket with ladle resting on a sauna
+  bench beside a small hourglass, a wisp of steam rising from hot stones behind,
+  close-up, editorial.*
 
 ---
 

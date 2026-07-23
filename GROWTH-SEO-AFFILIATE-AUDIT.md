@@ -146,10 +146,10 @@ _Alle intenties: aannemelijk/hypothese — valideren met GSC + keyword-onderzoek
 | 8 | Event-bodies verrijken (48 gepubliceerd; grootste indexeerbare set) | **hoog** | gemiddeld | gemiddeld | 3–5 u | codebase | ✅ `ed35238` |
 | 9 | Booking.com-affiliate voor ~10 sauna's met overnachting | zeer laag | **hoog** | gemiddeld | 3–5 u | codebase + hypothese | ⬜ wacht op aanmelding |
 | 10 | Kampioenschap-hubs (NK/MCC/Herbal/BK/WK) + NK/BK/WK-recaps | hoog | laag | laag–gem. | 1–2 dagen | concurrentie | ⬜ |
-| 11 | Gidsencluster uitbreiden (handdoek/hamamdoek, badjas, opgietset) + saunahoed-gids differentiëren | gemiddeld | **hoog** | laag | ½ dag/gids | concurrentie | ◐ saunageuren ✅; rest ⬜ |
+| 11 | Gidsencluster uitbreiden (handdoek/hamamdoek, badjas, opgietset) + saunahoed-gids differentiëren | gemiddeld | **hoog** | laag | ½ dag/gids | concurrentie | ✅ 23-07: handdoek/badjas/opgietset-gidsen + cross-links (7 gidsen totaal) |
 | 12 | Kerst-/winteropgietingen-landing (evergreen) + WK-2026-hub (tijdgevoelig) | hoog | gemiddeld | gemiddeld | 1 dag | zoekresultaten | ◐ WK-2026-hub ✅ `4da340b`; kerst ⬜ vóór nov |
 | 13 | Sponsored-propositie op `/voor-saunas` + sponsored-first sortering | zeer laag | gemiddeld | gemiddeld | 2–3 u | codebase | ⬜ |
-| 14 | Info-cluster (aufguss/opgieting/löyly · geuren · etiquette · gezond) + `llms.txt` verrijken | gemiddeld | laag | laag | ½ dag/artikel | concurrentie | ⬜ |
+| 14 | Info-cluster (aufguss/opgieting/löyly · geuren · etiquette · gezond) + `llms.txt` verrijken | gemiddeld | laag | laag | ½ dag/artikel | concurrentie | ◐ llms.txt ✅ 23-07 (gidsen + WK + Q&A + feeds); info-artikelen ⬜ |
 | 15 | Retentie & off-page: nieuwsbrief/agenda-digest + ICS "toevoegen aan agenda"; digital-PR-plan (neutrale NK/BK/WK-databron; 20 thermen om agenda-link vragen) | hoog (LT) | gemiddeld | gemiddeld–hoog | doorlopend | critic | ◐ ICS per event + webcal-feed + RSS ✅ `da732b0`; nieuwsbrief/PR ⬜ |
 
 ---

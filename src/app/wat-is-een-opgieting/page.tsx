@@ -119,7 +119,7 @@ export default function WatIsEenOpgietingPage() {
           <li>Kom op tijd: tijdens de sessie blijft de deur dicht en kun je niet meer naar binnen.</li>
           <li>
             Neem een{" "}
-            <Link href="/gids/wat-neem-je-mee-naar-een-opgieting" className="font-medium text-ember hover:underline">
+            <Link href="/gids/beste-saunahanddoek-2026" className="font-medium text-ember hover:underline">
               handdoek
             </Link>{" "}
             mee om volledig op te zitten (geen zweet op het hout).
