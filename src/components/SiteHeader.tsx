@@ -8,6 +8,7 @@ const navItems = [
   { href: "/agenda", label: "Agenda" },
   { href: "/saunas", label: "Sauna's" },
   { href: "/gids", label: "Gids" },
+  { href: "/saunahoed", label: "Saunahoed" },
   { href: "/wat-is-een-opgieting", label: "Wat is een opgieting?" },
   { href: "/over", label: "Over" },
   { href: "/voor-saunas", label: "Voor sauna's" },

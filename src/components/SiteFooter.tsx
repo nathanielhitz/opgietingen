@@ -28,6 +28,7 @@ export function SiteFooter() {
           <FooterLink href="/aufguss-kampioenschappen">Kampioenschappen</FooterLink>
           <FooterLink href="/saunas">Sauna’s</FooterLink>
           <FooterLink href="/gids">Saunagids</FooterLink>
+          <FooterLink href="/saunahoed">Onze saunahoed</FooterLink>
         </FooterCol>
 
         <FooterCol title="Per provincie">

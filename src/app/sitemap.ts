@@ -31,6 +31,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: u("/aufguss-kampioenschappen/wk-2026"), changeFrequency: "weekly", priority: 0.7 },
     { url: u("/saunas"), changeFrequency: "weekly", priority: 0.7 },
     { url: u("/gids"), changeFrequency: "weekly", priority: 0.6 },
+    { url: u("/saunahoed"), changeFrequency: "weekly", priority: 0.7 },
     { url: u("/over"), changeFrequency: "yearly", priority: 0.3 },
     { url: u("/contact"), changeFrequency: "yearly", priority: 0.3 },
     { url: u("/voor-saunas"), changeFrequency: "monthly", priority: 0.4 },
