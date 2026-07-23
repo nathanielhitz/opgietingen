@@ -57,6 +57,20 @@ export default function KampioenschappenPage() {
             als je nieuw bent. Kom op tijd: finales zitten snel vol.
           </p>
         </div>
+
+        {/* Editie-uitlichting: de actuele WK-subpagina (audit-item 12 / V5) */}
+        <p className="mt-5 rounded-2xl border border-sand bg-surface px-5 py-4">
+          <strong className="text-ink">Dit jaar:</strong> het WK Aufguss 2026 vindt van 14 t/m 20
+          september plaats bij Satama Sauna Resort, vlak bij Berlijn, met eind augustus de
+          WM-playoffs bij Thermen Bussloo.{" "}
+          <Link
+            href="/aufguss-kampioenschappen/wk-2026"
+            className="font-medium text-ember hover:underline"
+          >
+            Lees alles over het WK Aufguss 2026
+          </Link>
+          .
+        </p>
       </header>
 
       <section className="mt-8">

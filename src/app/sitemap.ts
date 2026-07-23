@@ -28,6 +28,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: u("/wat-is-een-opgieting"), changeFrequency: "monthly", priority: 0.8 },
     { url: u("/opgietweekenden"), lastModified: vandaag, changeFrequency: "weekly", priority: 0.7 },
     { url: u("/aufguss-kampioenschappen"), lastModified: vandaag, changeFrequency: "weekly", priority: 0.7 },
+    { url: u("/aufguss-kampioenschappen/wk-2026"), changeFrequency: "weekly", priority: 0.7 },
     { url: u("/saunas"), changeFrequency: "weekly", priority: 0.7 },
     { url: u("/gids"), changeFrequency: "weekly", priority: 0.6 },
     { url: u("/over"), changeFrequency: "yearly", priority: 0.3 },
