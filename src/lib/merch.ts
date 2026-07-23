@@ -12,7 +12,7 @@ const MERCH_DIR = path.join(process.cwd(), "content", "merch");
 
 export type MerchStatus = "binnenkort" | "leverbaar" | "uitverkocht";
 
-const MERCH_STATUSSEN: readonly string[] = ["binnenkort", "leverbaar", "uitverkocht"];
+const MERCH_STATUSSEN: readonly MerchStatus[] = ["binnenkort", "leverbaar", "uitverkocht"];
 
 export interface MerchProduct {
   slug: string;
@@ -60,9 +60,10 @@ export function parseMerchProduct(
       : [],
     betaalUrl: (data.betaalUrl as string) || undefined,
     // Onbekende/ontbrekende status -> veiligste stand (geen bestelknop).
-    productStatus: MERCH_STATUSSEN.includes(status as string)
-      ? (status as MerchStatus)
-      : "binnenkort",
+    productStatus:
+      typeof status === "string" && MERCH_STATUSSEN.includes(status as MerchStatus)
+        ? (status as MerchStatus)
+        : "binnenkort",
     bijgewerkt: toISODate(data.bijgewerkt),
     body,
   };
