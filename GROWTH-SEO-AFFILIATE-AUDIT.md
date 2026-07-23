@@ -16,7 +16,7 @@ _Versie 3 (21 juli 2026): implementatiestatus toegevoegd — de top-prioriteiten
 
 **Concept-review uitgevoerd:** geen van de 21 concepts publiceerbaar (14 verlopen, 6 bewust afgekeurd, 2 nieuwsbrief-testartefacten) — kwaliteitspoort werkt zoals bedoeld.
 
-**Nog open (hoogste prioriteit eerst):** Booking.com-affiliate voor de ~10 sauna's met overnachting (vereist aanmelding programma), kampioenschap-hubs + WK-2026-content (tijdgevoelig: WM-playoffs eind aug), restant technische-hygiëne-batch (Event-schema op lijstpagina's, sitemap lastMod, noindex afgelopen events, OG-image-fix), extra gidsen (handdoek/badjas/opgietset), kerst-/winterlanding (vóór nov), sponsored-propositie, info-cluster + llms.txt-verrijking, retentie & off-page (nieuwsbrief, ICS, digital PR).
+**Nog open (hoogste prioriteit eerst):** Booking.com-affiliate voor de ~10 sauna's met overnachting (vereist aanmelding programma), kampioenschap-hubs + WK-2026-content (tijdgevoelig: WM-playoffs eind aug), extra gidsen (handdoek/badjas/opgietset), kerst-/winterlanding (vóór nov), sponsored-propositie, info-cluster + llms.txt-verrijking, retentie & off-page (nieuwsbrief, digital PR). _Afgerond 23-07: technische-hygiëne-batch (`da732b0`) en ICS/webcal/RSS-feeds (`da732b0`)._
 
 > **Over de tijdsinschattingen:** dit zijn schattingen van de **implementatie-inspanning** (hands-on werk + review voor een competente ontwikkelaar/redacteur), **niet** van denktijd van de agent. Een AI-agent kan veel hiervan sneller doen; gebruik ze als menselijke effort-/review-richtlijn.
 
@@ -142,7 +142,7 @@ _Alle intenties: aannemelijk/hypothese — valideren met GSC + keyword-onderzoek
 | 4 | Nieuwe gids "Beste saunageuren & opgietmiddel" | hoog | **hoog** | laag | ½ dag | zoekresultaten | ✅ `dc5bd80` |
 | 5 | Hero-LCP fix (`loading:eager`) | gemiddeld | laag | zeer laag | 15–30 min | live | ✅ `37d231f` |
 | 6 | Scraper-duplicaten ontdubbelen + generieke titels verrijken | gemiddeld | laag | gemiddeld | 1–2 u | live + codebase | ✅ `37d231f`/`ed35238` |
-| 7 | Technische-hygiëne-batch: Event-objecten in lijst-ItemList · sitemap lastMod · meta's inkorten · alt/breadcrumb `/agenda` · noindex+eventStatus afgelopen · OG-image fix | gemiddeld | laag | gemiddeld | ½–1 dag | codebase + live | ◐ meta's/alt/breadcrumb ✅; schema/lastMod/noindex/OG ⬜ |
+| 7 | Technische-hygiëne-batch: Event-objecten in lijst-ItemList · sitemap lastMod · meta's inkorten · alt/breadcrumb `/agenda` · noindex+eventStatus afgelopen · OG-image fix | gemiddeld | laag | gemiddeld | ½–1 dag | codebase + live | ✅ `da732b0` (rest was `37d231f`) |
 | 8 | Event-bodies verrijken (48 gepubliceerd; grootste indexeerbare set) | **hoog** | gemiddeld | gemiddeld | 3–5 u | codebase | ✅ `ed35238` |
 | 9 | Booking.com-affiliate voor ~10 sauna's met overnachting | zeer laag | **hoog** | gemiddeld | 3–5 u | codebase + hypothese | ⬜ wacht op aanmelding |
 | 10 | Kampioenschap-hubs (NK/MCC/Herbal/BK/WK) + NK/BK/WK-recaps | hoog | laag | laag–gem. | 1–2 dagen | concurrentie | ⬜ |
@@ -150,7 +150,7 @@ _Alle intenties: aannemelijk/hypothese — valideren met GSC + keyword-onderzoek
 | 12 | Kerst-/winteropgietingen-landing (evergreen) + WK-2026-hub (tijdgevoelig) | hoog | gemiddeld | gemiddeld | 1 dag | zoekresultaten | ⬜ vóór eind aug (WK) / nov (kerst) |
 | 13 | Sponsored-propositie op `/voor-saunas` + sponsored-first sortering | zeer laag | gemiddeld | gemiddeld | 2–3 u | codebase | ⬜ |
 | 14 | Info-cluster (aufguss/opgieting/löyly · geuren · etiquette · gezond) + `llms.txt` verrijken | gemiddeld | laag | laag | ½ dag/artikel | concurrentie | ⬜ |
-| 15 | Retentie & off-page: nieuwsbrief/agenda-digest + ICS "toevoegen aan agenda"; digital-PR-plan (neutrale NK/BK/WK-databron; 20 thermen om agenda-link vragen) | hoog (LT) | gemiddeld | gemiddeld–hoog | doorlopend | critic | ⬜ |
+| 15 | Retentie & off-page: nieuwsbrief/agenda-digest + ICS "toevoegen aan agenda"; digital-PR-plan (neutrale NK/BK/WK-databron; 20 thermen om agenda-link vragen) | hoog (LT) | gemiddeld | gemiddeld–hoog | doorlopend | critic | ◐ ICS per event + webcal-feed + RSS ✅ `da732b0`; nieuwsbrief/PR ⬜ |
 
 ---
 
