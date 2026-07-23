@@ -2,6 +2,7 @@ import { site, COUNTRY_LABELS } from "@/lib/site";
 import { plainSummary } from "@/lib/text";
 import { isUpcoming } from "@/lib/dates";
 import type { Gids, OpgietEvent, Sauna } from "@/lib/content";
+import type { MerchProduct, MerchStatus } from "@/lib/merch";
 
 /** Maakt van een pad een absolute URL op basis van de site-URL. */
 export function absoluteUrl(pathOrUrl: string): string {
@@ -250,5 +251,32 @@ export function saunaSchema(sauna: Sauna) {
       name: naam,
       value: true,
     })),
+  };
+}
+
+/** Availability-mapping voor eigen merch: de productStatus is de bron van waarheid. */
+const MERCH_AVAILABILITY: Record<MerchStatus, string> = {
+  binnenkort: "https://schema.org/PreOrder",
+  leverbaar: "https://schema.org/InStock",
+  uitverkocht: "https://schema.org/OutOfStock",
+};
+
+/** schema.org Product JSON-LD voor eigen merch (bv. /saunahoed). */
+export function merchProductSchema(product: MerchProduct) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.naam,
+    description: plainSummary(product.body, 300),
+    ...(product.afbeeldingen.length > 0 ? { image: product.afbeeldingen.map(absoluteUrl) } : {}),
+    url: absoluteUrl(`/${product.slug}`),
+    brand: { "@type": "Brand", name: site.name },
+    offers: {
+      "@type": "Offer",
+      url: absoluteUrl(`/${product.slug}`),
+      price: product.prijs,
+      priceCurrency: "EUR",
+      availability: MERCH_AVAILABILITY[product.productStatus],
+    },
   };
 }
