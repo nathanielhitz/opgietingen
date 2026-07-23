@@ -33,12 +33,13 @@ export async function generateMetadata({
     title,
     description,
     alternates: { canonical: `/sauna/${sauna.slug}` },
+    // Bewust géén openGraph.images: die zou de dynamische per-sauna OG-image
+    // (opengraph-image.tsx, met naam/plaats op merk-achtergrond) overschrijven.
     openGraph: {
       type: "website",
       title,
       description,
       url: absoluteUrl(`/sauna/${sauna.slug}`),
-      ...(sauna.afbeelding ? { images: [{ url: absoluteUrl(sauna.afbeelding) }] } : {}),
     },
   };
 }

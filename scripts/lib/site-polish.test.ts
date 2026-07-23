@@ -8,7 +8,7 @@ import {
   parseFilters,
   validateDateRange,
 } from "../../src/lib/filters";
-import { eventSchema } from "../../src/lib/schema";
+import { eventSchema, eventItemListSchema } from "../../src/lib/schema";
 import type { OpgietEvent } from "../../src/lib/content";
 
 const event: OpgietEvent = {
@@ -136,6 +136,36 @@ test("eventSchema koppelt organizer aan de sauna en offers aan de ticketUrl", ()
   // "Vanaf € 49,50" bevat precies één bedrag → parsebaar
   assert.equal(offers.price, 49.5);
   assert.equal(offers.priceCurrency, "EUR");
+});
+
+test("eventSchema laat eventStatus en offers weg voor afgelopen events (V6)", () => {
+  const schema = eventSchema(event, { afgelopen: true }) as Record<string, unknown>;
+  assert.equal(schema.eventStatus, undefined);
+  assert.equal(schema.offers, undefined);
+  // De rest van de markup blijft intact
+  assert.equal(schema.name, "Midzomernacht Löyly");
+  assert.equal(schema.startDate, "2026-07-18");
+});
+
+test("eventItemListSchema geeft komende events een volledig Event-object (V3)", () => {
+  const lijst = eventItemListSchema([event], "Test", "2026-07-01") as {
+    itemListElement: Record<string, unknown>[];
+  };
+  const item = lijst.itemListElement[0].item as Record<string, unknown>;
+  assert.equal(item["@type"], "Event");
+  assert.equal(item.name, "Midzomernacht Löyly");
+  assert.ok(item.location, "verwacht location in het volledige Event-object");
+
+  // Afgelopen event (referentie ná de einddatum) → alleen url/naam
+  const archief = eventItemListSchema([event], "Test", "2026-08-01") as {
+    itemListElement: Record<string, unknown>[];
+  };
+  assert.equal(archief.itemListElement[0].item, undefined);
+  assert.equal(archief.itemListElement[0].name, "Midzomernacht Löyly");
+
+  // Zonder referentie: het oude, kale gedrag
+  const kaal = eventItemListSchema([event], "Test") as { itemListElement: Record<string, unknown>[] };
+  assert.equal(kaal.itemListElement[0].item, undefined);
 });
 
 test("parsePrijs parseert alleen ondubbelzinnige bedragen", () => {

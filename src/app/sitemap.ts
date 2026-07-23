@@ -10,6 +10,10 @@ import { isUpcoming, monthYearSlug, todayISO } from "@/lib/dates";
  *   bestaan (archief/editie-koppeling) maar worden niet actief aangeboden
  *   (SEO-PLAN §9). "Vandaag" is hier bewust build-tijd: de wekelijkse
  *   scraper-commit (en elke deploy) verst het venster.
+ * - lastModified alleen waar het klopt: lijst-/agendapagina's veranderen met
+ *   elke content-deploy (= build-datum), gidsen hebben `bijgewerkt`. Event- en
+ *   saunapagina's krijgen géén lastMod: we kennen hun echte wijzigingsdatum
+ *   niet, en een gefingeerde datum ondermijnt het signaal bij Google.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
   const u = (p: string) => `${site.url}${p}`;
@@ -17,13 +21,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const huidigeMaandStart = `${vandaag.slice(0, 7)}-01`;
 
   const statics: MetadataRoute.Sitemap = [
-    { url: u("/"), changeFrequency: "daily", priority: 1 },
-    { url: u("/agenda"), changeFrequency: "daily", priority: 0.9 },
-    { url: u("/opgietingen/vandaag"), changeFrequency: "daily", priority: 0.8 },
-    { url: u("/opgietingen/dit-weekend"), changeFrequency: "daily", priority: 0.8 },
+    { url: u("/"), lastModified: vandaag, changeFrequency: "daily", priority: 1 },
+    { url: u("/agenda"), lastModified: vandaag, changeFrequency: "daily", priority: 0.9 },
+    { url: u("/opgietingen/vandaag"), lastModified: vandaag, changeFrequency: "daily", priority: 0.8 },
+    { url: u("/opgietingen/dit-weekend"), lastModified: vandaag, changeFrequency: "daily", priority: 0.8 },
     { url: u("/wat-is-een-opgieting"), changeFrequency: "monthly", priority: 0.8 },
-    { url: u("/opgietweekenden"), changeFrequency: "weekly", priority: 0.7 },
-    { url: u("/aufguss-kampioenschappen"), changeFrequency: "weekly", priority: 0.7 },
+    { url: u("/opgietweekenden"), lastModified: vandaag, changeFrequency: "weekly", priority: 0.7 },
+    { url: u("/aufguss-kampioenschappen"), lastModified: vandaag, changeFrequency: "weekly", priority: 0.7 },
     { url: u("/saunas"), changeFrequency: "weekly", priority: 0.7 },
     { url: u("/gids"), changeFrequency: "weekly", priority: 0.6 },
     { url: u("/over"), changeFrequency: "yearly", priority: 0.3 },
@@ -52,6 +56,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Sauna-gebaseerd: een provinciepagina bestaat zolang er een sauna staat.
   const provinces = getProvincesWithSaunas().map((p) => ({
     url: u(`/opgietingen/${slugify(p.provincie)}`),
+    lastModified: vandaag,
     changeFrequency: "weekly" as const,
     priority: 0.7,
   }));
@@ -65,12 +70,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ),
   ].map((slug) => ({
     url: u(`/agenda/${slug}`),
+    lastModified: vandaag,
     changeFrequency: "weekly" as const,
     priority: 0.6,
   }));
 
   const gidsen = getAllGidsen().map((g) => ({
     url: u(`/gids/${g.slug}`),
+    ...(g.bijgewerkt ? { lastModified: g.bijgewerkt } : {}),
     changeFrequency: "monthly" as const,
     priority: 0.6,
   }));

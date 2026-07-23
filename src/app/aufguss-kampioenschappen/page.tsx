@@ -31,7 +31,7 @@ export default function KampioenschappenPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-      {komend.length > 0 && <JsonLd data={eventItemListSchema(komend, "Komende Aufguss-kampioenschappen")} />}
+      {komend.length > 0 && <JsonLd data={eventItemListSchema(komend, "Komende Aufguss-kampioenschappen", vandaag)} />}
       <Breadcrumb items={[{ href: "/agenda", label: "Agenda" }, { label: "Kampioenschappen" }]} />
 
       <header className="mt-4 max-w-2xl">

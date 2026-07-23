@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getAllEvents, getProvincesWithEvents, slugify } from "@/lib/content";
 import { parseFilters, filterEvents, validateDateRange, activeFilterCount, type SearchParams } from "@/lib/filters";
+import { todayISO } from "@/lib/dates";
 import { AgendaFilters, type ProvinceOption } from "@/components/AgendaFilters";
 import { AgendaEventCard } from "@/components/AgendaEventCard";
 import { Breadcrumb } from "@/components/Breadcrumb";
@@ -37,7 +38,7 @@ export default async function AgendaPage({
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
       {/* ItemList alleen op de ongefilterde weergave (de canonieke inhoud) */}
       {!filterError && activeFilterCount(filters) === 0 && (
-        <JsonLd data={eventItemListSchema(events, "Alle komende opgietingen in Nederland en België")} />
+        <JsonLd data={eventItemListSchema(events, "Alle komende opgietingen in Nederland en België", todayISO())} />
       )}
       <Breadcrumb items={[{ label: "Agenda" }]} />
 
@@ -80,6 +81,35 @@ export default async function AgendaPage({
           </Link>
         </div>
       )}
+
+      {/* Retentie: abonneerbare agenda (webcal/ICS) + RSS van nieuwe events */}
+      <div className="mt-10 rounded-[--radius-card] border border-sand bg-surface p-5">
+        <h2 className="font-display text-lg font-semibold text-ink">Agenda in je eigen kalender</h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          Abonneer je op de opgietagenda in Google Calendar, Apple Agenda of Outlook, dan verschijnen nieuwe
+          opgietingen er vanzelf bij. Of volg nieuwe events via RSS.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2 text-sm font-medium">
+          <a
+            href={`${site.url.replace(/^https?:\/\//, "webcal://")}/agenda.ics`}
+            className="rounded-full border border-sand bg-cream px-4 py-2 text-ink-soft transition-colors hover:border-ember hover:text-ember"
+          >
+            Abonneer in je kalender-app
+          </a>
+          <a
+            href="/agenda.ics"
+            className="rounded-full border border-sand bg-cream px-4 py-2 text-ink-soft transition-colors hover:border-ember hover:text-ember"
+          >
+            Download .ics
+          </a>
+          <a
+            href="/feed.xml"
+            className="rounded-full border border-sand bg-cream px-4 py-2 text-ink-soft transition-colors hover:border-ember hover:text-ember"
+          >
+            RSS-feed
+          </a>
+        </div>
+      </div>
 
       <p className="mt-10 text-xs text-ink-faint">
         Tip: sla een gefilterde weergave op door de URL te bewaren, filters staan in de link. Meer over {site.name} lees je{" "}

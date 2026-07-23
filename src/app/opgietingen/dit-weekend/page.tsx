@@ -33,7 +33,7 @@ export default function DitWeekendPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-      {events.length > 0 && <JsonLd data={eventItemListSchema(events, "Opgietingen dit weekend")} />}
+      {events.length > 0 && <JsonLd data={eventItemListSchema(events, "Opgietingen dit weekend", vandaag)} />}
       <Breadcrumb items={[{ href: "/agenda", label: "Agenda" }, { label: "Dit weekend" }]} />
 
       <header className="mt-4 max-w-2xl">

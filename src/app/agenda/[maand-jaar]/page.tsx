@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllEvents } from "@/lib/content";
-import { monthYearSlug, monthYearLabel, parseMonthYearSlug } from "@/lib/dates";
+import { monthYearSlug, monthYearLabel, parseMonthYearSlug, todayISO } from "@/lib/dates";
 import { eventItemListSchema } from "@/lib/schema";
 import { JsonLd } from "@/components/JsonLd";
 import { EventCard } from "@/components/EventCard";
@@ -65,7 +65,9 @@ export default async function MonthPage({ params }: { params: Params }) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-      <JsonLd data={eventItemListSchema(events, `Opgietingen in ${label}`)} />
+      {/* Build-tijd "vandaag" is hier bewust: de wekelijkse scraper-deploy verst
+          het venster, en alleen komende events krijgen volledige Event-markup. */}
+      <JsonLd data={eventItemListSchema(events, `Opgietingen in ${label}`, todayISO())} />
       <Breadcrumb items={[{ href: "/agenda", label: "Agenda" }, { label }]} />
 
       <header className="mt-4 max-w-2xl">

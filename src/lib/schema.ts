@@ -1,5 +1,6 @@
 import { site, COUNTRY_LABELS } from "@/lib/site";
 import { plainSummary } from "@/lib/text";
+import { isUpcoming } from "@/lib/dates";
 import type { Gids, OpgietEvent, Sauna } from "@/lib/content";
 
 /** Maakt van een pad een absolute URL op basis van de site-URL. */
@@ -84,17 +85,20 @@ function placeSchema(sauna: Sauna) {
   };
 }
 
-/** schema.org Event JSON-LD voor een event-detailpagina. */
-export function eventSchema(event: OpgietEvent) {
+/**
+ * Het kale Event-object (zonder @context), herbruikbaar in detail-schema én
+ * lijst-ItemList. Voor afgelopen events vervallen `eventStatus:EventScheduled`
+ * en de `InStock`-offer: die claims kloppen dan niet meer (audit V6).
+ */
+function eventJson(event: OpgietEvent, opts: { afgelopen?: boolean } = {}) {
   const { sauna } = event;
   const prijs = parsePrijs(event.prijsIndicatie);
   return {
-    "@context": "https://schema.org",
     "@type": "Event",
     name: event.titel,
     startDate: event.startDatum,
     endDate: event.eindDatum ?? event.startDatum,
-    eventStatus: "https://schema.org/EventScheduled",
+    ...(opts.afgelopen ? {} : { eventStatus: "https://schema.org/EventScheduled" }),
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     description: plainSummary(event.body, 300),
     ...(event.afbeelding ? { image: [absoluteUrl(event.afbeelding)] } : {}),
@@ -105,7 +109,7 @@ export function eventSchema(event: OpgietEvent) {
       name: sauna.naam,
       url: absoluteUrl(`/sauna/${sauna.slug}`),
     },
-    ...(event.ticketUrl
+    ...(event.ticketUrl && !opts.afgelopen
       ? {
           offers: {
             "@type": "Offer",
@@ -118,8 +122,21 @@ export function eventSchema(event: OpgietEvent) {
   };
 }
 
-/** schema.org ItemList JSON-LD voor lijstpagina's (agenda/maand/provincie). */
-export function eventItemListSchema(events: OpgietEvent[], name: string) {
+/** schema.org Event JSON-LD voor een event-detailpagina. */
+export function eventSchema(event: OpgietEvent, opts: { afgelopen?: boolean } = {}) {
+  return {
+    "@context": "https://schema.org",
+    ...eventJson(event, opts),
+  };
+}
+
+/**
+ * schema.org ItemList JSON-LD voor lijstpagina's (agenda/maand/provincie).
+ * Met een `vandaag`-referentie krijgen komende events het volledige
+ * Event-object mee (audit V3: rich-result-kandidaat op de SEO-lijstpagina's);
+ * afgelopen events (maand-archief) houden de kale url/naam-verwijzing.
+ */
+export function eventItemListSchema(events: OpgietEvent[], name: string, vandaag?: string) {
   return {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -128,8 +145,9 @@ export function eventItemListSchema(events: OpgietEvent[], name: string) {
     itemListElement: events.map((e, i) => ({
       "@type": "ListItem",
       position: i + 1,
-      url: absoluteUrl(`/event/${e.slug}`),
-      name: e.titel,
+      ...(vandaag && isUpcoming(e, vandaag)
+        ? { item: eventJson(e) }
+        : { url: absoluteUrl(`/event/${e.slug}`), name: e.titel }),
     })),
   };
 }

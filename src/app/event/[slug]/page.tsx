@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllEvents, getEventBySlug, findNextEdition, getRelatedEvents, slugify } from "@/lib/content";
 import { COUNTRY_LABELS } from "@/lib/site";
-import { formatDateRange, isUpcoming, todayISO, monthYearSlug, monthYearLabel } from "@/lib/dates";
+import { formatDateRange, isUpcoming, todayISO, monthYearSlug, monthYearLabel, addDaysISO } from "@/lib/dates";
 import { plainSummary } from "@/lib/text";
 import { eventSchema, absoluteUrl } from "@/lib/schema";
 import { JsonLd } from "@/components/JsonLd";
@@ -40,16 +40,26 @@ export async function generateMetadata({
       ? samenvatting
       : `${event.titel} bij ${event.sauna.naam} in ${event.sauna.plaats} op ${formatDateRange(event.startDatum, event.eindDatum)}. Bekijk tijden, programma en praktische informatie.`;
   const title = `${event.titel} bij ${event.sauna.naam}`;
+
+  // Index-hygiëne (audit V6): ruim afgelopen events krijgen noindex. Een
+  // grace-periode van 90 dagen behoudt de "is geweest"-pagina met
+  // editie-doorverwijzing; daarna is het crawl-ruis die wekelijks aangroeit.
+  const laatsteDag = event.eindDatum ?? event.startDatum;
+  const ruimAfgelopen = laatsteDag < addDaysISO(todayISO(), -90);
+
   return {
     title,
     description,
     alternates: { canonical: `/event/${event.slug}` },
+    ...(ruimAfgelopen ? { robots: { index: false, follow: true } } : {}),
+    // Bewust géén openGraph.images: die zou de dynamische per-event OG-image
+    // (opengraph-image.tsx, met titel/datum/sauna) overschrijven met een kale
+    // saunafoto die tientallen events delen.
     openGraph: {
       type: "article",
       title,
       description,
       url: absoluteUrl(`/event/${event.slug}`),
-      ...(event.afbeelding ? { images: [{ url: absoluteUrl(event.afbeelding) }] } : {}),
     },
   };
 }
@@ -72,7 +82,7 @@ export default async function EventPage({
 
   return (
     <article className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
-      <JsonLd data={eventSchema(event)} />
+      <JsonLd data={eventSchema(event, { afgelopen })} />
 
       <Breadcrumb
         items={[
@@ -165,6 +175,12 @@ export default async function EventPage({
               ) : (
                 <>
                   <AffiliateButton slug={event.slug} label={`Bekijk bij ${sauna.naam}`} />
+                  <a
+                    href={`/event/${event.slug}/ics`}
+                    className="mt-3 flex min-h-11 w-full items-center justify-center rounded-lg border border-sand bg-surface px-4 text-sm font-medium text-ink-soft transition-colors hover:border-ember hover:text-ember"
+                  >
+                    Zet in je agenda (.ics)
+                  </a>
                   <p className="mt-2 text-center text-xs text-ink-faint">Je gaat naar de website van de sauna.</p>
                   <p className="mt-2 text-center text-xs text-ink-faint">
                     Programma en tijden kunnen wijzigen. Controleer de actuele informatie op de website van de sauna.

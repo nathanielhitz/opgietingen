@@ -32,7 +32,7 @@ export default function VandaagPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-      {events.length > 0 && <JsonLd data={eventItemListSchema(events, "Opgietingen vandaag")} />}
+      {events.length > 0 && <JsonLd data={eventItemListSchema(events, "Opgietingen vandaag", vandaag)} />}
       <Breadcrumb items={[{ href: "/agenda", label: "Agenda" }, { label: "Vandaag" }]} />
 
       <header className="mt-4 max-w-2xl">

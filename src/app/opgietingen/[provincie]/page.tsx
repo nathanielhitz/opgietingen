@@ -9,7 +9,7 @@ import {
   slugify,
 } from "@/lib/content";
 import { COUNTRY_LABELS } from "@/lib/site";
-import { isUpcoming } from "@/lib/dates";
+import { isUpcoming, todayISO } from "@/lib/dates";
 import { eventItemListSchema } from "@/lib/schema";
 import { JsonLd } from "@/components/JsonLd";
 import { EventCard } from "@/components/EventCard";
@@ -76,7 +76,7 @@ export default async function ProvincePage({ params }: { params: Params }) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-      {events.length > 0 && <JsonLd data={eventItemListSchema(events, `Opgietingen in ${found.provincie}`)} />}
+      {events.length > 0 && <JsonLd data={eventItemListSchema(events, `Opgietingen in ${found.provincie}`, todayISO())} />}
       <Breadcrumb items={[{ href: "/agenda", label: "Agenda" }, { label: found.provincie }]} />
 
       <header className="mt-4 max-w-2xl">
