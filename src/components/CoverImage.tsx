@@ -9,6 +9,10 @@ import Image from "next/image";
   fit="contain" toont de foto volledig op een witte achtergrond — voor
   packshots (bol.com-productfoto's zijn vaak extreem staand en verliezen bij
   croppen precies het product zelf).
+
+  fallbackLogo (+ fallbackLogoDonker voor witte logovarianten) toont het
+  sauna-logo wanneer een foto ontbreekt; pas als ook dat er niet is, valt de
+  kaart terug op de gradient met stoomwolkje.
 */
 export function CoverImage({
   src,
@@ -16,17 +20,22 @@ export function CoverImage({
   className = "",
   sizes,
   fit = "cover",
+  fallbackLogo,
+  fallbackLogoDonker = false,
 }: {
   src?: string;
   alt: string;
   className?: string;
   sizes?: string;
   fit?: "cover" | "contain";
+  fallbackLogo?: string;
+  fallbackLogoDonker?: boolean;
 }) {
   const contain = fit === "contain";
+  const logoOpLichteTegel = !src && fallbackLogo && !fallbackLogoDonker;
   return (
     <div
-      className={`relative overflow-hidden ${contain ? "bg-white" : "bg-wood-dark warmth-gradient"} ${className}`}
+      className={`relative overflow-hidden ${contain || logoOpLichteTegel ? "bg-white" : "bg-wood-dark warmth-gradient"} ${className}`}
     >
       {src ? (
         <Image
@@ -40,6 +49,10 @@ export function CoverImage({
               : "object-cover transition-transform duration-500 group-hover:scale-105"
           }
         />
+      ) : fallbackLogo ? (
+        // unoptimized: logo's zijn kleine SVG's/PNG's; de optimizer weigert SVG.
+        // Padding in % zodat het logo ook in mini-thumbnails lucht houdt.
+        <Image src={fallbackLogo} alt={alt} fill unoptimized className="object-contain p-[12%]" />
       ) : (
         <div aria-hidden className="grid h-full w-full place-items-center text-ember-soft/40">
           <svg viewBox="0 0 24 24" className="h-10 w-10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">

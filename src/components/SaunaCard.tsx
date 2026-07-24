@@ -10,7 +10,14 @@ export function SaunaCard({ sauna, eventCount }: { sauna: Sauna; eventCount?: nu
       className="group flex flex-col overflow-hidden rounded-[--radius-card] border border-sand bg-surface shadow-sm transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
     >
       <div className="relative">
-        <CoverImage src={sauna.afbeelding} alt={sauna.naam} className="aspect-[16/10]" sizes="(max-width: 640px) 100vw, 400px" />
+        <CoverImage
+          src={sauna.afbeelding}
+          alt={sauna.naam}
+          fallbackLogo={sauna.logo}
+          fallbackLogoDonker={sauna.logoAchtergrond === "donker"}
+          className="aspect-[16/10]"
+          sizes="(max-width: 640px) 100vw, 400px"
+        />
         {sauna.sponsored && (
           <span className="absolute left-3 top-3 rounded-full bg-cream/90 px-2.5 py-1 text-xs font-semibold text-ink-soft shadow-sm">
             Uitgelicht

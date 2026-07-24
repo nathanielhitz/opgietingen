@@ -14,7 +14,14 @@ export function EventCard({ event }: { event: OpgietEvent }) {
       className="group flex flex-col overflow-hidden rounded-[--radius-card] border border-sand bg-surface shadow-sm transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
     >
       <div className="relative">
-        <CoverImage src={event.afbeelding} alt={event.titel} className="aspect-[16/10]" sizes="(max-width: 640px) 100vw, 400px" />
+        <CoverImage
+          src={event.afbeelding}
+          alt={event.titel}
+          fallbackLogo={sauna.logo}
+          fallbackLogoDonker={sauna.logoAchtergrond === "donker"}
+          className="aspect-[16/10]"
+          sizes="(max-width: 640px) 100vw, 400px"
+        />
         <div className="absolute left-3 top-3 flex gap-2">
           <TypeBadge type={event.type} className="shadow-sm" />
           {sauna.sponsored && (

@@ -15,6 +15,8 @@ export function AgendaEventCard({ event }: { event: OpgietEvent }) {
       <CoverImage
         src={event.afbeelding}
         alt={`${event.titel} bij ${sauna.naam}`}
+        fallbackLogo={sauna.logo}
+        fallbackLogoDonker={sauna.logoAchtergrond === "donker"}
         className="row-span-3 h-full min-h-28 sm:row-span-1 sm:min-h-32"
         sizes="(max-width: 639px) 5.5rem, 8rem"
       />

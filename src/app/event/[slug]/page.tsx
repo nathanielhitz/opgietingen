@@ -123,7 +123,14 @@ export default async function EventPage({
 
       {/* Hero */}
       <div className="relative mt-4 overflow-hidden rounded-[--radius-card]">
-        <CoverImage src={event.afbeelding} alt={event.titel} className="aspect-[16/9] sm:aspect-[2/1]" sizes="(max-width: 896px) 100vw, 896px" />
+        <CoverImage
+          src={event.afbeelding}
+          alt={event.titel}
+          fallbackLogo={event.sauna.logo}
+          fallbackLogoDonker={event.sauna.logoAchtergrond === "donker"}
+          className="aspect-[16/9] sm:aspect-[2/1]"
+          sizes="(max-width: 896px) 100vw, 896px"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-wood-dark/80 via-wood-dark/20 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-7">
           <div className="flex flex-wrap items-center gap-2">
@@ -194,7 +201,13 @@ export default async function EventPage({
             href={`/sauna/${sauna.slug}`}
             className="mt-4 flex items-center gap-3 rounded-[--radius-card] border border-sand bg-surface p-4 transition-shadow hover:shadow-md"
           >
-            <CoverImage src={sauna.afbeelding} alt={sauna.naam} className="h-14 w-14 flex-none rounded-lg" />
+            <CoverImage
+              src={sauna.afbeelding}
+              alt={sauna.naam}
+              fallbackLogo={sauna.logo}
+              fallbackLogoDonker={sauna.logoAchtergrond === "donker"}
+              className="h-14 w-14 flex-none rounded-lg"
+            />
             <span className="min-w-0">
               <span className="block text-xs text-ink-faint">Over de sauna</span>
               <span className="block truncate font-medium text-ink">{sauna.naam}</span>

@@ -39,6 +39,10 @@ export interface Sauna {
   affiliateUrl: string;
   sponsored: boolean;
   afbeelding?: string;
+  /** Logo van de sauna (public/images/logos/), gebruikt als fallback wanneer een foto ontbreekt. */
+  logo?: string;
+  /** Achtergrond waarop het logo leesbaar is; witte logovarianten hebben "donker" nodig. */
+  logoAchtergrond?: "licht" | "donker";
   /**
    * Vaste opgiettijden zoals vermeld op de sauna-website (uniek datapunt,
    * audit §6 kans 10). Alleen opnemen wat daar letterlijk staat.
@@ -165,6 +169,8 @@ export const getAllSaunas = cache((): Sauna[] => {
       affiliateUrl: data.affiliateUrl as string,
       sponsored: Boolean(data.sponsored),
       afbeelding: data.afbeelding as string | undefined,
+      logo: data.logo as string | undefined,
+      logoAchtergrond: data.logoAchtergrond as "licht" | "donker" | undefined,
       opgietRooster: parseOpgietRooster(data.opgietRooster),
       roosterGecheckt: toISODate(data.roosterGecheckt),
       body,

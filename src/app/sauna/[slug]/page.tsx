@@ -64,7 +64,14 @@ export default async function SaunaPage({
 
       {/* Hero */}
       <div className="relative mt-4 overflow-hidden rounded-[--radius-card]">
-        <CoverImage src={sauna.afbeelding} alt={sauna.naam} className="aspect-[16/9] sm:aspect-[5/2]" sizes="(max-width: 1024px) 100vw, 1024px" />
+        <CoverImage
+          src={sauna.afbeelding}
+          alt={sauna.naam}
+          fallbackLogo={sauna.logo}
+          fallbackLogoDonker={sauna.logoAchtergrond === "donker"}
+          className="aspect-[16/9] sm:aspect-[5/2]"
+          sizes="(max-width: 1024px) 100vw, 1024px"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-wood-dark/80 via-wood-dark/20 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-7">
           {sauna.sponsored && (
