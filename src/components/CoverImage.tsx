@@ -4,27 +4,41 @@ import Image from "next/image";
   Coverafbeelding voor event- en saunakaarten. Echte foto's gaan via next/image
   (automatische WebP + juiste formaten); zonder afbeelding valt de kaart terug
   op een warme gradient met stoomwolkje.
+
+  fit="cover" (default) vult het kader en cropt — goed voor sfeerfoto's.
+  fit="contain" toont de foto volledig op een witte achtergrond — voor
+  packshots (bol.com-productfoto's zijn vaak extreem staand en verliezen bij
+  croppen precies het product zelf).
 */
 export function CoverImage({
   src,
   alt,
   className = "",
   sizes,
+  fit = "cover",
 }: {
   src?: string;
   alt: string;
   className?: string;
   sizes?: string;
+  fit?: "cover" | "contain";
 }) {
+  const contain = fit === "contain";
   return (
-    <div className={`relative overflow-hidden bg-wood-dark warmth-gradient ${className}`}>
+    <div
+      className={`relative overflow-hidden ${contain ? "bg-white" : "bg-wood-dark warmth-gradient"} ${className}`}
+    >
       {src ? (
         <Image
           src={src}
           alt={alt}
           fill
           sizes={sizes ?? "100vw"}
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          className={
+            contain
+              ? "object-contain p-3"
+              : "object-cover transition-transform duration-500 group-hover:scale-105"
+          }
         />
       ) : (
         <div aria-hidden className="grid h-full w-full place-items-center text-ember-soft/40">

@@ -25,7 +25,8 @@ export function ProductCard({ product }: { product: GidsProduct }) {
       <CoverImage
         src={product.afbeelding}
         alt={product.naam}
-        className="aspect-[4/3]"
+        fit="contain"
+        className="aspect-square"
         sizes="(max-width: 640px) 100vw, 320px"
       />
       <div className="flex flex-1 flex-col p-4">
