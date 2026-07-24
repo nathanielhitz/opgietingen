@@ -74,10 +74,25 @@ export default async function SaunaPage({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-wood-dark/80 via-wood-dark/20 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-7">
-          {sauna.sponsored && (
-            <span className="mb-3 inline-block rounded-full bg-cream/90 px-2.5 py-1 text-xs font-semibold text-ink-soft">
-              Uitgelicht
-            </span>
+          {((sauna.logo && sauna.afbeelding) || sauna.sponsored) && (
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              {/* Logo-chip alleen naast een echte foto; zonder foto is het logo al het hoofdbeeld. */}
+              {sauna.logo && sauna.afbeelding && (
+                <span
+                  className={`inline-flex h-11 items-center rounded-lg px-3 shadow-sm sm:h-12 ${
+                    sauna.logoAchtergrond === "donker" ? "bg-wood-dark/90" : "bg-white/95"
+                  }`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element -- logo's hebben per sauna andere verhoudingen; next/image vereist vaste maten */}
+                  <img src={sauna.logo} alt="" className="h-6 w-auto max-w-44 object-contain sm:h-7" />
+                </span>
+              )}
+              {sauna.sponsored && (
+                <span className="inline-block rounded-full bg-cream/90 px-2.5 py-1 text-xs font-semibold text-ink-soft">
+                  Uitgelicht
+                </span>
+              )}
+            </div>
           )}
           <h1 className="font-display text-2xl font-semibold text-white drop-shadow-sm sm:text-4xl">{sauna.naam}</h1>
           <p className="mt-1 text-sm text-cream/90 sm:text-base">
