@@ -11,46 +11,12 @@
   ook al-geverifieerde bronnen opnieuw te controleren)
 */
 import { readBronnen, writeBronnen, type Bron } from "./lib/content";
-import { fetchUrl, getRobots, isPathAllowed, sleep, REQUEST_DELAY_MS } from "./lib/net";
+import { fetchUrl, getRobots, isPathAllowed, sleep, REQUEST_DELAY_MS, type FetchResult } from "./lib/net";
+import { scoreUrl, type Scored } from "./lib/discovery";
 import { firecrawlFetchMarkdown } from "../src/lib/scraper";
 
-const KEYWORD_SCORE: Array<[RegExp, number]> = [
-  [/agenda/i, 50],
-  [/aufguss/i, 40],
-  [/opgiet/i, 40],
-  [/event/i, 20],
-  [/programma/i, 20],
-];
-
 const CONTENT_HINT = /(aufguss|opgiet|agenda)/i;
-// Losse artikelen/nieuws/overige pagina's zijn geen agenda-overzicht → uitsluiten.
-const DISQUALIFY = /(^|\/)(blog|nieuws|news|artikel|pers|werkenbij|vacature|sponsor|faq|contact|over|arrangement|meeting|zakelijk|vergader|cadeau|webshop)/i;
 const TODAY = new Date().toISOString().slice(0, 10);
-
-interface Scored {
-  url: string;
-  score: number;
-  depth: number;
-}
-
-function scoreUrl(url: string, matchToken?: string): Scored | null {
-  let path: string;
-  try {
-    path = new URL(url).pathname.toLowerCase();
-  } catch {
-    return null;
-  }
-  if (DISQUALIFY.test(path)) return null;
-
-  let score = 0;
-  for (const [re, pts] of KEYWORD_SCORE) if (re.test(path)) score += pts;
-  if (matchToken && path.includes(matchToken.toLowerCase())) score += 100;
-  if (score === 0) return null;
-
-  const depth = path.split("/").filter(Boolean).length;
-  // Voorkeur voor ondiepe sectiepagina's boven diepe URLs.
-  return { url, score: score - Math.max(0, depth - 1) * 10, depth };
-}
 
 function sameHost(a: string, b: string): boolean {
   try {
@@ -122,25 +88,66 @@ async function resolveAgenda(bron: Bron): Promise<Resolution> {
   };
 
   // 1. Probeer de opgegeven URL + bepaal of de host überhaupt bereikbaar is.
-  const direct = await fetchUrl(bron.agendaUrl);
+  // robots.txt geldt óók voor onze eigen directe fetches, niet alleen voor
+  // discovery-kandidaten.
+  const geblokkeerd: FetchResult = {
+    ok: false,
+    status: 0,
+    finalUrl: bron.agendaUrl,
+    body: "",
+    error: "geblokkeerd door robots.txt",
+  };
+  const direct = check(bron.agendaUrl) ? await fetchUrl(bron.agendaUrl) : geblokkeerd;
   const isOrigin = bron.agendaUrl === origin || bron.agendaUrl === `${origin}/`;
-  const rootRes = isOrigin ? direct : await fetchUrl(origin);
-  const hostReachable = direct.ok || rootRes.ok;
+  const rootRes = isOrigin ? direct : check(`${origin}/`) ? await fetchUrl(origin) : geblokkeerd;
 
+  if (!check(bron.agendaUrl) && !check(`${origin}/`)) {
+    return {
+      status: "geen-agenda",
+      url: bron.agendaUrl,
+      notitie: "robots.txt blokkeert de agenda-URL en de homepage — niet scrapen; handmatig controleren.",
+    };
+  }
+
+  const hostReachable = direct.ok || rootRes.ok;
   if (!hostReachable) {
     const reason = direct.error || rootRes.error || `HTTP ${direct.status}`;
     return { status: "kapot", url: bron.agendaUrl, notitie: `Host onbereikbaar: ${reason}` };
   }
 
+  // Gecureerde vaste URL: alleen bereikbaarheid + inhoud checken, nooit
+  // herschrijven of opnieuw ontdekken (voorkomt churn zoals lago-brugge →
+  // valentijn-2026).
+  if (bron.agendaUrlVast) {
+    if (direct.ok && CONTENT_HINT.test(direct.body)) {
+      return { status: "actief", url: bron.agendaUrl, notitie: "Bevestigd (vaste URL)." };
+    }
+    if (check(bron.agendaUrl)) {
+      const md = await firecrawlFetchMarkdown(bron.agendaUrl);
+      if (md && CONTENT_HINT.test(md)) {
+        return { status: "actief", url: bron.agendaUrl, notitie: "Bevestigd via Firecrawl (vaste URL)." };
+      }
+    }
+    return {
+      status: "geen-agenda",
+      url: bron.agendaUrl,
+      notitie: `Vaste URL gaf HTTP ${direct.status || "fout"} of geen agenda-inhoud — handmatig controleren.`,
+    };
+  }
+
   // 2. Verzamel kandidaten (opgegeven URL + sitemap + homepage-links).
   const raw = new Set<string>();
-  if (direct.ok) raw.add(direct.finalUrl);
+  // Redirect naar een andere host is geen geldige kandidaat (geparkeerde/
+  // overgenomen domeinen zouden anders als "actief" doorlekken).
+  if (direct.ok && sameHost(direct.finalUrl, origin)) raw.add(direct.finalUrl);
   for (const u of await candidatesFromSitemaps(origin)) raw.add(u);
-  for (const u of await candidatesFromRoot(origin)) raw.add(u);
+  if (check(`${origin}/`)) {
+    for (const u of await candidatesFromRoot(origin)) raw.add(u);
+  }
 
   const scored = [...raw]
     .filter(check)
-    .map((u) => scoreUrl(u, bron.matchToken))
+    .map((u) => scoreUrl(u, bron.matchToken, bron.agendaUrl))
     .filter((c): c is Scored => c !== null)
     .sort((a, b) => b.score - a.score || a.depth - b.depth || a.url.length - b.url.length)
     .slice(0, 6);
@@ -168,12 +175,13 @@ async function resolveAgenda(bron: Bron): Promise<Resolution> {
     }
   }
 
-  // 4. Host is bereikbaar, maar geen aparte agendapagina gevonden op statische HTML.
-  const fallbackUrl = direct.ok ? direct.finalUrl : rootRes.ok ? rootRes.finalUrl : bron.agendaUrl;
+  // 4. Host is bereikbaar, maar geen aparte agendapagina gevonden op statische
+  // HTML. De opgegeven URL blijft staan: één transiënte fout (500/timeout/
+  // Firecrawl-quota) mag een gecureerde URL niet permanent vernietigen.
   const detail = direct.ok ? "" : ` (opgegeven pad gaf HTTP ${direct.status})`;
   return {
     status: "geen-agenda",
-    url: fallbackUrl,
+    url: bron.agendaUrl,
     notitie: `Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd)${detail} — handmatig controleren.`,
   };
 }
@@ -199,7 +207,11 @@ async function main() {
     const result = await resolveAgenda(bron);
     bron.status = result.status;
     bron.agendaUrl = result.url;
-    bron.notities = result.notitie;
+    // Curatienotities niet wegpoetsen: bij een simpele herbevestiging blijft
+    // een bestaande (handmatige) notitie staan.
+    if (!/^Bevestigd/.test(result.notitie) || !bron.notities) {
+      bron.notities = result.notitie;
+    }
     bron.laatstGecontroleerd = TODAY;
     console.log(`${result.status.toUpperCase()} → ${result.url}\n  ${result.notitie}`);
     await sleep(REQUEST_DELAY_MS);

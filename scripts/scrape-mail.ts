@@ -15,6 +15,9 @@
   Env: MAIL_IMAP_HOST/USER/PASS (+ optioneel PORT/TLS/MAILBOX), ANTHROPIC_API_KEY,
        SCRAPE_AUTOPUBLISH=true (auto-publiceren; standaard uit).
 */
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import {
   readBronnen,
   existingEventKeys,
@@ -28,7 +31,8 @@ import {
 } from "./lib/content";
 import { evaluateEvent } from "./lib/quality-gate";
 import { extractEventsFromText, type ScrapeOutcome, type ScrapedEvent } from "../src/lib/scraper";
-import { fetchUnseenMail, readMailConfig, type MailMessage } from "./lib/mail";
+import { fetchUnseenMail, markMailSeen, readMailConfig, type MailConfig, type MailMessage } from "./lib/mail";
+import { todayISOInTimeZone } from "../src/lib/dates";
 
 function argValue(name: string): string | undefined {
   const i = process.argv.indexOf(name);
@@ -36,10 +40,30 @@ function argValue(name: string): string | undefined {
 }
 
 const DRY_RUN = process.argv.includes("--dry-run");
-const LIMIT = argValue("--limit") ? Number(argValue("--limit")) : Infinity;
-const REF_YEAR = new Date().getUTCFullYear();
-const TODAY = new Date().toISOString().slice(0, 10);
-const AUTO_PUBLISH = process.env.SCRAPE_AUTOPUBLISH === "true";
+// Dry-run schrijft naar een tijdelijke map (zelfde reden als scrape-events:
+// mock-events mogen nooit in content/events/ belanden).
+const DOEL_DIR = process.argv.includes("--dry-run")
+  ? fs.mkdtempSync(path.join(os.tmpdir(), "opgietingen-mail-dry-run-"))
+  : undefined;
+const rawLimit = Number(argValue("--limit"));
+const LIMIT = Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : Infinity;
+const TODAY = todayISOInTimeZone();
+
+/**
+ * Alleen een ticket-URL uit de mail accepteren wanneer die naar het domein van
+ * de gematchte bron wijst: een From-header is spoofbaar, en een vreemde URL
+ * zou via /uit/[slug] een open redirect onder onze naam worden.
+ */
+function veiligeTicketUrl(ticketUrl: string | undefined, website: string | undefined): string | undefined {
+  if (!ticketUrl || !website) return website;
+  try {
+    const ticketHost = new URL(ticketUrl).hostname.replace(/^www\./, "");
+    const bronHost = new URL(website).hostname.replace(/^www\./, "");
+    return ticketHost === bronHost || ticketHost.endsWith(`.${bronHost}`) ? ticketUrl : website;
+  } catch {
+    return website;
+  }
+}
 
 /** Mock-inbox voor --dry-run: één herkende afzender, één onbekende. */
 function mockMail(): MailMessage[] {
@@ -81,6 +105,7 @@ async function main() {
   let skipped = 0;
 
   let mails: MailMessage[];
+  let mailConfig: MailConfig | null = null;
   if (DRY_RUN) {
     mails = mockMail().slice(0, LIMIT === Infinity ? undefined : LIMIT);
   } else if (!process.env.MAIL_IMAP_HOST) {
@@ -89,7 +114,10 @@ async function main() {
     return;
   } else {
     try {
-      mails = await fetchUnseenMail(readMailConfig(), { limit: LIMIT });
+      // \Seen pas ná succesvolle verwerking zetten: markeren bij het ophalen
+      // betekent definitief mailverlies wanneer de extractie daarna crasht.
+      mailConfig = readMailConfig();
+      mails = await fetchUnseenMail(mailConfig, { limit: LIMIT, markSeen: false });
     } catch (err) {
       // Verbindings-/inboxfout (timeout, firewall, verkeerde poort, auth) mag de
       // wekelijkse workflow niet blokkeren: de website-scrape-resultaten moeten nog
@@ -104,6 +132,7 @@ async function main() {
     `Mail-scraper gestart${DRY_RUN ? " (DRY-RUN)" : ""}. ${mails.length} ongelezen bericht(en).\n`,
   );
 
+  const verwerkteUids: number[] = [];
   for (const mail of mails) {
     const bron: Bron | undefined = matchBronBySender(data.bronnen, mail.from);
     // Geen match → afzender-slug als saunaSlug; de poort keurt dit af (onbekende
@@ -119,7 +148,7 @@ async function main() {
     try {
       outcome = DRY_RUN
         ? mockOutcome(mail)
-        : await extractEventsFromText(mail.markdown, { saunaNaam: bron?.naam ?? mail.from, land, jaar: REF_YEAR });
+        : await extractEventsFromText(mail.markdown, { saunaNaam: bron?.naam ?? mail.from, land, vandaag: TODAY });
     } catch (err) {
       console.log(`  ✗ Fout: ${err instanceof Error ? err.message : String(err)}\n`);
       continue;
@@ -141,12 +170,18 @@ async function main() {
         { saunaSlugs, today: TODAY },
       );
 
-      const status: "concept" | "gepubliceerd" =
-        verdict.passed && AUTO_PUBLISH ? "gepubliceerd" : "concept";
+      // Mail-events publiceren NOOIT automatisch: een From-header is spoofbaar
+      // (geen DKIM/DMARC-verificatie in deze laag), dus iedereen zou anders
+      // onder de naam van een echte sauna events live kunnen zetten.
+      const status: "concept" | "gepubliceerd" = "concept";
 
       // Zonder bron-match de afzender in de keurnotitie zetten voor handmatige review.
       const redenen = [...verdict.redenen];
-      if (!bron) redenen.unshift(`nieuwsbrief van onbekende afzender: ${mail.from} — wijs handmatig een sauna toe`);
+      if (verdict.passed) {
+        redenen.push("nieuwsbrief-event: afzender is niet technisch verifieerbaar (spoofing-risico) — handmatig beoordelen en publiceren");
+      }
+      // Alleen het domein noteren, geen volledig e-mailadres in de repo.
+      if (!bron) redenen.unshift(`nieuwsbrief van onbekende afzender (@${mail.from.split("@")[1] ?? "?"}) — wijs handmatig een sauna toe`);
 
       const newEvent: NewEvent = {
         saunaSlug,
@@ -156,14 +191,14 @@ async function main() {
         eindDatum: ev.eindDatum,
         tijden: ev.tijden,
         prijsIndicatie: ev.prijsIndicatie,
-        ticketUrl: ev.ticketUrl ?? bron?.website,
+        ticketUrl: veiligeTicketUrl(ev.ticketUrl, bron?.website),
         beschrijving: ev.beschrijving,
         status,
         ...(redenen.length ? { keurNotitie: redenen.join("; ") } : {}),
       };
 
-      const path = writeEventMdx(newEvent);
-      if (path) {
+      const mdxPad = writeEventMdx(newEvent, DOEL_DIR);
+      if (mdxPad) {
         seen.add(key);
         written++;
         console.log(
@@ -174,7 +209,20 @@ async function main() {
         console.log(`  = bestand bestaat al voor: ${ev.titel}`);
       }
     }
+    // Deze mail is volledig verwerkt (ook 0 events telt) → mag als gelezen.
+    verwerkteUids.push(mail.uid);
     console.log("");
+  }
+
+  if (!DRY_RUN && mailConfig && verwerkteUids.length) {
+    try {
+      await markMailSeen(mailConfig, verwerkteUids);
+      console.log(`${verwerkteUids.length} mail(s) als gelezen gemarkeerd.`);
+    } catch (err) {
+      // Niet fataal: ongemarkeerde mails worden volgende run opnieuw verwerkt
+      // en de dedup (saunaSlug + startDatum) vangt dubbelen op.
+      console.warn(`Kon mails niet als gelezen markeren: ${err instanceof Error ? err.message : String(err)}`);
+    }
   }
 
   console.log(`Klaar. ${written} nieuw event(s), ${skipped} overgeslagen.`);

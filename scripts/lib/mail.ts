@@ -62,7 +62,9 @@ export function readMailConfig(): MailConfig {
 
 /** Kiest het beste leesbare deel van een mail en normaliseert naar tekst. */
 function bodyToMarkdown(text: string | undefined, html: string | false): string {
-  if (text && text.trim()) return text.trim();
+  // Zelfde cap als htmlToText: één mega-digest mag geen gigantische
+  // extractie-prompt (kosten/contextlimiet) veroorzaken.
+  if (text && text.trim()) return text.trim().slice(0, 60000);
   if (html) return htmlToText(html);
   return "";
 }
@@ -138,4 +140,32 @@ export async function fetchUnseenMail(
   }
 
   return out;
+}
+
+/**
+ * Markeert de opgegeven mails als gelezen (\Seen). Aparte verbinding, bedoeld
+ * om ná succesvolle verwerking aan te roepen: wie \Seen al bij het ophalen zet
+ * (fetchUnseenMail met markSeen=true), verliest de mail definitief wanneer de
+ * verwerking daarna crasht (bv. een 429 van de extractie-API).
+ */
+export async function markMailSeen(cfg: MailConfig, uids: number[]): Promise<void> {
+  if (uids.length === 0) return;
+  const client = new ImapFlow({
+    host: cfg.host,
+    port: cfg.port,
+    secure: cfg.secure,
+    auth: { user: cfg.user, pass: cfg.pass },
+    logger: false,
+    connectionTimeout: 20_000,
+    greetingTimeout: 15_000,
+    socketTimeout: 60_000,
+  });
+  await client.connect();
+  const lock = await client.getMailboxLock(cfg.mailbox);
+  try {
+    await client.messageFlagsAdd(uids, ["\\Seen"], { uid: true });
+  } finally {
+    lock.release();
+    await client.logout();
+  }
 }

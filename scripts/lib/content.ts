@@ -35,6 +35,11 @@ export interface Bron {
   type?: string;
   /** Helpt op multi-locatie-sites de juiste agendapagina te kiezen. */
   matchToken?: string;
+  /**
+   * true = agendaUrl is handmatig gecureerd: verify-bronnen checkt alleen
+   * bereikbaarheid/inhoud en doet geen discovery of herschrijving.
+   */
+  agendaUrlVast?: boolean;
   status: BronStatus;
   notities?: string;
   laatstGecontroleerd?: string | null;
@@ -56,34 +61,54 @@ export function writeBronnen(data: BronnenFile): void {
   fs.writeFileSync(BRONNEN_PATH, `${JSON.stringify(data, null, 2)}\n`);
 }
 
+// Gedeelde platform-hosts zijn geen bewijs van afzenderschap: een bron met
+// website facebook.com mag niet elke Facebook-notificatiemail claimen.
+const PLATFORM_HOSTS = new Set([
+  "facebook.com",
+  "instagram.com",
+  "gmail.com",
+  "outlook.com",
+  "hotmail.com",
+  "mailchimp.com",
+]);
+
 /**
  * Koppelt een nieuwsbrief-afzender aan een sauna-bron (→ saunaSlug).
  * Match-volgorde:
- *   1. expliciete `matchToken` die als substring in het afzenderadres zit
- *      (bv. matchToken "@thermenbussloo.nl");
- *   2. host van `website` die overeenkomt met het afzenderdomein (automatisch).
- * Retourneert de gematchte bron, of undefined als geen bron past.
+ *   1. expliciete `matchToken` die als substring in het afzenderDOMEIN zit —
+ *      en alleen als het token op een adres/domein lijkt ("@" of "." bevat):
+ *      URL-discovery-tokens zoals "brugge" zouden anders elke mail van
+ *      @brugge.be claimen;
+ *   2. host van `website` die overeenkomt met het afzenderdomein (automatisch),
+ *      behalve platform-hosts, en alleen als precies één bron die host heeft
+ *      (bij multi-locatieketens zoals thermae.com is de afzender niet aan één
+ *      vestiging toe te wijzen → concept voor handmatige toewijzing).
+ * Retourneert de gematchte bron, of undefined als geen bron eenduidig past.
  */
 export function matchBronBySender(bronnen: Bron[], fromAddress: string): Bron | undefined {
   const from = fromAddress.toLowerCase().trim();
   if (!from) return undefined;
   const domain = from.split("@")[1] ?? "";
 
-  const byToken = bronnen.find(
-    (b) => b.matchToken && from.includes(b.matchToken.toLowerCase()),
-  );
+  const byToken = bronnen.find((b) => {
+    if (!b.matchToken) return false;
+    const token = b.matchToken.toLowerCase();
+    if (!token.includes("@") && !token.includes(".")) return false;
+    return token.startsWith("@") ? from.includes(token) : domain.includes(token);
+  });
   if (byToken) return byToken;
 
-  if (!domain) return undefined;
-  return bronnen.find((b) => {
+  if (!domain || PLATFORM_HOSTS.has(domain)) return undefined;
+  const byHost = bronnen.filter((b) => {
     if (!b.website) return false;
     try {
       const host = new URL(b.website).hostname.replace(/^www\./, "");
-      return host && (domain === host || domain.endsWith(`.${host}`));
+      return host !== "" && !PLATFORM_HOSTS.has(host) && (domain === host || domain.endsWith(`.${host}`));
     } catch {
       return false;
     }
   });
+  return byHost.length === 1 ? byHost[0] : undefined;
 }
 
 /* ---------- Bestaande events (voor dedup) ---------- */
@@ -102,15 +127,27 @@ export function dedupKey(saunaSlug: string, startDatum: string): string {
 
 /** Sleutels van alle bestaande events in content/events/. */
 export function existingEventKeys(): Set<string> {
-  const keys = new Set<string>();
-  if (!fs.existsSync(EVENTS_DIR)) return keys;
+  return new Set(existingEventTitles().keys());
+}
+
+/**
+ * Dedup-sleutel → titel van het bestaande event. De titel maakt het mogelijk
+ * om bij een dedup-hit te melden dat er mógelijk een tweede, ander event op
+ * dezelfde dag bestaat (de grove sleutel saunaSlug+startDatum laat bewust maar
+ * één event per sauna per dag toe, als anker tegen her-scraping).
+ */
+export function existingEventTitles(): Map<string, string> {
+  const map = new Map<string, string>();
+  if (!fs.existsSync(EVENTS_DIR)) return map;
   for (const file of fs.readdirSync(EVENTS_DIR)) {
     if (!file.endsWith(".mdx")) continue;
     const { data } = matter(fs.readFileSync(path.join(EVENTS_DIR, file), "utf-8"));
     const startDatum = toISODate(data.startDatum);
-    if (data.saunaSlug && startDatum) keys.add(dedupKey(String(data.saunaSlug), startDatum));
+    if (data.saunaSlug && startDatum) {
+      map.set(dedupKey(String(data.saunaSlug), startDatum), String(data.titel ?? ""));
+    }
   }
-  return keys;
+  return map;
 }
 
 // Slugs van bestaande sauna-profielen (bestandsnaam zonder .mdx).
@@ -154,10 +191,15 @@ export { htmlToText } from "../../src/lib/html";
  */
 export function normalizeProseDashes(text: string): string {
   return text
-    .replace(/\s+—\s+/g, ", ")
+    // Regel-initiële em-dash is een opsomming: nette markdown-bullet van maken
+    // (vóór de generieke vervangingen, die anders regels aan elkaar plakken).
+    .replace(/^—[ \t]*/gm, "- ")
+    // Alleen horizontale witruimte matchen: \s zou ook newlines opeten en
+    // daarmee een opsomming tot één kommaregel verminken.
+    .replace(/[ \t]+—[ \t]+/g, ", ")
     .replace(/—/g, "-")
-    .replace(/\s+,/g, ",")
-    .replace(/,\s*,/g, ",");
+    .replace(/[ \t]+,/g, ",")
+    .replace(/,[ \t]*,/g, ",");
 }
 
 /**
@@ -185,19 +227,40 @@ export interface NewEvent {
   keurNotitie?: string; // afkeurreden(en) bij status concept
 }
 
-/** Genereert een unieke, leesbare slug voor het event-bestand. */
+/**
+ * Genereert een unieke, leesbare slug voor het event-bestand. De saunaSlug zit
+ * in de naam zodat twee sauna's met dezelfde generieke titel ("Opgietingen")
+ * op dezelfde dag niet op bestandsnaam botsen (het tweede event zou dan stil
+ * sneuvelen). Als de titel de saunanaam al begint te herhalen, laten we het
+ * voorvoegsel weg om dubbele namen als "vitae-goes-vitae-goes-…" te vermijden.
+ */
 export function eventSlug(ev: NewEvent): string {
-  return `${slugify(ev.titel)}-${ev.startDatum}`.replace(/-+/g, "-");
+  const titelSlug = slugify(ev.titel) || "event";
+  const prefix = titelSlug.startsWith(ev.saunaSlug) ? "" : `${ev.saunaSlug}-`;
+  return `${prefix}${titelSlug}-${ev.startDatum}`.replace(/-+/g, "-");
+}
+
+/**
+ * MDX behandelt `<`, `{` en `}` als syntax (JSX/expressies). Gescrapete tekst
+ * moet als platte tekst renderen: één "<12 jaar" in een beschrijving zou
+ * anders de volledige productie-build breken, en `{…}` zou als JS-expressie
+ * worden UITGEVOERD tijdens de build. Backslash-escapes maken er letterlijke
+ * tekens van.
+ */
+export function escapeMdxText(text: string): string {
+  return text.replace(/\\/g, "\\\\").replace(/[<{}]/g, (c) => `\\${c}`);
 }
 
 /**
  * Schrijft een event als MDX met de status uit ev.status. Retourneert het pad,
- * of null als het bestand al bestaat (geen overschrijving).
+ * of null als het bestand al bestaat (geen overschrijving). `dir` overschrijft
+ * de doelmap (dry-runs schrijven naar een tijdelijke map zodat mock-events
+ * nooit per ongeluk in content/events/ belanden en gecommit worden).
  */
-export function writeEventMdx(ev: NewEvent): string | null {
-  fs.mkdirSync(EVENTS_DIR, { recursive: true });
+export function writeEventMdx(ev: NewEvent, dir: string = EVENTS_DIR): string | null {
+  fs.mkdirSync(dir, { recursive: true });
   const slug = eventSlug(ev);
-  const filePath = path.join(EVENTS_DIR, `${slug}.mdx`);
+  const filePath = path.join(dir, `${slug}.mdx`);
   if (fs.existsSync(filePath)) return null;
 
   // Normaliseer em-streepjes weg vóór het wegschrijven: dit is het enige
@@ -219,7 +282,7 @@ export function writeEventMdx(ev: NewEvent): string | null {
     ...(ev.keurNotitie ? { keurNotitie: ev.keurNotitie } : {}),
   };
 
-  const body = normalizeProseDashes(ev.beschrijving?.trim() || `${titel} bij deze sauna.`);
+  const body = escapeMdxText(normalizeProseDashes(ev.beschrijving?.trim() || `${titel} bij deze sauna.`));
   const file = matter.stringify(`\n${body}\n`, frontmatter);
   fs.writeFileSync(filePath, file);
   return filePath;

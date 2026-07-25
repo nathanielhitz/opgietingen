@@ -15,16 +15,21 @@
   Env: FIRECRAWL_API_KEY, ANTHROPIC_API_KEY (niet nodig bij --dry-run),
        SCRAPE_AUTOPUBLISH=true (zet auto-publiceren aan; standaard uit).
 */
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import {
   readBronnen,
-  existingEventKeys,
+  existingEventTitles,
   existingSaunaSlugs,
   dedupKey,
+  slugify,
   writeEventMdx,
   type NewEvent,
 } from "./lib/content";
-import { evaluateEvent } from "./lib/quality-gate";
+import { evaluateEvent, OPGIET_RE } from "./lib/quality-gate";
 import { isAllowed, sleep, REQUEST_DELAY_MS } from "./lib/net";
+import { todayISOInTimeZone } from "../src/lib/dates";
 import { scrapeAgenda, type ScrapeOutcome, type ScrapedEvent } from "../src/lib/scraper";
 
 function argValue(name: string): string | undefined {
@@ -34,9 +39,15 @@ function argValue(name: string): string | undefined {
 
 const DRY_RUN = process.argv.includes("--dry-run");
 const LIMIT = argValue("--limit") ? Number(argValue("--limit")) : Infinity;
-const REF_YEAR = new Date().getUTCFullYear();
-const TODAY = new Date().toISOString().slice(0, 10);
+// Dry-run schrijft naar een tijdelijke map: mock-events horen nooit in
+// content/events/ terecht te komen (en dus ook nooit in een commit).
+const DOEL_DIR = process.argv.includes("--dry-run")
+  ? fs.mkdtempSync(path.join(os.tmpdir(), "opgietingen-dry-run-"))
+  : undefined;
+const TODAY = todayISOInTimeZone();
 const AUTO_PUBLISH = process.env.SCRAPE_AUTOPUBLISH === "true";
+/** Waarschuwingen per run; scrape-report neemt ze mee in het wekelijkse issue. */
+const WARNINGS_PATH = "scrape-warnings.json";
 
 /** Mock-extractie voor --dry-run: twee toekomstige events per bron. */
 function mockOutcome(): ScrapeOutcome {
@@ -89,9 +100,10 @@ async function main() {
       `${targets.length} van ${actief.length} actieve bronnen.\n`
   );
 
-  const existing = existingEventKeys();
+  const existing = existingEventTitles();
   const saunaSlugs = existingSaunaSlugs();
   const seen = new Set<string>(); // dedup binnen deze run
+  const rapportWarnings: { bron: string; melding: string }[] = [];
   let written = 0;
   let skipped = 0;
 
@@ -101,6 +113,7 @@ async function main() {
     // robots.txt naleven (Firecrawl doet dit ook, maar we checken beleefd vooraf).
     if (!DRY_RUN && !(await isAllowed(bron.agendaUrl))) {
       console.log("  ⚠ robots.txt blokkeert deze URL — overgeslagen.\n");
+      rapportWarnings.push({ bron: bron.naam, melding: "robots.txt blokkeert de agenda-URL" });
       continue;
     }
 
@@ -111,20 +124,40 @@ async function main() {
         : await scrapeAgenda(bron.agendaUrl, {
             saunaNaam: bron.naam,
             land: bron.land === "BE" ? "BE" : "NL",
-            jaar: REF_YEAR,
+            vandaag: TODAY,
           });
     } catch (err) {
-      console.log(`  ✗ Fout: ${err instanceof Error ? err.message : String(err)}\n`);
+      const msg = err instanceof Error ? err.message : String(err);
+      console.log(`  ✗ Fout: ${msg}\n`);
+      rapportWarnings.push({ bron: bron.naam, melding: `scrape-fout: ${msg}` });
       continue;
     }
 
     for (const w of outcome.warnings) console.log(`  · ${w}`);
     console.log(`  Extractie: ${outcome.method}, ${outcome.events.length} kandidaat-event(s).`);
+    // "none" = de extractie faalde echt (0 events via een geslaagde route is
+    // gewoon een lege agenda) → dat hoort in het weekissue, niet alleen stdout.
+    if (!DRY_RUN && outcome.method === "none") {
+      rapportWarnings.push({
+        bron: bron.naam,
+        melding: `extractie faalde (${outcome.warnings.join(" | ") || "geen details"})`,
+      });
+    }
 
     for (const ev of outcome.events) {
       const key = dedupKey(bron.id, ev.startDatum);
       if (existing.has(key) || seen.has(key)) {
         console.log(`  = dedup: ${ev.titel} (${ev.startDatum}) bestaat al.`);
+        // De grove dedup-sleutel (sauna+dag) laat één event per dag toe; wijkt
+        // de titel duidelijk af, dan is er mogelijk een tweede echt event →
+        // mens laten kijken via het weekissue.
+        const bestaande = existing.get(key);
+        if (bestaande && slugify(bestaande) !== slugify(ev.titel)) {
+          rapportWarnings.push({
+            bron: bron.naam,
+            melding: `mogelijk tweede event op ${ev.startDatum}: "${ev.titel}" naast bestaand "${bestaande}" (dedup liet het vallen)`,
+          });
+        }
         skipped++;
         continue;
       }
@@ -140,8 +173,18 @@ async function main() {
         { saunaSlugs, today: TODAY },
       );
 
+      // Auto-publiceren vereist het opgiet-trefwoord in de TITEL: een
+      // modelgegenereerde beschrijving kan het woord "opgieting" terloops
+      // bevatten terwijl het event zelf een brunch is. Trefwoord alleen in de
+      // beschrijving → concept, met notitie voor de handmatige check.
+      const titelHeeftTrefwoord = OPGIET_RE.test(ev.titel);
       const status: "concept" | "gepubliceerd" =
-        verdict.passed && AUTO_PUBLISH ? "gepubliceerd" : "concept";
+        verdict.passed && AUTO_PUBLISH && titelHeeftTrefwoord ? "gepubliceerd" : "concept";
+      const keurNotitie = !verdict.passed
+        ? verdict.redenen.join("; ")
+        : titelHeeftTrefwoord
+          ? undefined
+          : "poort ok, maar opgiet-trefwoord staat alleen in de beschrijving, niet in de titel — handmatig beoordelen en publiceren";
 
       const newEvent: NewEvent = {
         saunaSlug: bron.id,
@@ -154,15 +197,15 @@ async function main() {
         ticketUrl: ev.ticketUrl ?? bron.agendaUrl,
         beschrijving: ev.beschrijving,
         status,
-        ...(verdict.passed ? {} : { keurNotitie: verdict.redenen.join("; ") }),
+        ...(keurNotitie ? { keurNotitie } : {}),
       };
 
-      const path = writeEventMdx(newEvent);
+      const path = writeEventMdx(newEvent, DOEL_DIR);
       if (path) {
         seen.add(key);
         written++;
         console.log(
-          `  + ${status}${verdict.passed ? "" : " (afgekeurd: " + verdict.redenen.join("; ") + ")"} — ${ev.titel}`,
+          `  + ${status}${keurNotitie ? " (concept: " + keurNotitie + ")" : ""} — ${ev.titel}`,
         );
       } else {
         skipped++;
@@ -174,7 +217,16 @@ async function main() {
     if (!DRY_RUN) await sleep(REQUEST_DELAY_MS);
   }
 
-  console.log(`Klaar. ${written} nieuw event(s), ${skipped} overgeslagen (dedup).`);
+  if (!DRY_RUN) {
+    fs.writeFileSync(
+      WARNINGS_PATH,
+      JSON.stringify({ run: TODAY, warnings: rapportWarnings }, null, 2) + "\n",
+    );
+  }
+  console.log(
+    `Klaar. ${written} nieuw event(s), ${skipped} overgeslagen (dedup), ` +
+      `${rapportWarnings.length} waarschuwing(en)${DRY_RUN ? "" : ` → ${WARNINGS_PATH}`}.`,
+  );
 }
 
 main().catch((err) => {

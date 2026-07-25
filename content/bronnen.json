@@ -132,8 +132,9 @@
       "agendaUrl": "https://www.waerwaters.com/nl/wellness/belevingen-overzicht/opgietsessies",
       "type": "website",
       "status": "actief",
-      "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-25"
+      "notities": "Vaste URL (2026-07-25): dedicated opgietsessies-pagina (7 vaste sessietypes), via sitemap gevonden.",
+      "laatstGecontroleerd": "2026-07-25",
+      "agendaUrlVast": true
     },
     {
       "id": "thermen-dilbeek",
@@ -144,8 +145,9 @@
       "agendaUrl": "https://www.thermendilbeek.be/praktisch/praktische-info/",
       "type": "website",
       "status": "geen-agenda",
-      "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) — handmatig controleren.",
-      "laatstGecontroleerd": "2026-07-25"
+      "notities": "Vaste URL (2026-07-25): vast dagrooster onder Praktisch; geen losse events te scrapen.",
+      "laatstGecontroleerd": "2026-07-25",
+      "agendaUrlVast": true
     },
     {
       "id": "thermen-katara",
@@ -168,8 +170,9 @@
       "agendaUrl": "https://www.thermenlonderzeel.be/praktisch/praktische-info/",
       "type": "website",
       "status": "geen-agenda",
-      "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) — handmatig controleren.",
-      "laatstGecontroleerd": "2026-07-25"
+      "notities": "Vaste URL (2026-07-25): vast dagrooster onder Praktisch; geen losse events te scrapen.",
+      "laatstGecontroleerd": "2026-07-25",
+      "agendaUrlVast": true
     },
     {
       "id": "thermae-boetfort",
@@ -467,11 +470,12 @@
       "land": "BE",
       "provincie": "Oost-Vlaanderen",
       "website": "https://asanti.be",
-      "agendaUrl": "https://asanti.be/het-opgietritueel-meer-dan-alleen-stoom/",
+      "agendaUrl": "https://asanti.be/wellness/asanti-rituals/",
       "type": "website",
       "status": "actief",
-      "notities": "Pad bijgewerkt (score 40).",
-      "laatstGecontroleerd": "2026-07-25"
+      "notities": "Vaste URL (2026-07-25): rooster + opgietweekends staan op de Rituals-pagina; discovery koos eerder een blogartikel.",
+      "laatstGecontroleerd": "2026-07-25",
+      "agendaUrlVast": true
     },
     {
       "id": "sane-thermen",
@@ -479,11 +483,12 @@
       "land": "BE",
       "provincie": "Limburg (BE)",
       "website": "https://sane-thermen.be/nl/",
-      "agendaUrl": "https://sane-thermen.be/nl/opgietsessie/",
+      "agendaUrl": "https://sane-thermen.be/nl/kalender/",
       "type": "website",
       "status": "actief",
-      "notities": "Pad bijgewerkt (score 30).",
-      "laatstGecontroleerd": "2026-07-25"
+      "notities": "Vaste URL (2026-07-25): de kalenderpagina bevat het jaaroverzicht met thema-opgietdagen (scrapebron); het vaste rooster staat op /nl/opgietsessies/.",
+      "laatstGecontroleerd": "2026-07-25",
+      "agendaUrlVast": true
     },
     {
       "id": "lago-brugge",
@@ -495,8 +500,9 @@
       "type": "website",
       "matchToken": "brugge",
       "status": "actief",
-      "notities": "Handmatig teruggezet 2026-07-25: discovery koos een verlopen actiepagina (valentijn-2026); de opgietsessies staan op de Wellness Nights-pagina.",
-      "laatstGecontroleerd": "2026-07-25"
+      "notities": "Vaste URL (2026-07-25): opgietsessies staan op de Wellness Nights-pagina; discovery koos eerder een verlopen actiepagina.",
+      "laatstGecontroleerd": "2026-07-25",
+      "agendaUrlVast": true
     },
     {
       "id": "aquatopia-sauna-be",

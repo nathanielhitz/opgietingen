@@ -6,7 +6,11 @@
 const GELDIGE_TYPES = new Set(["opgietweekend", "thema", "kampioenschap", "regulier"]);
 
 // Herkent opgiet-gerelateerde content; voorkomt dat een "moederdagbrunch" doorglipt.
-export const OPGIET_RE = /opgiet|aufguss|löyly|loyly|saunaritueel|gietceremonie/i;
+// banja/pirts/infusion zijn de Vlaamse/Baltische varianten van het ritueel
+// (Thermen Katara "Infusion Xperience", banja- en pirts-rituelen); met
+// woordgrenzen zodat substrings in gewone woorden niet meetellen.
+export const OPGIET_RE =
+  /opgiet|aufguss|löyly|loyly|saunaritueel|gietceremonie|\bbanja\b|\bbanya\b|\bpirts\b|\binfusie\b|\binfusion\b/i;
 
 export interface GateInput {
   saunaSlug: string;

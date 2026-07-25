@@ -45,8 +45,13 @@ export interface ScrapedEvent {
 export interface ScrapeContext {
   saunaNaam: string;
   land?: "NL" | "BE";
-  /** Referentiejaar voor het aanvullen van datums zonder jaartal. */
-  jaar: number;
+  /**
+   * Referentiedatum (ISO YYYY-MM-DD, "vandaag") voor het aanvullen van datums
+   * zonder jaartal: het eerstvolgende voorkomen op of ná deze datum. Een kaal
+   * referentiejaar was een jaarrond-bug: "10 januari" gescrapet in juli werd
+   * 10 januari van dít jaar (verleden) in plaats van volgend jaar.
+   */
+  vandaag: string;
 }
 
 export type ExtractionMethod = "plain-claude" | "firecrawl-json" | "claude-fallback" | "none";
@@ -105,10 +110,11 @@ const EVENT_JSON_SCHEMA = {
 
 function extractionPrompt(ctx: ScrapeContext): string {
   return [
-    `Je haalt opgiet-/Aufguss-events op voor de agenda van ${ctx.saunaNaam}.`,
-    `Extraheer ALLEEN echte events met een concrete datum. Sla algemene info, arrangementen en losse pagina's zonder datum over.`,
-    `Gebruik ${ctx.jaar} als jaartal wanneer een datum geen jaar vermeldt (kies het eerstvolgende voorkomen).`,
-    `Datums in formaat YYYY-MM-DD. Vertaal maanden vanuit het Nederlands.`,
+    `Je haalt opgiet-/Aufguss-events op voor de agenda van ${ctx.saunaNaam}. Vandaag is ${ctx.vandaag}.`,
+    `Extraheer ALLEEN echte events met een concrete kalenderdatum. Sla algemene info, arrangementen en losse pagina's zonder datum over.`,
+    `Vaste week- of dagroosters ("dagelijks om 11:30", "elke zondag", "ma t/m vr") zijn GEEN events: sla ze over en leid er geen datums uit af.`,
+    `Vermeldt een datum geen jaartal, kies dan het eerstvolgende voorkomen op of na vandaag (rond de jaarwisseling is dat het volgende jaar).`,
+    `Datums in formaat YYYY-MM-DD. De paginatekst kan Nederlands of Frans zijn; vertaal maandnamen naar de juiste maand.`,
     `Bepaal het type: opgietweekend, thema, kampioenschap of regulier.`,
     `Schrijf per event een beschrijving van 60-120 woorden in vloeiend Nederlands op basis van wat de pagina vermeldt: wat het event inhoudt, wat de bezoeker kan verwachten en voor wie het leuk is. Gebruik uitsluitend feiten van de pagina; verzin geen tijden, prijzen, geuren of programmaonderdelen. Staat er weinig op de pagina, houd de beschrijving dan korter in plaats van te speculeren.`,
   ].join(" ");
@@ -151,10 +157,26 @@ export function sanitizeEvents(raw: unknown): ScrapedEvent[] {
     const type = e.type as EventType;
     if (!titel || !ISO_DATE.test(startDatum) || !EVENT_TYPES.includes(type)) continue;
 
-    const eindDatum = typeof e.eindDatum === "string" && ISO_DATE.test(e.eindDatum.trim())
+    const rawEind = typeof e.eindDatum === "string" && ISO_DATE.test(e.eindDatum.trim())
       ? e.eindDatum.trim()
       : undefined;
+    // Een (gehallucineerde) einddatum vóór de startdatum zou het event via
+    // isUpcoming direct van de site laten verdwijnen → droppen.
+    const eindDatum = rawEind && rawEind >= startDatum ? rawEind : undefined;
     const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : undefined);
+    // ticketUrl gaat ongefilterd een 302-redirect in (/uit/[slug]); alleen
+    // absolute http(s)-URL's toestaan — een relatief of verzonnen pad zou een
+    // 500 of open redirect opleveren. De aanroeper valt terug op de bron-URL.
+    const ticketUrl = (() => {
+      const v = str(e.ticketUrl);
+      if (!v) return undefined;
+      try {
+        const u = new URL(v);
+        return u.protocol === "http:" || u.protocol === "https:" ? u.toString() : undefined;
+      } catch {
+        return undefined;
+      }
+    })();
 
     out.push({
       titel,
@@ -163,7 +185,7 @@ export function sanitizeEvents(raw: unknown): ScrapedEvent[] {
       eindDatum,
       tijden: str(e.tijden),
       prijsIndicatie: str(e.prijsIndicatie),
-      ticketUrl: str(e.ticketUrl),
+      ticketUrl,
       beschrijving: str(e.beschrijving) ?? titel,
     });
   }
@@ -243,12 +265,17 @@ export async function firecrawlFetchMarkdown(url: string): Promise<string | null
 
 /* ---------- Claude-fallback (claude-haiku-4-5) ---------- */
 
+/** Cap op de invoertekst (zelfde grens als htmlToText hanteert). */
+const MAX_EXTRACT_INPUT_CHARS = 60000;
+
 async function claudeExtract(markdown: string, ctx: ScrapeContext): Promise<ScrapedEvent[]> {
   if (!markdown.trim()) return [];
 
   const message = await getAnthropic().messages.create({
     model: FALLBACK_MODEL,
-    max_tokens: 4096,
+    // Ruim bemeten: 60-120 woorden beschrijving per event betekent dat een
+    // seizoensagenda met 25+ events anders tegen de limiet aanloopt.
+    max_tokens: 16384,
     system:
       "Je bent een nauwkeurige extractie-assistent voor een sauna-opgietagenda. " +
       "Je roept altijd de tool record_events aan met alle gevonden events. Verzin niets.",
@@ -263,10 +290,17 @@ async function claudeExtract(markdown: string, ctx: ScrapeContext): Promise<Scra
     messages: [
       {
         role: "user",
-        content: `Sauna: ${ctx.saunaNaam}\nReferentiejaar: ${ctx.jaar}\n\nPAGINA (markdown):\n\n${markdown}`,
+        content: `Sauna: ${ctx.saunaNaam}\nVandaag: ${ctx.vandaag}\n\nPAGINA (markdown):\n\n${markdown.slice(0, MAX_EXTRACT_INPUT_CHARS)}`,
       },
     ],
   });
+
+  // Afgekapte tool-input zou stil dataverlies zijn (sanitizeEvents maakt er
+  // geruisloos minder/0 events van); hard falen zodat de aanroeper het als
+  // warning ziet en eventueel de Firecrawl-route probeert.
+  if (message.stop_reason === "max_tokens") {
+    throw new Error("extractie afgekapt (max_tokens bereikt) — resultaat onbetrouwbaar");
+  }
 
   const toolUse = message.content.find(
     (b): b is Anthropic.ToolUseBlock => b.type === "tool_use" && b.name === "record_events"
@@ -292,12 +326,22 @@ export async function extractEventsFromText(
   }
   try {
     const events = await claudeExtract(markdown, ctx);
-    return { events, markdown, method: events.length ? "claude-fallback" : "none", warnings };
+    // Ook 0 events is een geslaagde extractie; "none" is voorbehouden aan falen.
+    return { events, markdown, method: "claude-fallback", warnings };
   } catch (err) {
     warnings.push(`Claude-extractie-fout: ${err instanceof Error ? err.message : String(err)}`);
     return { events: [], markdown, method: "none", warnings };
   }
 }
+
+/**
+ * Signalen dat statische tekst echt agenda-inhoud bevat (datums, tijden of
+ * opgiet-termen). Zonder deze signalen vertrouwen we een 0-event-resultaat op
+ * de kale route niet blind: een cookiebanner + navigatie haalt makkelijk de
+ * tekendrempel terwijl de echte agenda JS-gerenderd is.
+ */
+const AGENDA_SIGNAAL =
+  /\d{1,2}:\d{2}|\d{1,2}[-/]\d{1,2}[-/]\d{2,4}|januari|februari|maart|april|\bmei\b|juni|juli|augustus|september|oktober|november|december|opgiet|aufguss/i;
 
 /**
  * Haalt één agendapagina op en levert gestructureerde events.
@@ -314,8 +358,15 @@ export async function scrapeAgenda(url: string, ctx: ScrapeContext): Promise<Scr
     try {
       const events = await claudeExtract(staticText, ctx);
       // Substantiële statische pagina → vertrouw dit resultaat, ook bij 0
-      // events (liever een false negative dan onnodig Firecrawl-credits).
-      return { events, markdown: staticText, method: "plain-claude", warnings };
+      // events (liever een false negative dan onnodig Firecrawl-credits) —
+      // tenzij de tekst geen enkel agenda-signaal bevat: dan is het
+      // vermoedelijk boilerplate rond een JS-gerenderde agenda.
+      if (events.length > 0 || AGENDA_SIGNAAL.test(staticText)) {
+        return { events, markdown: staticText, method: "plain-claude", warnings };
+      }
+      warnings.push(
+        "Kale route gaf 0 events en de statische tekst bevat geen agenda-signalen (datums/tijden/opgiet) — door naar Firecrawl.",
+      );
     } catch (err) {
       warnings.push(
         `Kale route mislukt (${err instanceof Error ? err.message : String(err)}); door naar Firecrawl.`,

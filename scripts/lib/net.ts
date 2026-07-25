@@ -67,13 +67,17 @@ interface RobotsRules {
 const robotsCache = new Map<string, RobotsRules>();
 
 /** Parseert de regelblokken die op ons van toepassing zijn (onze naam + '*'). */
-function parseRobots(text: string): RobotsRules {
+export function parseRobots(text: string): RobotsRules {
   const disallow: string[] = [];
   const allow: string[] = [];
   const lines = text.split(/\r?\n/);
 
   let applies = false;
   let sawAnyGroup = false;
+  // Opeenvolgende User-agent-regels vormen samen één groep (RFC 9309): de
+  // regels eronder gelden voor elk van die agents. Zolang we in zo'n
+  // UA-kopblok zitten, accumuleren we de match in plaats van te overschrijven.
+  let inUaKop = false;
 
   for (const raw of lines) {
     const line = raw.replace(/#.*$/, "").trim();
@@ -86,11 +90,18 @@ function parseRobots(text: string): RobotsRules {
     if (field === "user-agent") {
       sawAnyGroup = true;
       const ua = value.toLowerCase();
-      applies = ua === "*" || ROBOT_NAME.includes(ua) || ua.includes(ROBOT_NAME);
-    } else if (applies && field === "disallow") {
-      if (value) disallow.push(value);
-    } else if (applies && field === "allow") {
-      if (value) allow.push(value);
+      // Product-token-match: '*', exact, of prefix van onze naam ("opgietingen"
+      // matcht; een generiek "bot" niet — dat zou ons overal buitensluiten).
+      const match = ua === "*" || ua === ROBOT_NAME || ROBOT_NAME.startsWith(ua);
+      applies = inUaKop ? applies || match : match;
+      inUaKop = true;
+    } else {
+      inUaKop = false;
+      if (applies && field === "disallow") {
+        if (value) disallow.push(value);
+      } else if (applies && field === "allow") {
+        if (value) allow.push(value);
+      }
     }
   }
 
@@ -102,9 +113,15 @@ export async function getRobots(origin: string): Promise<RobotsRules> {
   if (cached) return cached;
 
   const res = await fetchUrl(`${origin}/robots.txt`, 10000);
-  // Geen (bereikbare) robots.txt → conventie: alles toegestaan.
-  const rules =
-    res.ok && res.body.trim() ? parseRobots(res.body) : { disallow: [], allow: [], permissive: true };
+  // Geen robots.txt (404) → conventie: alles toegestaan. Maar een serverfout
+  // (5xx) betekent "onbekend" en dan schrijft RFC 9309 juist voorzichtigheid
+  // voor: alles dicht tot de robots.txt weer leesbaar is.
+  const rules: RobotsRules =
+    res.ok && res.body.trim()
+      ? parseRobots(res.body)
+      : res.status >= 500
+        ? { disallow: ["/"], allow: [], permissive: false }
+        : { disallow: [], allow: [], permissive: true };
   robotsCache.set(origin, rules);
   return rules;
 }
