@@ -69,7 +69,7 @@ Optioneel veld `bron: scraper` markeert automatisch gescrapete events. Optioneel
 | Route | Doel |
 |-------|------|
 | `/` | Home: highlights + komende events + zoekbalk |
-| `/agenda` | Volledige agenda — lijst + filters (land, provincie, datum, type) |
+| `/agenda` | Volledige agenda — lijst + filters (land, provincie, datum, type); `?weergave=kalender&maand=<maand-jaar>` toont de maandkalender |
 | `/agenda/[maand-jaar]` | SEO: events per maand (bv. `november-2026`) |
 | `/opgietingen/[provincie]` | SEO: events per regio (bv. `gelderland`) |
 | `/event/[slug]` | Event-detail + `Event` structured data |
@@ -81,7 +81,7 @@ Optioneel veld `bron: scraper` markeert automatisch gescrapete events. Optioneel
 | `/uit/product/[id]` | Affiliate-redirect (bol.com-product) met klik-logging + subid |
 | `/over`, `/contact`, `/voor-saunas` | Statische pagina's (B2B-pitch) |
 
-Kalenderweergave en nieuwsbrief-opt-in zijn **uitgesteld** naar een latere sessie.
+Nieuwsbrief-opt-in is **uitgesteld** naar een latere sessie.
 
 ## Conventies
 
