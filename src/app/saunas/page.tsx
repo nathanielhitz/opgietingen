@@ -3,6 +3,7 @@ import { getAllSaunas, getEventsForSauna } from "@/lib/content";
 import { COUNTRY_LABELS, type Country } from "@/lib/site";
 import { isUpcoming } from "@/lib/dates";
 import { SaunaCard } from "@/components/SaunaCard";
+import { SaunaKaart } from "@/components/SaunaKaart";
 import { JsonLd } from "@/components/JsonLd";
 import { saunaItemListSchema } from "@/lib/schema";
 
@@ -34,6 +35,22 @@ export default function SaunasPage() {
         </p>
       </header>
 
+      <section className="mt-8" aria-labelledby="kaart-titel">
+        <h2 id="kaart-titel" className="sr-only">
+          Alle sauna’s op de kaart
+        </h2>
+        <SaunaKaart
+          saunas={saunas.map((s) => ({
+            slug: s.slug,
+            naam: s.naam,
+            plaats: s.plaats,
+            provincie: s.provincie,
+            lat: s.lat,
+            lng: s.lng,
+          }))}
+        />
+      </section>
+
       {byCountry.map((group) => (
         <section key={group.land} className="mt-10">
           <h2 className="font-display text-xl font-semibold text-ink">
@@ -49,10 +66,6 @@ export default function SaunasPage() {
           </ul>
         </section>
       ))}
-
-      <p className="mt-10 text-xs text-ink-faint">
-        Een interactieve overzichtskaart met alle sauna’s volgt. Locatie per sauna vind je nu op de saunapagina zelf.
-      </p>
     </div>
   );
 }
