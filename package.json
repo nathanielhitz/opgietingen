@@ -11,6 +11,7 @@
     "bronnen-report": "tsx scripts/bronnen-report.ts",
     "scrape": "tsx scripts/scrape-events.ts",
     "scrape-mail": "tsx scripts/scrape-mail.ts",
+    "check-roosters": "tsx scripts/check-roosters.ts",
     "test": "node --import tsx --test \"scripts/**/*.test.ts\"",
     "scrape-report": "tsx scripts/scrape-report.ts"
   },
