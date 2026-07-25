@@ -1,6 +1,6 @@
 {
   "$comment": "Bronnenlijst voor opgietingen.nl event-scraper. id = saunaSlug (koppelt gescrapete events aan content/saunas/). status: te-verifieren | actief | geen-agenda | handmatig | aanvullen | opzetten | kapot. Alleen 'actief' (type website) wordt gescrapet. matchToken kiest de juiste pagina op multi-locatie-sites.",
-  "laatstBijgewerkt": "2026-07-12",
+  "laatstBijgewerkt": "2026-07-25",
   "bronnen": [
     {
       "id": "thermen-bussloo",
@@ -12,30 +12,6 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-07-20"
-    },
-    {
-      "id": "fortuna-wellness",
-      "naam": "Sauna & Wellness Fortuna",
-      "land": "NL",
-      "provincie": "Zuid-Holland",
-      "website": "https://www.fortunawellness.nl",
-      "agendaUrl": "https://www.fortunawellness.nl/agenda",
-      "type": "website",
-      "status": "kapot",
-      "notities": "Host onbereikbaar: fetch failed",
-      "laatstGecontroleerd": "2026-07-20"
-    },
-    {
-      "id": "spasereen",
-      "naam": "SpaSereen",
-      "land": "NL",
-      "provincie": "Noord-Holland",
-      "website": "https://www.spasereen.nl",
-      "agendaUrl": "https://www.spasereen.nl/agenda",
-      "type": "website",
-      "status": "kapot",
-      "notities": "Host onbereikbaar: fetch failed",
       "laatstGecontroleerd": "2026-07-20"
     },
     {
@@ -153,11 +129,11 @@
       "land": "BE",
       "provincie": "Vlaams-Brabant",
       "website": "https://www.waerwaters.com",
-      "agendaUrl": "https://www.waerwaters.com/",
+      "agendaUrl": "https://www.waerwaters.com/nl/wellness/belevingen-overzicht/opgietsessies",
       "type": "website",
-      "status": "geen-agenda",
-      "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) — handmatig controleren.",
-      "laatstGecontroleerd": "2026-07-20"
+      "status": "actief",
+      "notities": "Bevestigd.",
+      "laatstGecontroleerd": "2026-07-25"
     },
     {
       "id": "thermen-dilbeek",
@@ -165,23 +141,23 @@
       "land": "BE",
       "provincie": "Vlaams-Brabant",
       "website": "https://www.thermendilbeek.be",
-      "agendaUrl": "https://www.thermendilbeek.be/",
+      "agendaUrl": "https://www.thermendilbeek.be/praktisch/praktische-info/",
       "type": "website",
       "status": "geen-agenda",
       "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) — handmatig controleren.",
-      "laatstGecontroleerd": "2026-07-20"
+      "laatstGecontroleerd": "2026-07-25"
     },
     {
       "id": "thermen-katara",
       "naam": "Thermen Katara",
       "land": "BE",
-      "provincie": "Antwerpen",
-      "website": "https://www.thermenkatara.be",
-      "agendaUrl": "https://www.thermenkatara.be/agenda",
+      "provincie": "Oost-Vlaanderen",
+      "website": "https://katara.be",
+      "agendaUrl": "https://katara.be/thermen/opgietrituelen/",
       "type": "website",
-      "status": "kapot",
-      "notities": "Host onbereikbaar: fetch failed",
-      "laatstGecontroleerd": "2026-07-20"
+      "status": "actief",
+      "notities": "Bevestigd.",
+      "laatstGecontroleerd": "2026-07-25"
     },
     {
       "id": "thermen-londerzeel",
@@ -189,11 +165,11 @@
       "land": "BE",
       "provincie": "Vlaams-Brabant",
       "website": "https://www.thermenlonderzeel.be",
-      "agendaUrl": "https://www.thermenlonderzeel.be/",
+      "agendaUrl": "https://www.thermenlonderzeel.be/praktisch/praktische-info/",
       "type": "website",
       "status": "geen-agenda",
       "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) — handmatig controleren.",
-      "laatstGecontroleerd": "2026-07-20"
+      "laatstGecontroleerd": "2026-07-25"
     },
     {
       "id": "thermae-boetfort",
@@ -342,6 +318,187 @@
       "laatstGecontroleerd": "2026-07-12"
     },
     {
+      "id": "sauna-swoll",
+      "naam": "Sauna Swoll",
+      "land": "NL",
+      "provincie": "Overijssel",
+      "website": "https://saunaswoll.nl",
+      "agendaUrl": "https://saunaswoll.nl/behandelingen/opgietingen",
+      "type": "website",
+      "status": "actief",
+      "notities": "Bevestigd.",
+      "laatstGecontroleerd": "2026-07-25"
+    },
+    {
+      "id": "sauna-zuidwolde",
+      "naam": "Sauna Thermen Zuidwolde",
+      "land": "NL",
+      "provincie": "Drenthe",
+      "website": "https://www.sauna-zuidwolde.nl",
+      "agendaUrl": "https://www.sauna-zuidwolde.nl/opgietingen/",
+      "type": "website",
+      "status": "actief",
+      "notities": "Bevestigd.",
+      "laatstGecontroleerd": "2026-07-25"
+    },
+    {
+      "id": "thermen-bad-nieuweschans",
+      "naam": "Thermen Bad Nieuweschans",
+      "land": "NL",
+      "provincie": "Groningen",
+      "website": "https://www.thermenbadnieuweschans.nl",
+      "agendaUrl": "https://www.thermenbadnieuweschans.nl/agenda",
+      "type": "website",
+      "status": "actief",
+      "notities": "Pad bijgewerkt (score 50).",
+      "laatstGecontroleerd": "2026-07-25"
+    },
+    {
+      "id": "spa-loppersum",
+      "naam": "Spa Loppersum (Hotel Spoorzicht & SPA)",
+      "land": "NL",
+      "provincie": "Groningen",
+      "website": "https://hotelspoorzichtspa.nl",
+      "agendaUrl": "https://hotelspoorzichtspa.nl/faciliteiten-spa-loppersum/",
+      "type": "website",
+      "status": "geen-agenda",
+      "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) — handmatig controleren.",
+      "laatstGecontroleerd": "2026-07-25"
+    },
+    {
+      "id": "zuiver-amsterdam",
+      "naam": "Hotel & Wellness ZUIVER",
+      "land": "NL",
+      "provincie": "Noord-Holland",
+      "website": "https://zuiveramsterdam.nl",
+      "agendaUrl": "https://zuiveramsterdam.nl/wellness/opgietingen/",
+      "type": "website",
+      "status": "actief",
+      "notities": "Bevestigd.",
+      "laatstGecontroleerd": "2026-07-25"
+    },
+    {
+      "id": "sauna-ridderrode",
+      "naam": "Sauna Ridderrode",
+      "land": "NL",
+      "provincie": "Noord-Holland",
+      "website": "https://www.saunaridderrode.nl",
+      "agendaUrl": "https://www.saunaridderrode.nl/sauna/",
+      "type": "website",
+      "status": "geen-agenda",
+      "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) — handmatig controleren.",
+      "laatstGecontroleerd": "2026-07-25"
+    },
+    {
+      "id": "thermen-holiday",
+      "naam": "Thermen Holiday",
+      "land": "NL",
+      "provincie": "Zuid-Holland",
+      "website": "https://thermenholiday.nl",
+      "agendaUrl": "https://thermenholiday.nl/wellness-rituelen/wellness-events",
+      "type": "website",
+      "status": "actief",
+      "notities": "Pad bijgewerkt (score 10).",
+      "laatstGecontroleerd": "2026-07-25"
+    },
+    {
+      "id": "thermen-barendrecht",
+      "naam": "Thermen Barendrecht",
+      "land": "NL",
+      "provincie": "Zuid-Holland",
+      "website": "https://thermenbarendrecht.nl",
+      "agendaUrl": "https://thermenbarendrecht.nl/wellnessrituelen/wellness-events",
+      "type": "website",
+      "status": "actief",
+      "notities": "Pad bijgewerkt (score 10).",
+      "laatstGecontroleerd": "2026-07-25"
+    },
+    {
+      "id": "thermen-goirle",
+      "naam": "Thermen Goirle",
+      "land": "NL",
+      "provincie": "Noord-Brabant",
+      "website": "https://www.thermengoirle.nl",
+      "agendaUrl": "https://www.thermengoirle.nl/info/opgietingen-en-klankschalensessies/",
+      "type": "website",
+      "status": "actief",
+      "notities": "Bevestigd.",
+      "laatstGecontroleerd": "2026-07-25"
+    },
+    {
+      "id": "spa-wellness-venlo",
+      "naam": "Spa Wellness Venlo",
+      "land": "NL",
+      "provincie": "Limburg",
+      "website": "https://spawellnessvenlo.nl",
+      "agendaUrl": "https://spawellnessvenlo.nl/sauna/opgietingen/",
+      "type": "website",
+      "status": "actief",
+      "notities": "Bevestigd.",
+      "laatstGecontroleerd": "2026-07-25"
+    },
+    {
+      "id": "palestra",
+      "naam": "Palestra Beauty & Wellness",
+      "land": "NL",
+      "provincie": "Gelderland",
+      "website": "https://www.palestra.nl",
+      "agendaUrl": "https://www.palestra.nl/wellness/",
+      "type": "website",
+      "status": "geen-agenda",
+      "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) — handmatig controleren.",
+      "laatstGecontroleerd": "2026-07-25"
+    },
+    {
+      "id": "elaisa-wellness",
+      "naam": "Elaisa Energetic Wellness",
+      "land": "BE",
+      "provincie": "Limburg (BE)",
+      "website": "https://www.elaisawellness.com",
+      "agendaUrl": "https://www.elaisawellness.com/events/opgietingen-belevenissen/",
+      "type": "website",
+      "status": "actief",
+      "notities": "Pad bijgewerkt (score 50).",
+      "laatstGecontroleerd": "2026-07-25"
+    },
+    {
+      "id": "asanti",
+      "naam": "Asanti",
+      "land": "BE",
+      "provincie": "Oost-Vlaanderen",
+      "website": "https://asanti.be",
+      "agendaUrl": "https://asanti.be/het-opgietritueel-meer-dan-alleen-stoom/",
+      "type": "website",
+      "status": "actief",
+      "notities": "Pad bijgewerkt (score 40).",
+      "laatstGecontroleerd": "2026-07-25"
+    },
+    {
+      "id": "sane-thermen",
+      "naam": "Sané Thermen",
+      "land": "BE",
+      "provincie": "Limburg (BE)",
+      "website": "https://sane-thermen.be/nl/",
+      "agendaUrl": "https://sane-thermen.be/nl/opgietsessie/",
+      "type": "website",
+      "status": "actief",
+      "notities": "Pad bijgewerkt (score 30).",
+      "laatstGecontroleerd": "2026-07-25"
+    },
+    {
+      "id": "lago-brugge",
+      "naam": "LAGO Brugge Olympia",
+      "land": "BE",
+      "provincie": "West-Vlaanderen",
+      "website": "https://www.lago.be/nl/brugge",
+      "agendaUrl": "https://www.lago.be/nl/brugge/wellness/wellness-nights",
+      "type": "website",
+      "matchToken": "brugge",
+      "status": "actief",
+      "notities": "Handmatig teruggezet 2026-07-25: discovery koos een verlopen actiepagina (valentijn-2026); de opgietsessies staan op de Wellness Nights-pagina.",
+      "laatstGecontroleerd": "2026-07-25"
+    },
+    {
       "id": "aquatopia-sauna-be",
       "naam": "Overige BE-sauna's (placeholder)",
       "land": "BE",
@@ -350,7 +507,7 @@
       "agendaUrl": "",
       "type": "website",
       "status": "aanvullen",
-      "notities": "Placeholder: BE-lijst verder aanvullen (bijv. Eden, Octopus, overige LAGO-locaties)."
+      "notities": "Placeholder: BE-lijst verder aanvullen. Gecheckt 2026-07-25: Octopus/Eden/Yuma/Pure Wellness zonder eigen-site-bewijs voor opgietingen; LAGO Kortrijk Weide geen opgietsessies. Reserve-kandidaat: LAGO Gent Rozebroeken (opgietsessies tijdens Pure Wellness-momenten + eerste dinsdag/maand op eigen pagina)."
     },
     {
       "id": "aufguss-wm-community",
