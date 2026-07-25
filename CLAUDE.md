@@ -23,8 +23,8 @@ Opgietingen.nl is dé agenda voor opgiet-evenementen (Aufguss-sessies, opgietwee
 | Content parsing | `gray-matter` (frontmatter) + `next-mdx-remote/rsc` (MDX-body) |
 | Fonts | `next/font/google` — Fraunces (display) + Inter (body) |
 | Hosting | Vercel (auto-deploy via git push) |
-| Kaart | Leaflet + OpenStreetMap (nog te implementeren) |
-| Analytics | Plausible of Vercel Analytics (nog te implementeren) |
+| Kaart | Leaflet + OpenStreetMap (overzichtskaart op `/saunas`; OSM-iframe-embed op detailpagina's) |
+| Analytics | Vercel Web Analytics + Speed Insights (in `src/app/layout.tsx`) |
 
 ## Projectstructuur
 
