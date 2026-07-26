@@ -123,6 +123,67 @@ Winter/kerst-variant:
 
 ---
 
+## Sauna-sfeerbeelden in bulk (20 nieuwe profielen, juli 2026)
+
+De 20 profielen uit de uitbreiding van 25 juli tonen nu hun logo; een sfeerbeeld is
+de mooiste upgrade. **Let op de kanttekening bovenaan dit document:** dit blijven
+AI-sfeerimpressies, geen echte foto's van de locatie — echte (met toestemming
+verkregen) foto's blijven op termijn beter voor vertrouwen/E-E-A-T. De scenes
+hieronder zijn daarom sfeer-generiek gehouden, geïnspireerd op wat elke sauna
+bijzonder maakt, zonder gebouwen of interieurs na te bootsen.
+
+**Werkwijze:** plak eerst de masterprompt hieronder in ChatGPT, en vraag daarna per
+beeld "generate scene 3" (of plak de scene-regel). Sla elk beeld op als
+`public/images/saunas/<bestandsnaam>` (exact de naam uit de lijst) en zet daarna in
+de frontmatter van het profiel: `afbeelding: /images/saunas/<bestandsnaam>`.
+
+### Masterprompt (één keer plakken)
+
+> You will generate a series of photorealistic horizontal images (16:9) for sauna
+> profile pages on a Dutch wellness website. Every image in the series must share the
+> exact same style so they feel like one collection:
+>
+> Mood & style: warm, inviting, premium and editorial — like a luxury wellness
+> magazine. Calm, atmospheric, slightly cinematic. Soft natural steam and warm light.
+> No people, or only anonymous silhouettes seen from behind.
+>
+> Color palette: warm cream and sand backgrounds, deep warm brown wood tones, a
+> glowing ember/terracotta orange accent (#c1592a) for warmth, and soft cool
+> steam-grey highlights. Warm, low, golden lighting. Avoid cold blue tones, avoid
+> neon, avoid oversaturation.
+>
+> Composition: clean and uncluttered, natural depth of field, rule-of-thirds framing.
+>
+> Avoid: text, logos, watermarks, signage, cartoon/illustration style, cheap
+> stock-photo feel.
+>
+> I will ask for one scene at a time from a numbered list.
+
+### Scenes (bestandsnaam → scene-regel)
+
+1. `sauna-swoll.jpg` — *a warm wooden sauna house beside a natural ecological swimming pond in an English landscape garden at golden hour, reeds and soft reflections, a wisp of steam.*
+2. `sauna-zuidwolde.jpg` — *a rustic thatched farmhouse converted into a countryside sauna, warm light glowing from small windows at dusk, flat Dutch farmland behind.*
+3. `thermen-bad-nieuweschans.jpg` — *a steaming outdoor mineral water bath at dusk at a spa resort, bathers' towels on the edge, soft rising vapour catching golden light.*
+4. `spa-loppersum.jpg` — *a close-up of a wood-fired sauna stove with crackling logs and glowing embers, a water bucket and ladle beside it, intimate small-spa atmosphere.*
+5. `zuiver-amsterdam.jpg` — *a spa sun terrace with loungers at the edge of a green forest, morning mist between the trees, towels folded on the loungers, serene urban escape.*
+6. `sauna-ridderrode.jpg` — *an intimate herbal sauna room with a wooden infusion bucket at its centre, bundles of dried herbs hanging, warm candle-like light, dune landscape hinted through a small window.*
+7. `thermen-holiday.jpg` — *a tall tower-like wooden sauna cabin in a themed sauna garden at dusk, playful lantern light, winding path with warm glow.*
+8. `thermen-barendrecht.jpg` — *the interior of a kelo log sauna built from thick ancient pine trunks, steam rising from the stove, deep warm wood tones.*
+9. `thermen-goirle.jpg` — *a large amphitheatre-style Aufguss cabin with tiered benches ready for a session, towels laid out, dramatic warm light on the central stove.*
+10. `spa-wellness-venlo.jpg` — *a sauna house beside a small natural bathing pond, rose petals on a wooden tray in the foreground, soft summer evening light.*
+11. `palestra.jpg` — *Lapland-style log kota cabins with softly glowing windows in a wooded holiday park at blue hour, warm lantern light on a wooden walkway.*
+12. `sauna-drome.jpg` — *a small wooden boat-shaped sauna floating on calm water at golden hour, gentle smoke from its chimney, reeds and reflections.*
+13. `elaisa-wellness.jpg` — *a sauna interior lined with thousands of woven willow branches, a wall of warm organic texture, view over a quiet lake through a panoramic window.*
+14. `sane-thermen.jpg` — *steaming thermal pools in a modern bathing house with Roman touches, arched warm lighting, bathers as distant silhouettes in swimwear.*
+15. `asanti.jpg` — *a kelo wood sauna with ritual towels folded on the bench and essential-oil bottles on a tray, terrace with pond view through the door opening.*
+16. `lago-brugge.jpg` — *an outdoor barrel sauna glowing warmly on a terrace at evening, soft pool lights in the background, inviting after-swim calm.*
+17. `waer-waters.jpg` — *a panoramic sauna with a wide window overlooking landscaped gardens at dusk, tiered benches in warm light, quiet luxury.*
+18. `thermen-dilbeek.jpg` — *a heated outdoor pool steaming on a cold evening, warm underwater light, frost on the surrounding plants, cosy contrast of heat and cold.*
+19. `thermen-londerzeel.jpg` — *a natural pond used as a cool-down bath beside a sauna house, wooden steps into dark calm water, early evening light, a hint of steam.*
+20. `thermen-katara.jpg` — *a Thai-inspired sauna temple interior with carved wood details and golden accents, incense-like steam in warm light, serene and exotic.*
+
+---
+
 ## Tips
 
 - Vraag om varianten: voeg toe *"Give me 3 variations with different compositions."*
