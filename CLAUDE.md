@@ -145,6 +145,7 @@ npm run scrape -- --dry-run   # test de pipeline + poort zonder API-keys
 npm run scrape-mail     # verwerk ongelezen nieuwsbrieven uit de inbox (IMAP + ANTHROPIC_API_KEY)
 npm run scrape-mail -- --dry-run  # mock-inbox; test matching + poort zonder keys
 npm run check-roosters  # hercontroleer verouderde opgietroosters (ANTHROPIC_API_KEY)
+npm run fetch-logos     # haal logo's op voor sauna-profielen zonder beeld (geen keys nodig)
 npm run scrape-report   # bouw scrape-issue.md + print problemen/schoon
 
 ```

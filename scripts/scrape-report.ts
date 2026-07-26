@@ -51,6 +51,24 @@ function actieveZonderProfiel(): string[] {
   return bronnen.filter((b) => b.status === "actief" && !slugs.has(b.id)).map((b) => b.naam);
 }
 
+const SAUNAS_DIR = path.join(process.cwd(), "content", "saunas");
+
+/**
+ * Sauna-profielen zonder afbeelding én zonder logo tonen de gradient-
+ * placeholder op de site; die willen we alleen als het echt niet anders kan.
+ * `npm run fetch-logos` lost het meestal op; anders een sfeerbeeld genereren
+ * via docs/image-prompts.md.
+ */
+function profielenZonderBeeld(): string[] {
+  if (!fs.existsSync(SAUNAS_DIR)) return [];
+  const out: string[] = [];
+  for (const f of fs.readdirSync(SAUNAS_DIR).filter((f) => f.endsWith(".mdx"))) {
+    const { data } = matter(fs.readFileSync(path.join(SAUNAS_DIR, f), "utf8"));
+    if (!data.afbeelding && !data.logo) out.push(String(data.naam ?? f));
+  }
+  return out;
+}
+
 interface RoosterAandacht {
   naam: string;
   detail: string;
@@ -117,13 +135,15 @@ function main() {
   const problematischeBronnen = bronnen.filter((b) => PROBLEEM_STATUSSEN.has(b.status));
   const roosters = roosterProblemen(new Date().toISOString().slice(0, 10));
   const warnings = scrapeWarnings();
+  const zonderBeeld = profielenZonderBeeld();
 
   const problemen =
     concepts.length > 0 ||
     problematischeBronnen.length > 0 ||
     zonderProfiel.length > 0 ||
     roosters.length > 0 ||
-    warnings.length > 0;
+    warnings.length > 0 ||
+    zonderBeeld.length > 0;
 
   const lines: string[] = [];
   lines.push("<!-- scraper-issue -->");
@@ -147,6 +167,15 @@ function main() {
     lines.push("Maak handmatig een profiel aan in `content/saunas/` zodat events zichtbaar worden:");
     lines.push("");
     for (const naam of zonderProfiel) lines.push(`- ${naam}`);
+    lines.push("");
+  }
+
+  if (zonderBeeld.length > 0) {
+    lines.push("## Sauna-profielen met placeholder-beeld");
+    lines.push("");
+    lines.push("Deze profielen tonen de gradient-placeholder. Draai `npm run fetch-logos` of genereer een sfeerbeeld (docs/image-prompts.md):");
+    lines.push("");
+    for (const naam of zonderBeeld) lines.push(`- ${naam}`);
     lines.push("");
   }
 
