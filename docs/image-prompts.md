@@ -108,6 +108,18 @@ Winter/kerst-variant:
   `opgietset-emmer-lepel.jpg`): *a wooden sauna bucket with ladle resting on a sauna
   bench beside a small hourglass, a wisp of steam rising from hot stones behind,
   close-up, editorial.*
+- **Gids opgietbegrippen** (`/gids/opgietbegrippen-uitgelegd`, bestandsnaam-suggestie
+  `opgietbegrippen-stoom-kelle.jpg`): *a close-up of a wooden sauna ladle pouring water
+  onto glowing hot stones, a dense cloud of steam rising and catching warm golden
+  backlight, dark wooden sauna interior softly blurred behind, sensory and elemental.*
+- **Gids Aufguss-etiquette** (`/gids/aufguss-etiquette`, bestandsnaam-suggestie
+  `aufguss-etiquette-saunabanken.jpg`): *neatly spread towels on tiered wooden sauna
+  benches awaiting guests, a calm and orderly sauna cabin just before an Aufguss
+  session, soft steam near the stove, warm quiet anticipation, no people.*
+- **Gids veilig opgieten** (`/gids/veilig-opgieten`, bestandsnaam-suggestie
+  `veilig-opgieten-waterfles.jpg`): *a glass water bottle and a folded towel resting on
+  a wooden bench outside a sauna cabin door, soft daylight from a window, a hint of
+  steam behind the glass door, calm restorative mood.*
 
 ---
 
