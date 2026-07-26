@@ -134,7 +134,8 @@ test("mdxExcerpt stript markdown en kapt af op een woordgrens", async () => {
   );
   const lang = mdxExcerpt(`Woord ${"heelerglang ".repeat(30)}einde`, 80);
   assert.ok(lang.length <= 81 && lang.endsWith("…"));
-  assert.equal(mdxExcerpt("Toegang \\<12 jaar en \\{gratis\\} entree."), "Toegang 12 jaar en gratis entree.");
+  // Ge-escapete MDX-syntax uit de scraper (\< en \{) wordt weer leesbare tekst.
+  assert.equal(mdxExcerpt("Toegang \\<12 jaar en \\{gratis\\} entree."), "Toegang <12 jaar en {gratis} entree.");
 });
 
 /* ---------- htmlToText entity-decodering ---------- */
