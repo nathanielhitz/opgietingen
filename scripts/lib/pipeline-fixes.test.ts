@@ -124,6 +124,19 @@ test("OPGIET_RE herkent Vlaamse/Baltische ritueel-termen met woordgrenzen", () =
   assert.ok(!OPGIET_RE.test("Moederdagbrunch met bubbels"));
 });
 
+/* ---------- mdxExcerpt (hovercard-samenvatting) ---------- */
+
+test("mdxExcerpt stript markdown en kapt af op een woordgrens", async () => {
+  const { mdxExcerpt } = await import("../../src/lib/content");
+  assert.equal(
+    mdxExcerpt("## Kop\n\nEen **stevige** opgieting met [muziek](https://x.nl) en meer."),
+    "Een stevige opgieting met muziek en meer.",
+  );
+  const lang = mdxExcerpt(`Woord ${"heelerglang ".repeat(30)}einde`, 80);
+  assert.ok(lang.length <= 81 && lang.endsWith("…"));
+  assert.equal(mdxExcerpt("Toegang \\<12 jaar en \\{gratis\\} entree."), "Toegang 12 jaar en gratis entree.");
+});
+
 /* ---------- htmlToText entity-decodering ---------- */
 
 test("htmlToText decodeert betekenisdragende entities", () => {

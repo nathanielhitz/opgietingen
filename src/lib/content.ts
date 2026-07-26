@@ -116,6 +116,25 @@ function toISODate(value: unknown): string | undefined {
 }
 
 /** Simpele, diacritics-veilige slugify (bv. "Noord-Holland" -> "noord-holland"). */
+/**
+ * Platte-tekst-samenvatting van een MDX-body, voor previews/hovercards.
+ * Strip markdown/JSX en kap af op een woordgrens.
+ */
+export function mdxExcerpt(body: string, maxChars = 160): string {
+  const plat = body
+    .replace(/^#+\s.*$/gm, " ") // koppen zijn structuur, geen lopende tekst
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/[*_`>#\\]/g, "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (plat.length <= maxChars) return plat;
+  const afgekapt = plat.slice(0, maxChars);
+  const laatsteSpatie = afgekapt.lastIndexOf(" ");
+  return `${afgekapt.slice(0, laatsteSpatie > 60 ? laatsteSpatie : maxChars).replace(/[,;:]$/, "")}…`;
+}
+
 export function slugify(input: string): string {
   return input
     .toLowerCase()

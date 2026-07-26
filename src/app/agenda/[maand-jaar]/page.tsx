@@ -6,6 +6,8 @@ import { monthYearSlug, monthYearLabel, parseMonthYearSlug, todayISO } from "@/l
 import { eventItemListSchema } from "@/lib/schema";
 import { JsonLd } from "@/components/JsonLd";
 import { EventCard } from "@/components/EventCard";
+import { EventHoverCard } from "@/components/EventHoverCard";
+import { EventPreview } from "@/components/EventPreview";
 import { Breadcrumb } from "@/components/Breadcrumb";
 
 type Params = Promise<{ "maand-jaar": string }>;
@@ -83,7 +85,9 @@ export default async function MonthPage({ params }: { params: Params }) {
         <ul className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((event) => (
             <li key={event.slug}>
-              <EventCard event={event} />
+              <EventHoverCard kaart={<EventPreview event={event} />}>
+                <EventCard event={event} />
+              </EventHoverCard>
             </li>
           ))}
         </ul>

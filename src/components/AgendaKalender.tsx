@@ -3,6 +3,8 @@ import type { OpgietEvent } from "@/lib/content";
 import type { EventType } from "@/lib/site";
 import { EVENT_TYPES } from "@/lib/site";
 import { MONTHS_NL, monthYearLabel, parseMonthYearSlug } from "@/lib/dates";
+import { EventHoverCard } from "@/components/EventHoverCard";
+import { EventPreview } from "@/components/EventPreview";
 
 /*
   Kalenderweergave voor /agenda (?weergave=kalender&maand=<maand-jaar>).
@@ -163,17 +165,18 @@ export function AgendaKalender({
                   <ul className="mt-0.5 space-y-0.5">
                     {dagEvents.map((e) => (
                       <li key={e.slug}>
-                        <Link
-                          href={`/event/${e.slug}`}
-                          title={`${e.titel} · ${e.sauna.naam}`}
-                          className={`flex items-center gap-1 rounded px-0.5 py-0.5 text-[11px] leading-tight transition-colors hover:bg-ember-tint sm:px-1 ${
-                            isVerleden ? "text-ink-faint/70" : "text-ink-soft hover:text-ember"
-                          }`}
-                        >
-                          <span aria-hidden className={`h-1.5 w-1.5 shrink-0 rounded-full ${TYPE_DOT[e.type]}`} />
-                          <span className="hidden truncate sm:inline">{e.titel}</span>
-                          <span className="sr-only sm:hidden">{e.titel}</span>
-                        </Link>
+                        <EventHoverCard kaart={<EventPreview event={e} />}>
+                          <Link
+                            href={`/event/${e.slug}`}
+                            className={`flex items-center gap-1 rounded px-0.5 py-0.5 text-[11px] leading-tight transition-colors hover:bg-ember-tint sm:px-1 ${
+                              isVerleden ? "text-ink-faint/70" : "text-ink-soft hover:text-ember"
+                            }`}
+                          >
+                            <span aria-hidden className={`h-1.5 w-1.5 shrink-0 rounded-full ${TYPE_DOT[e.type]}`} />
+                            <span className="hidden truncate sm:inline">{e.titel}</span>
+                            <span className="sr-only sm:hidden">{e.titel}</span>
+                          </Link>
+                        </EventHoverCard>
                       </li>
                     ))}
                   </ul>
