@@ -23,6 +23,17 @@ export function SaunaCard({ sauna, eventCount }: { sauna: Sauna; eventCount?: nu
             Uitgelicht
           </span>
         )}
+        {/* Logo-chip alleen naast een echte foto; zonder foto is het logo al het hoofdbeeld. */}
+        {sauna.logo && sauna.afbeelding && (
+          <span
+            className={`absolute bottom-3 left-3 inline-flex h-11 items-center rounded-lg px-3 shadow-sm ${
+              sauna.logoAchtergrond === "donker" ? "bg-wood-dark/90" : "bg-white/95"
+            }`}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element -- logo's hebben per sauna andere verhoudingen; next/image vereist vaste maten */}
+            <img src={sauna.logo} alt="" className="h-7 w-auto max-w-40 object-contain" />
+          </span>
+        )}
       </div>
       <div className="flex flex-1 flex-col p-4">
         <h3 className="font-display text-lg font-semibold text-ink transition-colors group-hover:text-ember">
