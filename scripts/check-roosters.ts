@@ -17,6 +17,9 @@
     npm run check-roosters                  # hercheck verouderde roosters
     npm run check-roosters -- --max-dagen 30
     npm run check-roosters -- --dry-run     # alleen tonen wat verouderd is
+    npm run check-roosters -- --sauna thermae-boetfort
+                                            # hercheck één profiel, ongeacht
+                                            # hoe vers roosterGecheckt is
 
   Env: ANTHROPIC_API_KEY (zonder key slaat het script zichzelf netjes over).
 */
@@ -38,6 +41,12 @@ function argValue(name: string): string | undefined {
 
 const DRY_RUN = process.argv.includes("--dry-run");
 const MAX_DAGEN = argValue("--max-dagen") ? Number(argValue("--max-dagen")) : 60;
+/**
+ * Eén profiel gericht hercontroleren, ook als roosterGecheckt nog vers is. Een
+ * afwijking die één keer gemeld is verdwijnt anders uit beeld tot het profiel
+ * na --max-dagen vanzelf weer aan de beurt is.
+ */
+const SAUNA = argValue("--sauna");
 const VANDAAG = todayISOInTimeZone();
 const RAPPORT_PATH = "rooster-check.json";
 
@@ -125,11 +134,22 @@ async function beoordeelRooster(
 
 async function main() {
   const profielen = readRoosterProfielen();
-  const verouderd = profielen.filter((p) => isVerouderd(p.gecheckt, VANDAAG, MAX_DAGEN));
+
+  if (SAUNA && !profielen.some((p) => p.slug === SAUNA)) {
+    console.log(`Geen profiel met een opgietRooster voor "${SAUNA}".`);
+    process.exitCode = 1;
+    return;
+  }
+
+  const verouderd = SAUNA
+    ? profielen.filter((p) => p.slug === SAUNA)
+    : profielen.filter((p) => isVerouderd(p.gecheckt, VANDAAG, MAX_DAGEN));
 
   console.log(
-    `Rooster-hercheck${DRY_RUN ? " (DRY-RUN)" : ""}: ${verouderd.length} van ${profielen.length} ` +
-      `roosters ouder dan ${MAX_DAGEN} dagen (referentie ${VANDAAG}).\n`,
+    SAUNA
+      ? `Rooster-hercheck${DRY_RUN ? " (DRY-RUN)" : ""}: alleen ${SAUNA} (referentie ${VANDAAG}).\n`
+      : `Rooster-hercheck${DRY_RUN ? " (DRY-RUN)" : ""}: ${verouderd.length} van ${profielen.length} ` +
+          `roosters ouder dan ${MAX_DAGEN} dagen (referentie ${VANDAAG}).\n`,
   );
 
   if (verouderd.length === 0) {
@@ -228,6 +248,17 @@ async function main() {
     }
 
     await sleep(REQUEST_DELAY_MS);
+  }
+
+  // Een gerichte --sauna-run bekijkt maar één profiel; die uitkomst mag het
+  // rapport van een volledige run niet vervangen (scrape-report leest dit als
+  // "alles wat gecontroleerd is").
+  if (SAUNA) {
+    console.log(
+      `\nKlaar. ${bevestigd} bevestigd, ${problemen.length} probleem/problemen, ` +
+        `${nietControleerbaar.length} niet controleerbaar (${RAPPORT_PATH} niet overschreven bij --sauna).`,
+    );
+    return;
   }
 
   fs.writeFileSync(
