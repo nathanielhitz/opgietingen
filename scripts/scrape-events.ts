@@ -21,8 +21,10 @@ import path from "node:path";
 import {
   readBronnen,
   existingEventTitles,
+  existingTitelDatumIndex,
   existingSaunaSlugs,
   dedupKey,
+  titelDatumKey,
   slugify,
   writeEventMdx,
   type NewEvent,
@@ -101,6 +103,9 @@ async function main() {
   );
 
   const existing = existingEventTitles();
+  // Groeit tijdens de run mee met wat we wegschrijven, zodat twee sauna's die
+  // in dezelfde run hetzelfde event aankondigen elkaar ook opvangen.
+  const perTitelDatum = existingTitelDatumIndex();
   const saunaSlugs = existingSaunaSlugs();
   const seen = new Set<string>(); // dedup binnen deze run
   const rapportWarnings: { bron: string; melding: string }[] = [];
@@ -173,18 +178,39 @@ async function main() {
         { saunaSlugs, today: TODAY },
       );
 
+      // Een afgelopen datum wordt elke run opnieuw afgekeurd, dus een concept
+      // als dedup-anker levert niets op — alleen een bestand dat voorgoed in
+      // het weekrapport blijft staan. Niet wegschrijven.
+      if (verdict.verleden) {
+        console.log(`  · voorbij: ${ev.titel} (${ev.startDatum}) — niet weggeschreven.`);
+        skipped++;
+        continue;
+      }
+
+      // Zelfde titel op dezelfde dag bij een ándere sauna: vrijwel altijd een
+      // keten-sauna die het event van een collega aankondigt. Nooit
+      // automatisch publiceren — anders staat één finale vijf keer op de site.
+      const tdKey = titelDatumKey(ev.titel, ev.startDatum);
+      const eerdereSauna = perTitelDatum.get(tdKey);
+      const isKopie = eerdereSauna !== undefined && eerdereSauna !== bron.id;
+
       // Auto-publiceren vereist het opgiet-trefwoord in de TITEL: een
       // modelgegenereerde beschrijving kan het woord "opgieting" terloops
       // bevatten terwijl het event zelf een brunch is. Trefwoord alleen in de
       // beschrijving → concept, met notitie voor de handmatige check.
       const titelHeeftTrefwoord = OPGIET_RE.test(ev.titel);
       const status: "concept" | "gepubliceerd" =
-        verdict.passed && AUTO_PUBLISH && titelHeeftTrefwoord ? "gepubliceerd" : "concept";
+        verdict.passed && AUTO_PUBLISH && titelHeeftTrefwoord && !isKopie
+          ? "gepubliceerd"
+          : "concept";
+      const kopieNotitie = `zelfde titel en datum staan al bij "${eerdereSauna}" — waarschijnlijk kondigt deze sauna het event van een ander alleen aan; handmatig beoordelen`;
       const keurNotitie = !verdict.passed
         ? verdict.redenen.join("; ")
-        : titelHeeftTrefwoord
-          ? undefined
-          : "poort ok, maar opgiet-trefwoord staat alleen in de beschrijving, niet in de titel — handmatig beoordelen en publiceren";
+        : isKopie
+          ? kopieNotitie
+          : titelHeeftTrefwoord
+            ? undefined
+            : "poort ok, maar opgiet-trefwoord staat alleen in de beschrijving, niet in de titel — handmatig beoordelen en publiceren";
 
       const newEvent: NewEvent = {
         saunaSlug: bron.id,
@@ -203,6 +229,7 @@ async function main() {
       const path = writeEventMdx(newEvent, DOEL_DIR);
       if (path) {
         seen.add(key);
+        if (!perTitelDatum.has(tdKey)) perTitelDatum.set(tdKey, bron.id);
         written++;
         console.log(
           `  + ${status}${keurNotitie ? " (concept: " + keurNotitie + ")" : ""} — ${ev.titel}`,

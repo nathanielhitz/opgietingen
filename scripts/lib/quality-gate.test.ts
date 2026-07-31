@@ -28,11 +28,20 @@ test("datum in het verleden wordt afgekeurd", () => {
   const r = evaluateEvent(ev({ startDatum: "2026-01-01" }), ctx);
   assert.equal(r.passed, false);
   assert.ok(r.redenen.some((m) => m.includes("verleden")));
+  assert.equal(r.verleden, true);
 });
 
 test("event vandaag telt als toekomst (niet afgekeurd op datum)", () => {
   const r = evaluateEvent(ev({ startDatum: "2026-07-11" }), ctx);
   assert.ok(!r.redenen.some((m) => m.includes("verleden")));
+  assert.equal(r.verleden, false);
+});
+
+test("verleden-vlag blijft uit bij een ongeldig datumformaat", () => {
+  // Onparseerbaar is iets anders dan voorbij: zo'n event mag de aanroeper wél
+  // als concept wegschrijven, want een correctie kan het alsnog geldig maken.
+  const r = evaluateEvent(ev({ startDatum: "19-09-2026" }), ctx);
+  assert.equal(r.verleden, false);
 });
 
 test("ongeldig datumformaat wordt afgekeurd", () => {

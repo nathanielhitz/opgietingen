@@ -138,14 +138,51 @@ export function existingEventKeys(): Set<string> {
  */
 export function existingEventTitles(): Map<string, string> {
   const map = new Map<string, string>();
-  if (!fs.existsSync(EVENTS_DIR)) return map;
+  for (const ev of readEventFrontmatter()) {
+    map.set(dedupKey(ev.saunaSlug, ev.startDatum), ev.titel);
+  }
+  return map;
+}
+
+/** Frontmatter van alle events met een bruikbare saunaSlug + startDatum. */
+function readEventFrontmatter(): { saunaSlug: string; startDatum: string; titel: string }[] {
+  if (!fs.existsSync(EVENTS_DIR)) return [];
+  const out: { saunaSlug: string; startDatum: string; titel: string }[] = [];
   for (const file of fs.readdirSync(EVENTS_DIR)) {
     if (!file.endsWith(".mdx")) continue;
     const { data } = matter(fs.readFileSync(path.join(EVENTS_DIR, file), "utf-8"));
     const startDatum = toISODate(data.startDatum);
-    if (data.saunaSlug && startDatum) {
-      map.set(dedupKey(String(data.saunaSlug), startDatum), String(data.titel ?? ""));
-    }
+    if (!data.saunaSlug || !startDatum) continue;
+    out.push({
+      saunaSlug: String(data.saunaSlug),
+      startDatum,
+      titel: String(data.titel ?? ""),
+    });
+  }
+  return out;
+}
+
+/**
+ * Sleutel voor het herkennen van hetzelfde event bij verschillende sauna's:
+ * genormaliseerde titel + startdatum, bewust zónder saunaSlug.
+ */
+export function titelDatumKey(titel: string, startDatum: string): string {
+  return `${slugify(titel)}|${startDatum}`;
+}
+
+/**
+ * titelDatumKey → saunaSlug van het event dat er al ligt. Keten-sauna's
+ * kondigen elkaars events aan (de BeWellness Aufguss Challenge-finale stond zo
+ * vijf keer live), en de dedup op saunaSlug + startDatum ziet dat niet: elke
+ * aankondiger levert een eigen sleutel op. Deze index vangt de kopie op de
+ * titel, zodat alleen de eerste vindplaats automatisch gepubliceerd wordt.
+ */
+export function existingTitelDatumIndex(): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const ev of readEventFrontmatter()) {
+    if (!ev.titel) continue;
+    const key = titelDatumKey(ev.titel, ev.startDatum);
+    if (!map.has(key)) map.set(key, ev.saunaSlug);
   }
   return map;
 }

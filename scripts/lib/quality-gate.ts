@@ -28,6 +28,12 @@ export interface GateContext {
 export interface GateResult {
   passed: boolean;
   redenen: string[]; // leeg wanneer passed === true
+  /**
+   * De startdatum ligt vóór de referentiedatum. Apart van `redenen` omdat de
+   * aanroeper zo'n event helemaal niet wegschrijft: een dedup-anker heeft geen
+   * zin voor een datum die de poort elke run opnieuw afwijst.
+   */
+  verleden: boolean;
 }
 
 // True als s een echt bestaande kalenderdatum in ISO-formaat is.
@@ -39,10 +45,12 @@ export function isRealIsoDate(s: string): boolean {
 
 export function evaluateEvent(ev: GateInput, ctx: GateContext): GateResult {
   const redenen: string[] = [];
+  let verleden = false;
 
   if (!isRealIsoDate(ev.startDatum)) {
     redenen.push(`ongeldige datum: "${ev.startDatum}" is geen geldige YYYY-MM-DD`);
   } else if (ev.startDatum < ctx.today) {
+    verleden = true;
     redenen.push(`datum in het verleden: ${ev.startDatum} < ${ctx.today}`);
   }
 
@@ -63,5 +71,5 @@ export function evaluateEvent(ev: GateInput, ctx: GateContext): GateResult {
     redenen.push("niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)");
   }
 
-  return { passed: redenen.length === 0, redenen };
+  return { passed: redenen.length === 0, redenen, verleden };
 }
