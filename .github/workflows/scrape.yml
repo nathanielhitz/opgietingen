@@ -60,6 +60,7 @@ jobs:
           MAIL_IMAP_USER: ${{ secrets.MAIL_IMAP_USER }}
           MAIL_IMAP_PASS: ${{ secrets.MAIL_IMAP_PASS }}
           MAIL_IMAP_TLS: ${{ secrets.MAIL_IMAP_TLS }}
+          MAIL_VERTROUWDE_AFZENDERS: ${{ secrets.MAIL_VERTROUWDE_AFZENDERS }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           SCRAPE_AUTOPUBLISH: "true"
         run: npm run scrape-mail
