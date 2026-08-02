@@ -150,3 +150,12 @@ test("facebookPaginanaam en matchBronByContent negeren nep-facebook-hosts", () =
   const bronnen = [testBron({ id: "thermen-binnenmaas", facebook: "https://www.facebook.com/ThermenBinnenmaas" })];
   assert.equal(matchBronByContent(bronnen, "zie myfacebook.com/ThermenBinnenmaas"), undefined);
 });
+
+test("matchBronByContent matcht geen host met een vervolg-domeinlabel erachter", () => {
+  const bronnen = [testBron({ id: "thermen-bussloo", website: "https://www.thermenbussloo.nl" })];
+  // host.tld.evil.tld mag niet matchen …
+  assert.equal(matchBronByContent(bronnen, "zie thermenbussloo.nl.evil-tracker.ru"), undefined);
+  // … maar een zin-afsluitende punt en een pad erachter wél.
+  assert.equal(matchBronByContent(bronnen, "Kijk op thermenbussloo.nl.")?.id, "thermen-bussloo");
+  assert.equal(matchBronByContent(bronnen, "zie thermenbussloo.nl/agenda")?.id, "thermen-bussloo");
+});

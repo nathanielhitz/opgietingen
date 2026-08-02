@@ -199,9 +199,11 @@ export function matchBronByContent(bronnen: Bron[], tekst: string): Bron | undef
       // Domeingrens: geen letters/cijfers/koppeltekens direct vóór of ná de
       // host, anders zou "grootthermen.nl" de bron met host "thermen.nl"
       // matchen. Een punt vóór de host (subdomein, bv. "www.thermenbussloo.nl")
-      // mag wel; de lookahead ná de host verbiedt alleen voortzetting van
-      // hetzelfde domeinlabel (de host eindigt zelf al op de TLD).
-      const grens = new RegExp(`(?:^|[^a-z0-9-])${escapeRegExp(host)}(?![a-z0-9-])`);
+      // mag wel. Ná de host verbiedt de lookahead zowel voortzetting van
+      // hetzelfde domeinlabel als een vervolg-domeinlabel na een punt
+      // (host.tld.evil.tld — een klassiek domeinspoofing-patroon waarbij de
+      // echte host als subdomein van een aanvallersdomein wordt misbruikt).
+      const grens = new RegExp(`(?:^|[^a-z0-9-])${escapeRegExp(host)}(?![a-z0-9-]|\\.[a-z0-9])`);
       return grens.test(text);
     } catch {
       return false;
