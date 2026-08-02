@@ -4,6 +4,7 @@ import {
   existingSaunaSlugs,
   existingTitelDatumIndex,
   facebookPaginanaam,
+  isVertrouwdeAfzender,
   matchBronByContent,
   normalizeProseDashes,
   normalizeRangeDashes,
@@ -158,4 +159,21 @@ test("matchBronByContent matcht geen host met een vervolg-domeinlabel erachter",
   // … maar een zin-afsluitende punt en een pad erachter wél.
   assert.equal(matchBronByContent(bronnen, "Kijk op thermenbussloo.nl.")?.id, "thermen-bussloo");
   assert.equal(matchBronByContent(bronnen, "zie thermenbussloo.nl/agenda")?.id, "thermen-bussloo");
+});
+
+/* ---------- isVertrouwdeAfzender ---------- */
+
+test("isVertrouwdeAfzender vergelijkt op volledig adres, case-insensitief", () => {
+  const lijst = "Nathaniel@Example.com, tweede@example.com";
+  assert.equal(isVertrouwdeAfzender("nathaniel@example.com", lijst), true);
+  assert.equal(isVertrouwdeAfzender("  TWEEDE@EXAMPLE.COM ", lijst), true);
+});
+
+test("isVertrouwdeAfzender is false zonder lijst of bij deel-match", () => {
+  assert.equal(isVertrouwdeAfzender("nathaniel@example.com", undefined), false);
+  assert.equal(isVertrouwdeAfzender("nathaniel@example.com", ""), false);
+  // Deel-matches en domein-matches tellen niet: het volledige adres moet kloppen.
+  assert.equal(isVertrouwdeAfzender("evil-nathaniel@example.com", "nathaniel@example.com"), false);
+  assert.equal(isVertrouwdeAfzender("iemand@example.com", "nathaniel@example.com"), false);
+  assert.equal(isVertrouwdeAfzender("", "nathaniel@example.com"), false);
 });

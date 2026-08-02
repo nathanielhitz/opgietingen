@@ -212,6 +212,23 @@ export function matchBronByContent(bronnen: Bron[], tekst: string): Bron | undef
   return byHost.length === 1 ? byHost[0] : undefined;
 }
 
+/**
+ * Staat dit afzenderadres in de kommagescheiden lijst vertrouwde doorstuurders
+ * (env MAIL_VERTROUWDE_AFZENDERS)? Vergelijking op het VOLLEDIGE adres,
+ * lowercase. Trusted bepaalt alleen of de content-match geprobeerd wordt —
+ * nooit de publicatiestatus (een From-header blijft spoofbaar; mail-events
+ * blijven altijd concept).
+ */
+export function isVertrouwdeAfzender(fromAddress: string, lijst: string | undefined): boolean {
+  const from = fromAddress.toLowerCase().trim();
+  if (!from || !lijst) return false;
+  return lijst
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean)
+    .includes(from);
+}
+
 /* ---------- Bestaande events (voor dedup) ---------- */
 
 /** YAML parseert kale datums als Date; normaliseer naar ISO YYYY-MM-DD. */
