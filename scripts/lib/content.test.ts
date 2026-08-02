@@ -176,4 +176,6 @@ test("isVertrouwdeAfzender is false zonder lijst of bij deel-match", () => {
   assert.equal(isVertrouwdeAfzender("evil-nathaniel@example.com", "nathaniel@example.com"), false);
   assert.equal(isVertrouwdeAfzender("iemand@example.com", "nathaniel@example.com"), false);
   assert.equal(isVertrouwdeAfzender("", "nathaniel@example.com"), false);
+  // Een kaal domein als lijst-item mag nooit matchen (borgt tegen substring-refactors).
+  assert.equal(isVertrouwdeAfzender("iemand@example.com", "example.com"), false);
 });

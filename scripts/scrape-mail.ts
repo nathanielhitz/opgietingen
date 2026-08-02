@@ -1,8 +1,12 @@
 /*
   Nieuwsbrief-scraper. Leest ONGELEZEN mails uit de gedeelde inbox
   (events@opgietingen.nl) via de IMAP-laag (src/lib/mail.ts), koppelt elke mail op
-  afzender aan een sauna-bron (→ saunaSlug), extraheert events uit de mailinhoud
-  (src/lib/scraper.ts → Claude), dedupliceert (saunaSlug + startDatum), beoordeelt
+  afzender aan een sauna-bron (→ saunaSlug),
+  mails van vertrouwde doorstuurders (MAIL_VERTROUWDE_AFZENDERS, voor
+  doorgestuurde Facebook-posts) worden bij een gemiste afzender-match op
+  INHOUD gekoppeld (facebook-veld/website-domein via matchBronByContent),
+  extraheert events uit de mailinhoud (src/lib/scraper.ts → Claude), dedupliceert
+  (saunaSlug + startDatum), beoordeelt
   via de kwaliteitspoort en schrijft ze als MDX. Identieke verwerking als de
   website-scraper: status "gepubliceerd" bij poort-pass én SCRAPE_AUTOPUBLISH=true,
   anders "concept" (met keurNotitie).
@@ -13,7 +17,7 @@
     npm run scrape-mail -- --dry-run    # mock-inbox + mock-extractie; geen keys nodig
 
   Env: MAIL_IMAP_HOST/USER/PASS (+ optioneel PORT/TLS/MAILBOX), ANTHROPIC_API_KEY,
-       SCRAPE_AUTOPUBLISH=true (auto-publiceren; standaard uit).
+       MAIL_VERTROUWDE_AFZENDERS (doorstuur-route), SCRAPE_AUTOPUBLISH=true.
 */
 import fs from "node:fs";
 import os from "node:os";
@@ -22,6 +26,8 @@ import {
   readBronnen,
   existingEventKeys,
   existingSaunaSlugs,
+  isVertrouwdeAfzender,
+  matchBronByContent,
   matchBronBySender,
   dedupKey,
   slugify,
@@ -48,6 +54,11 @@ const DOEL_DIR = process.argv.includes("--dry-run")
 const rawLimit = Number(argValue("--limit"));
 const LIMIT = Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : Infinity;
 const TODAY = todayISOInTimeZone();
+// Doorstuur-route: in dry-run een vast mock-adres zodat de route zonder env
+// testbaar is; in productie uitsluitend wat de operator expliciet instelt.
+const VERTROUWDE_AFZENDERS = DRY_RUN
+  ? "doorstuur@voorbeeld.example"
+  : process.env.MAIL_VERTROUWDE_AFZENDERS;
 
 /**
  * Alleen een ticket-URL uit de mail accepteren wanneer die naar het domein van
@@ -80,16 +91,25 @@ function mockMail(): MailMessage[] {
       subject: "Onze opgietingen",
       markdown: "Opgietweekend op 7 maart 2027.",
     },
+    {
+      uid: 3,
+      from: "doorstuur@voorbeeld.example", // vertrouwde doorstuurder → match op inhoud
+      subject: "Fwd: opgietweekend bij Thermen Binnenmaas",
+      markdown:
+        "Opgietweekend op 11 en 12 april 2027 met gast-Aufgussmeisters!\n" +
+        "https://www.facebook.com/ThermenBinnenmaas/posts/pfbid0voorbeeld",
+    },
   ];
 }
 
 /** Mock-extractie voor --dry-run: één geldig toekomstig event uit de mail. */
 function mockOutcome(mail: MailMessage): ScrapeOutcome {
+  const startDatums: Record<number, string> = { 1: "2027-02-14", 2: "2027-03-07", 3: "2027-04-11" };
   const events: ScrapedEvent[] = [
     {
       titel: `Aufguss uit nieuwsbrief (${mail.subject})`,
       type: "thema",
-      startDatum: mail.uid === 1 ? "2027-02-14" : "2027-03-07",
+      startDatum: startDatums[mail.uid] ?? "2027-05-01",
       beschrijving: "Opgieting aangekondigd via de nieuwsbrief.",
     },
   ];
@@ -134,15 +154,20 @@ async function main() {
 
   const verwerkteUids: number[] = [];
   for (const mail of mails) {
-    const bron: Bron | undefined = matchBronBySender(data.bronnen, mail.from);
+    let bron: Bron | undefined = matchBronBySender(data.bronnen, mail.from);
+    let matchRoute = bron ? `sauna: ${bron.id}` : "GEEN match (concept)";
+    // Doorgestuurde post (bv. Facebook) van een vertrouwde doorstuurder: de
+    // afzender zegt dan niets over de sauna, dus match op de mailinhoud.
+    if (!bron && isVertrouwdeAfzender(mail.from, VERTROUWDE_AFZENDERS)) {
+      bron = matchBronByContent(data.bronnen, `${mail.subject}\n${mail.markdown}`);
+      if (bron) matchRoute = `sauna: ${bron.id} (op inhoud, doorgestuurd)`;
+    }
     // Geen match → afzender-slug als saunaSlug; de poort keurt dit af (onbekende
     // saunaSlug) zodat het als concept blijft staan voor handmatige toewijzing.
     const saunaSlug = bron?.id ?? slugify(mail.from);
     const land: "NL" | "BE" = bron?.land === "BE" ? "BE" : "NL";
 
-    console.log(
-      `— ${mail.from} · "${mail.subject}" → ${bron ? `sauna: ${bron.id}` : "GEEN match (concept)"}`,
-    );
+    console.log(`— ${mail.from} · "${mail.subject}" → ${matchRoute}`);
 
     let outcome: ScrapeOutcome;
     try {
