@@ -156,11 +156,18 @@ async function main() {
   for (const mail of mails) {
     let bron: Bron | undefined = matchBronBySender(data.bronnen, mail.from);
     let matchRoute = bron ? `sauna: ${bron.id}` : "GEEN match (concept)";
+    let viaInhoud = false;
     // Doorgestuurde post (bv. Facebook) van een vertrouwde doorstuurder: de
     // afzender zegt dan niets over de sauna, dus match op de mailinhoud.
-    if (!bron && isVertrouwdeAfzender(mail.from, VERTROUWDE_AFZENDERS)) {
+    const vertrouwd = isVertrouwdeAfzender(mail.from, VERTROUWDE_AFZENDERS);
+    if (!bron && vertrouwd) {
+      // Onderwerp én body samen als matchtekst: een link staat soms alleen in
+      // het onderwerp (bv. een doorgestuurde Facebook-post zonder eigen tekst).
       bron = matchBronByContent(data.bronnen, `${mail.subject}\n${mail.markdown}`);
-      if (bron) matchRoute = `sauna: ${bron.id} (op inhoud, doorgestuurd)`;
+      if (bron) {
+        matchRoute = `sauna: ${bron.id} (op inhoud, doorgestuurd)`;
+        viaInhoud = true;
+      }
     }
     // Geen match → afzender-slug als saunaSlug; de poort keurt dit af (onbekende
     // saunaSlug) zodat het als concept blijft staan voor handmatige toewijzing.
@@ -205,8 +212,17 @@ async function main() {
       if (verdict.passed) {
         redenen.push("nieuwsbrief-event: afzender is niet technisch verifieerbaar (spoofing-risico) — handmatig beoordelen en publiceren");
       }
+      if (viaInhoud) {
+        redenen.push("sauna-toewijzing via inhoud van doorgestuurd bericht (facebook-veld/domein) — controleer of dit de juiste sauna is");
+      }
       // Alleen het domein noteren, geen volledig e-mailadres in de repo.
-      if (!bron) redenen.unshift(`nieuwsbrief van onbekende afzender (@${mail.from.split("@")[1] ?? "?"}) — wijs handmatig een sauna toe`);
+      if (!bron) {
+        redenen.unshift(
+          vertrouwd
+            ? "doorgestuurd bericht van vertrouwde afzender, maar geen eenduidige sauna in de inhoud gevonden — wijs handmatig toe"
+            : `nieuwsbrief van onbekende afzender (@${mail.from.split("@")[1] ?? "?"}) — wijs handmatig een sauna toe`,
+        );
+      }
 
       const newEvent: NewEvent = {
         saunaSlug,
