@@ -1,5 +1,5 @@
 {
-  "$comment": "Bronnenlijst voor opgietingen.nl event-scraper. id = saunaSlug (koppelt gescrapete events aan content/saunas/). status: te-verifieren | actief | geen-agenda | handmatig | aanvullen | opzetten | kapot. Alleen 'actief' (type website) wordt gescrapet. matchToken kiest de juiste pagina op multi-locatie-sites.",
+  "$comment": "Bronnenlijst voor opgietingen.nl event-scraper. id = saunaSlug (koppelt gescrapete events aan content/saunas/). status: te-verifieren | actief | geen-agenda | handmatig | aanvullen | opzetten | kapot. Alleen 'actief' (type website) wordt gescrapet. matchToken kiest de juiste pagina op multi-locatie-sites. facebook = URL van de Facebook-pagina (matching-anker voor doorgestuurde posts).",
   "laatstBijgewerkt": "2026-07-25",
   "bronnen": [
     {
@@ -68,6 +68,7 @@
       "land": "NL",
       "provincie": "Zuid-Holland",
       "website": "https://www.thermenbinnenmaas.nl",
+      "facebook": "https://www.facebook.com/ThermenBinnenmaas",
       "agendaUrl": "https://www.thermenbinnenmaas.nl/",
       "type": "website",
       "matchToken": "thermenbinnenmaas",

@@ -30,6 +30,12 @@ export interface Bron {
   land: string; // "NL" | "BE" | "NL/BE"
   provincie?: string;
   website?: string;
+  /**
+   * URL van de Facebook-pagina van de sauna. Matching-anker voor doorgestuurde
+   * social-posts in scrape-mail (en de bronnenlijst voor eventueel later
+   * automatisch FB-scrapen, zie de spec van 2026-08-02).
+   */
+  facebook?: string;
   agendaUrl: string;
   /** website | handmatig | nieuwsbrief. Alleen 'website' wordt gescrapet. */
   type?: string;
