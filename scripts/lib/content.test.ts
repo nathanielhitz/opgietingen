@@ -137,3 +137,16 @@ test("matchBronByContent valt terug op het website-domein, alleen bij een unieke
   // Lege tekst → geen match.
   assert.equal(matchBronByContent(bronnen, "   "), undefined);
 });
+
+test("matchBronByContent matcht geen domein dat als substring in een langer domein zit", () => {
+  const bronnen = [testBron({ id: "thermen", website: "https://thermen.nl" })];
+  assert.equal(matchBronByContent(bronnen, "Zie www.grootthermen.nl voor tijden."), undefined);
+  // Een subdomein van de bron zelf blijft wél matchen.
+  assert.equal(matchBronByContent(bronnen, "Zie www.thermen.nl voor tijden.")?.id, "thermen");
+});
+
+test("facebookPaginanaam en matchBronByContent negeren nep-facebook-hosts", () => {
+  assert.equal(facebookPaginanaam("https://myfacebook.com/ThermenBinnenmaas"), undefined);
+  const bronnen = [testBron({ id: "thermen-binnenmaas", facebook: "https://www.facebook.com/ThermenBinnenmaas" })];
+  assert.equal(matchBronByContent(bronnen, "zie myfacebook.com/ThermenBinnenmaas"), undefined);
+});

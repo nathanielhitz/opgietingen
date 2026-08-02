@@ -135,16 +135,29 @@ const GENERIEKE_FB_SEGMENTEN = new Set([
   "hashtag",
   "l.php",
   "login",
+  "login.php",
 ]);
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Domeingrens vóór "facebook": geen letter/cijfer/koppelteken direct ervoor,
+// anders zou "myfacebook.com" ook matchen. Een punt ervoor (subdomein, zoals
+// "www." of "m.") mag wel, dus die staat niet in de verboden-tekenklasse.
+// Zonder /g-vlag hier: match() geeft dan de capture-group mee; met /g zou
+// alleen de volledige treffer terugkomen (voor de meervoudige zoekactie in
+// matchBronByContent gebruiken we hieronder wél een eigen /g-instantie).
+const FACEBOOK_URL_RE = /(?:^|[^a-z0-9-])facebook\.com\/([a-z0-9._-]+)/;
 
 /**
  * Genormaliseerde paginanaam uit een facebook-URL: het eerste padsegment na
  * facebook.com, lowercase. Werkt voor pagina-URLs én post-URLs, en voor
- * www./m.-varianten (de regex matcht facebook.com als substring van de host).
+ * www./m.-varianten; een domeingrens voorkomt dat "myfacebook.com" meetelt.
  */
 export function facebookPaginanaam(facebookUrl: string | undefined): string | undefined {
   if (!facebookUrl) return undefined;
-  const m = facebookUrl.toLowerCase().match(/facebook\.com\/([a-z0-9._-]+)/);
+  const m = facebookUrl.toLowerCase().match(FACEBOOK_URL_RE);
   const naam = m?.[1];
   return naam && !GENERIEKE_FB_SEGMENTEN.has(naam) ? naam : undefined;
 }
@@ -165,7 +178,7 @@ export function matchBronByContent(bronnen: Bron[], tekst: string): Bron | undef
   if (!text.trim()) return undefined;
 
   const paginasInTekst = new Set(
-    [...text.matchAll(/facebook\.com\/([a-z0-9._-]+)/g)]
+    [...text.matchAll(new RegExp(FACEBOOK_URL_RE.source, "g"))]
       .map((m) => m[1])
       .filter((naam) => !GENERIEKE_FB_SEGMENTEN.has(naam)),
   );
@@ -181,8 +194,15 @@ export function matchBronByContent(bronnen: Bron[], tekst: string): Bron | undef
   const byHost = bronnen.filter((b) => {
     if (!b.website) return false;
     try {
-      const host = new URL(b.website).hostname.replace(/^www\./, "").toLowerCase();
-      return host !== "" && !PLATFORM_HOSTS.has(host) && text.includes(host);
+      const host = new URL(b.website).hostname.replace(/^www\./, "");
+      if (host === "" || PLATFORM_HOSTS.has(host)) return false;
+      // Domeingrens: geen letters/cijfers/koppeltekens direct vóór of ná de
+      // host, anders zou "grootthermen.nl" de bron met host "thermen.nl"
+      // matchen. Een punt vóór de host (subdomein, bv. "www.thermenbussloo.nl")
+      // mag wel; de lookahead ná de host verbiedt alleen voortzetting van
+      // hetzelfde domeinlabel (de host eindigt zelf al op de TLD).
+      const grens = new RegExp(`(?:^|[^a-z0-9-])${escapeRegExp(host)}(?![a-z0-9-])`);
+      return grens.test(text);
     } catch {
       return false;
     }
