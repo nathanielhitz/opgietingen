@@ -32,8 +32,9 @@ export interface Bron {
   website?: string;
   /**
    * URL van de Facebook-pagina van de sauna. Matching-anker voor doorgestuurde
-   * social-posts in scrape-mail (en de bronnenlijst voor eventueel later
-   * automatisch FB-scrapen, zie de spec van 2026-08-02).
+   * social-posts in scrape-mail (matchBronByContent). Automatisch FB-scrapen is
+   * bewust NIET gebouwd (fase B blijft op papier), zie
+   * docs/superpowers/specs/2026-08-02-facebook-doorstuurkanaal-design.md.
    */
   facebook?: string;
   agendaUrl: string;
@@ -110,6 +111,78 @@ export function matchBronBySender(bronnen: Bron[], fromAddress: string): Bron | 
     try {
       const host = new URL(b.website).hostname.replace(/^www\./, "");
       return host !== "" && !PLATFORM_HOSTS.has(host) && (domain === host || domain.endsWith(`.${host}`));
+    } catch {
+      return false;
+    }
+  });
+  return byHost.length === 1 ? byHost[0] : undefined;
+}
+
+// Vaste padsegmenten van Facebook zelf; nooit een paginanaam. Voorkomt dat een
+// bron met een pages/-URL of een share-link in een mail een valse match geeft.
+const GENERIEKE_FB_SEGMENTEN = new Set([
+  "pages",
+  "groups",
+  "events",
+  "people",
+  "profile.php",
+  "share",
+  "story.php",
+  "permalink.php",
+  "photo.php",
+  "watch",
+  "reel",
+  "hashtag",
+  "l.php",
+  "login",
+]);
+
+/**
+ * Genormaliseerde paginanaam uit een facebook-URL: het eerste padsegment na
+ * facebook.com, lowercase. Werkt voor pagina-URLs én post-URLs, en voor
+ * www./m.-varianten (de regex matcht facebook.com als substring van de host).
+ */
+export function facebookPaginanaam(facebookUrl: string | undefined): string | undefined {
+  if (!facebookUrl) return undefined;
+  const m = facebookUrl.toLowerCase().match(/facebook\.com\/([a-z0-9._-]+)/);
+  const naam = m?.[1];
+  return naam && !GENERIEKE_FB_SEGMENTEN.has(naam) ? naam : undefined;
+}
+
+/**
+ * Koppelt een doorgestuurde mail (bv. een Facebook-post van een sauna) op
+ * INHOUD aan een bron — voor mails waarvan de afzender de doorstuurder is en
+ * dus niets over de sauna zegt. Match-volgorde:
+ *   1. facebook-paginanamen in de tekst versus het `facebook`-veld van de
+ *      bronnen (post- en pagina-URLs, www./m.-varianten, hoofdletterongevoelig);
+ *   2. fallback: het website-domein van precies één bron komt in de tekst voor
+ *      (platform-hosts uitgesloten, zelfde reden als bij matchBronBySender).
+ * Uniek of niets: bij twee of meer kandidaten wordt niet gegokt (→ concept
+ * met keurNotitie voor handmatige toewijzing, het bestaande vangnet).
+ */
+export function matchBronByContent(bronnen: Bron[], tekst: string): Bron | undefined {
+  const text = tekst.toLowerCase();
+  if (!text.trim()) return undefined;
+
+  const paginasInTekst = new Set(
+    [...text.matchAll(/facebook\.com\/([a-z0-9._-]+)/g)]
+      .map((m) => m[1])
+      .filter((naam) => !GENERIEKE_FB_SEGMENTEN.has(naam)),
+  );
+  if (paginasInTekst.size) {
+    const byFacebook = bronnen.filter((b) => {
+      const naam = facebookPaginanaam(b.facebook);
+      return naam !== undefined && paginasInTekst.has(naam);
+    });
+    if (byFacebook.length === 1) return byFacebook[0];
+    if (byFacebook.length > 1) return undefined; // ambigu → niet gokken
+  }
+
+  const byHost = bronnen.filter((b) => {
+    if (!b.website) return false;
+    try {
+      const host = new URL(b.website).hostname.replace(/^www\./, "").toLowerCase();
+      return host !== "" && !PLATFORM_HOSTS.has(host) && text.includes(host);
     } catch {
       return false;
     }

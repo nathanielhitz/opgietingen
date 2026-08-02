@@ -3,9 +3,12 @@ import assert from "node:assert/strict";
 import {
   existingSaunaSlugs,
   existingTitelDatumIndex,
+  facebookPaginanaam,
+  matchBronByContent,
   normalizeProseDashes,
   normalizeRangeDashes,
   titelDatumKey,
+  type Bron,
 } from "./content";
 
 test("existingSaunaSlugs bevat bekende profielen", () => {
@@ -67,4 +70,70 @@ test("normalizeProseDashes laat en-streepjes met rust", () => {
 test("normalizeRangeDashes zet een em-streepje om naar een half streepje zonder spaties", () => {
   assert.equal(normalizeRangeDashes("11:00 — 18:00"), "11:00–18:00");
   assert.equal(normalizeRangeDashes("€ 25 — € 40"), "€ 25–€ 40");
+});
+
+/* ---------- matchBronByContent (doorgestuurde Facebook-posts) ---------- */
+
+// Minimale geldige bron voor matching-tests; overrides vullen de rest in.
+function testBron(overrides: Partial<Bron> & Pick<Bron, "id">): Bron {
+  return {
+    naam: overrides.id,
+    land: "NL",
+    agendaUrl: "",
+    status: "actief",
+    ...overrides,
+  };
+}
+
+test("facebookPaginanaam haalt de paginanaam uit URL-varianten", () => {
+  assert.equal(facebookPaginanaam("https://www.facebook.com/ThermenBinnenmaas"), "thermenbinnenmaas");
+  assert.equal(facebookPaginanaam("https://m.facebook.com/ThermenBinnenmaas/"), "thermenbinnenmaas");
+  assert.equal(facebookPaginanaam("facebook.com/SaunaDrome"), "saunadrome");
+  // Generieke segmenten zijn geen paginanaam (oude pages/-URLs, share-links).
+  assert.equal(facebookPaginanaam("https://www.facebook.com/pages/Thermen/12345"), undefined);
+  assert.equal(facebookPaginanaam(undefined), undefined);
+  assert.equal(facebookPaginanaam("https://voorbeeld.nl/geen-facebook"), undefined);
+});
+
+test("matchBronByContent matcht een post-URL op het facebook-veld", () => {
+  const bronnen = [
+    testBron({ id: "thermen-binnenmaas", facebook: "https://www.facebook.com/ThermenBinnenmaas" }),
+    testBron({ id: "sauna-drome", facebook: "https://www.facebook.com/SaunaDrome" }),
+  ];
+  const tekst =
+    "Opgietweekend! https://www.facebook.com/ThermenBinnenmaas/posts/pfbid02ZGUKAGG6j6F695uQJtEgrpd1Kp";
+  assert.equal(matchBronByContent(bronnen, tekst)?.id, "thermen-binnenmaas");
+});
+
+test("matchBronByContent is hoofdletter- en m.facebook-ongevoelig", () => {
+  const bronnen = [testBron({ id: "thermen-binnenmaas", facebook: "https://www.facebook.com/ThermenBinnenmaas" })];
+  assert.equal(matchBronByContent(bronnen, "zie M.FACEBOOK.COM/thermenbinnenmaas/")?.id, "thermen-binnenmaas");
+});
+
+test("matchBronByContent gokt niet bij ambiguïteit", () => {
+  const bronnen = [
+    testBron({ id: "sauna-a", facebook: "https://www.facebook.com/SaunaA" }),
+    testBron({ id: "sauna-b", facebook: "https://www.facebook.com/SaunaB" }),
+  ];
+  // Twee paginanamen in één mail → geen match.
+  const tekst = "facebook.com/SaunaA en facebook.com/SaunaB doen allebei mee!";
+  assert.equal(matchBronByContent(bronnen, tekst), undefined);
+});
+
+test("matchBronByContent valt terug op het website-domein, alleen bij een unieke hit", () => {
+  const bronnen = [
+    testBron({ id: "thermen-bussloo", website: "https://www.thermenbussloo.nl" }),
+    testBron({ id: "sauna-drome", website: "https://saunadrome-putten.nl" }),
+  ];
+  assert.equal(
+    matchBronByContent(bronnen, "Kijk op www.thermenbussloo.nl/agenda voor tijden.")?.id,
+    "thermen-bussloo",
+  );
+  // Twee domeinen in de tekst → ambigu → geen match.
+  assert.equal(
+    matchBronByContent(bronnen, "thermenbussloo.nl en saunadrome-putten.nl"),
+    undefined,
+  );
+  // Lege tekst → geen match.
+  assert.equal(matchBronByContent(bronnen, "   "), undefined);
 });
