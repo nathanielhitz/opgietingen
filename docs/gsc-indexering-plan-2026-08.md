@@ -42,11 +42,24 @@ kent ze uit oude probe-verkeer of een legacy-link.
 
 Impact op rankings: nul. Een 403 op een niet-bestaande URL kost geen posities.
 
-**Optie A (aanbevolen): laten staan.** De firewall doet zijn werk. Wel één controle uitvoeren:
+**Optie A (aanbevolen): laten staan.** De firewall doet zijn werk.
 
-- [ ] Vercel → Project → Firewall → check in de logs dat er **geen echte site-paden**
-      gemitigeerd worden (alleen `*.php` en soortgelijke probes). Duurt 5 minuten en sluit
-      uit dat Googlebot ergens anders geblokkeerd wordt.
+- [x] **Geverifieerd op 2026-08-08** met een volledige crawl van het live domein als Googlebot,
+      wat harder bewijs is dan de dashboardlogs: **alle 140 sitemap-URL's geven 200**, evenals
+      `robots.txt`, `sitemap.xml`, `feed.xml`, `agenda.ics`, `llms.txt`, de dynamische
+      OG-images, de per-event `.ics`-downloads en gefilterde agenda-URL's met querystring.
+      De affiliate-redirect geeft 302. Geen rate-limit of bot-challenge bij 140 snelle
+      requests achtereen.
+
+      De mitigatie is exact één regel breed: **alleen de extensie `.php`** (`/index.php`,
+      `/wp-login.php`, `/admin.php`, `/xmlrpc.php`, `/config.php` → 403), terwijl
+      `/.env`, `/.git/config` en onbekende paden een gewone 404 geven. Op een Next.js-site
+      bestaat geen legitiem `.php`-pad, dus een vals-positief is uitgesloten.
+
+**Conclusie: niets doen.** De twee URLs blijven in GSC als "geblokkeerd" staan — ze verdwijnen
+alleen als ze gaan 404'en of redirecten, en daarvoor zou je de bescherming moeten versoepelen
+op precies het pad dat het vaakst geprobeerd wordt. Slechte ruil voor een rapportregel die
+geen ranking kost.
 
 **Optie B (als je de melding weg wilt):** eerst een custom firewall-rule `path equals /index.php → Allow`
 (custom rules gaan vóór de managed ruleset), daarna in `next.config.ts`:
