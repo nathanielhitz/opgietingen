@@ -113,7 +113,14 @@ function mockOutcome(mail: MailMessage): ScrapeOutcome {
       beschrijving: "Opgieting aangekondigd via de nieuwsbrief.",
     },
   ];
-  return { events, markdown: mail.markdown, method: "none", warnings: ["dry-run: geen echte extractie"] };
+  // Geslaagde methode: "none" betekent nu "extractie faalde" en zou de
+  // dry-run-mails onterecht als onverwerkt laten gelden.
+  return {
+    events,
+    markdown: mail.markdown,
+    method: "claude-fallback",
+    warnings: ["dry-run: geen echte extractie"],
+  };
 }
 
 async function main() {
@@ -250,8 +257,16 @@ async function main() {
         console.log(`  = bestand bestaat al voor: ${ev.titel}`);
       }
     }
-    // Deze mail is volledig verwerkt (ook 0 events telt) → mag als gelezen.
-    verwerkteUids.push(mail.uid);
+    // Alleen na een geslaagde extractie als gelezen markeren. 0 events telt
+    // daarbij als verwerkt (een mail zonder events is gewoon klaar), maar bij
+    // method "none" faalde de extractie — extractEventsFromText vangt zo'n
+    // fout af en gooit niet, dus zonder deze check zou een API-fout de mail
+    // voorgoed onzichtbaar maken en de events definitief verloren laten gaan.
+    if (outcome.method === "none") {
+      console.log("  ⚠ extractie mislukt — mail blijft ongelezen voor de volgende run.");
+    } else {
+      verwerkteUids.push(mail.uid);
+    }
     console.log("");
   }
 

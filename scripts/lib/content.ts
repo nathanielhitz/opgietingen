@@ -229,6 +229,42 @@ export function isVertrouwdeAfzender(fromAddress: string, lijst: string | undefi
     .includes(from);
 }
 
+/**
+ * Geeft de host van `ticketUrl` terug wanneer die naar een ánder domein wijst
+ * dan de sauna zelf; undefined wanneer het het eigen domein (of een subdomein
+ * daarvan) is, of wanneer er geen eigen ticket-URL is.
+ *
+ * Waarom: een gescrapete ticket-URL gaat via /uit/[slug] als 302 de deur uit
+ * onder onze eigen domeinnaam. Externe ticketshops (Eventbrite, Weeztix) zijn
+ * legitiem, dus blokkeren kan niet — maar een URL die op een gekaapte
+ * bronpagina is geïnjecteerd mag nooit automatisch live gaan. De aanroeper
+ * gebruikt dit om zulke events als concept weg te schrijven. Het mailkanaal
+ * heeft zijn eigen, strengere variant (veiligeTicketUrl) omdat een
+ * From-header spoofbaar is en de URL daar wél vervangen mag worden.
+ *
+ * Bij twijfel extern: is de host van de bron zelf niet te bepalen, dan kunnen
+ * we niets vergelijken en telt de ticket-URL als extern (poort-filosofie:
+ * liever een handmatige check te veel dan een verkeerde redirect live).
+ */
+export function externeTicketHost(
+  ticketUrl: string | undefined,
+  bronUrl: string | undefined,
+): string | undefined {
+  const host = (u: string | undefined): string | undefined => {
+    if (!u) return undefined;
+    try {
+      return new URL(u).hostname.toLowerCase().replace(/^www\./, "");
+    } catch {
+      return undefined;
+    }
+  };
+  const ticket = host(ticketUrl);
+  if (!ticket) return undefined;
+  const bron = host(bronUrl);
+  if (!bron) return ticket;
+  return ticket === bron || ticket.endsWith(`.${bron}`) ? undefined : ticket;
+}
+
 /* ---------- Bestaande events (voor dedup) ---------- */
 
 /** YAML parseert kale datums als Date; normaliseer naar ISO YYYY-MM-DD. */

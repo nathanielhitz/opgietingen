@@ -23,6 +23,7 @@ import {
   existingEventTitles,
   existingTitelDatumIndex,
   existingSaunaSlugs,
+  externeTicketHost,
   dedupKey,
   titelDatumKey,
   slugify,
@@ -88,8 +89,18 @@ function mockOutcome(): ScrapeOutcome {
       startDatum: "2027-06-01",
       beschrijving: "Bevat opgiet-trefwoord maar fout type.",
     },
+    // Poort ok, maar ticket-URL wijst naar een vreemd domein → nooit auto-publiceren.
+    {
+      titel: "Aufguss met externe ticketlink (mock)",
+      type: "thema",
+      startDatum: "2027-07-03",
+      ticketUrl: "https://tickets.voorbeeld-extern.example/aufguss",
+      beschrijving: "Opgieting waarvan de tickets elders verkocht lijken te worden.",
+    },
   ];
-  return { events, markdown: "", method: "none", warnings: ["dry-run: geen echte fetch"] };
+  // Geslaagde methode: "none" is voorbehouden aan een gefaalde extractie en
+  // zou de dry-run een valse "extractie faalde"-waarschuwing opleveren.
+  return { events, markdown: "", method: "plain-claude", warnings: ["dry-run: geen echte fetch"] };
 }
 
 async function main() {
@@ -147,6 +158,16 @@ async function main() {
         bron: bron.naam,
         melding: `extractie faalde (${outcome.warnings.join(" | ") || "geen details"})`,
       });
+    } else if (!DRY_RUN && outcome.method === "claude-fallback" && outcome.events.length === 0) {
+      // Deze route wordt alleen bereikt nadat de kale fetch niets bruikbaars
+      // gaf én Firecrawl ook 0 events vond. Dat is geen extractiefout — een
+      // lege agenda kan echt — maar het is wel het profiel van een bron
+      // waarvan de agendapagina van vorm veranderd is. Zonder deze melding
+      // zou zo'n bron sinds de "none"-herdefinitie geruisloos leeg blijven.
+      rapportWarnings.push({
+        bron: bron.naam,
+        melding: `0 events, ook na de Firecrawl-route (${outcome.warnings.join(" | ") || "geen details"})`,
+      });
     }
 
     for (const ev of outcome.events) {
@@ -194,23 +215,49 @@ async function main() {
       const eerdereSauna = perTitelDatum.get(tdKey);
       const isKopie = eerdereSauna !== undefined && eerdereSauna !== bron.id;
 
+      // Alles wat automatisch publiceren in de weg staat, in één lijst: de
+      // status volgt eruit en de redenen belanden samen in keurNotitie, zodat
+      // een event dat op meerdere punten twijfelachtig is dat ook allemaal
+      // vermeldt in plaats van alleen de eerste reden.
+      const blokkades: string[] = [];
+
+      if (!verdict.passed) blokkades.push(verdict.redenen.join("; "));
+
+      if (isKopie) {
+        blokkades.push(
+          `zelfde titel en datum staan al bij "${eerdereSauna}" — waarschijnlijk kondigt deze sauna het event van een ander alleen aan; handmatig beoordelen`,
+        );
+      }
+
+      // Een ticket-URL naar een vreemd domein wordt via /uit/[slug] een 302
+      // onder onze eigen naam. Externe ticketshops zijn legitiem, dus we
+      // blokkeren de URL niet — maar publiceren hem nooit automatisch.
+      // || en niet ??: een leeg website-veld moet doorvallen naar de agenda-URL,
+      // anders is de bron-host onbepaald en telt élke ticket-URL als extern.
+      const externeHost = externeTicketHost(ev.ticketUrl, bron.website || bron.agendaUrl);
+      if (externeHost) {
+        blokkades.push(
+          `ticket-URL wijst naar extern domein ${externeHost} — controleer of dit een echte ticketpagina voor dit event is`,
+        );
+      }
+
       // Auto-publiceren vereist het opgiet-trefwoord in de TITEL: een
       // modelgegenereerde beschrijving kan het woord "opgieting" terloops
-      // bevatten terwijl het event zelf een brunch is. Trefwoord alleen in de
-      // beschrijving → concept, met notitie voor de handmatige check.
-      const titelHeeftTrefwoord = OPGIET_RE.test(ev.titel);
+      // bevatten terwijl het event zelf een brunch is.
+      // Elke reden moet op zichzelf kloppen: ze staan naast elkaar in dezelfde
+      // notitie, dus geen aannames over de andere blokkades in de tekst. Bij
+      // een gefaalde poort blijft deze reden weg — "beoordeel en publiceer"
+      // naast een afkeuring wegens niet-opgiet leest als tegenstrijdig advies,
+      // en de status verandert er niet door (de poortreden blokkeert al).
+      if (verdict.passed && !OPGIET_RE.test(ev.titel)) {
+        blokkades.push(
+          "opgiet-trefwoord staat niet in de titel, hooguit in de beschrijving — handmatig beoordelen en publiceren",
+        );
+      }
+
       const status: "concept" | "gepubliceerd" =
-        verdict.passed && AUTO_PUBLISH && titelHeeftTrefwoord && !isKopie
-          ? "gepubliceerd"
-          : "concept";
-      const kopieNotitie = `zelfde titel en datum staan al bij "${eerdereSauna}" — waarschijnlijk kondigt deze sauna het event van een ander alleen aan; handmatig beoordelen`;
-      const keurNotitie = !verdict.passed
-        ? verdict.redenen.join("; ")
-        : isKopie
-          ? kopieNotitie
-          : titelHeeftTrefwoord
-            ? undefined
-            : "poort ok, maar opgiet-trefwoord staat alleen in de beschrijving, niet in de titel — handmatig beoordelen en publiceren";
+        AUTO_PUBLISH && blokkades.length === 0 ? "gepubliceerd" : "concept";
+      const keurNotitie = blokkades.length ? blokkades.join("; ") : undefined;
 
       const newEvent: NewEvent = {
         saunaSlug: bron.id,

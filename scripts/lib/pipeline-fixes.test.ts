@@ -1,8 +1,16 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { sanitizeEvents } from "../../src/lib/scraper";
+import { eventsFromMessage, sanitizeEvents } from "../../src/lib/scraper";
 import { htmlToText } from "../../src/lib/html";
-import { escapeMdxText, eventSlug, matchBronBySender, normalizeProseDashes, type Bron, type NewEvent } from "./content";
+import {
+  escapeMdxText,
+  eventSlug,
+  externeTicketHost,
+  matchBronBySender,
+  normalizeProseDashes,
+  type Bron,
+  type NewEvent,
+} from "./content";
 import { OPGIET_RE } from "./quality-gate";
 
 /* ---------- sanitizeEvents (extractie-output hardening) ---------- */
@@ -136,6 +144,87 @@ test("mdxExcerpt stript markdown en kapt af op een woordgrens", async () => {
   assert.ok(lang.length <= 81 && lang.endsWith("…"));
   // Ge-escapete MDX-syntax uit de scraper (\< en \{) wordt weer leesbare tekst.
   assert.equal(mdxExcerpt("Toegang \\<12 jaar en \\{gratis\\} entree."), "Toegang <12 jaar en {gratis} entree.");
+});
+
+/* ---------- externeTicketHost (auto-publicatie van vreemde redirects) ---------- */
+
+test("externeTicketHost laat het eigen domein en subdomeinen door", () => {
+  const bron = "https://www.sauna-de-proef.nl/agenda";
+  assert.equal(externeTicketHost("https://sauna-de-proef.nl/tickets", bron), undefined);
+  assert.equal(externeTicketHost("https://www.sauna-de-proef.nl/tickets", bron), undefined);
+  assert.equal(externeTicketHost("https://tickets.sauna-de-proef.nl/aufguss", bron), undefined);
+  // Geen eigen ticket-URL: de aanroeper valt terug op de agenda-URL.
+  assert.equal(externeTicketHost(undefined, bron), undefined);
+  assert.equal(externeTicketHost("/tickets/aufguss", bron), undefined);
+});
+
+test("externeTicketHost meldt een vreemd domein, ook bij een lookalike", () => {
+  const bron = "https://sauna-de-proef.nl/agenda";
+  assert.equal(externeTicketHost("https://www.eventbrite.nl/e/123", bron), "eventbrite.nl");
+  // Domeingrens: het achtervoegsel matcht wel, maar de host is een ander domein.
+  assert.equal(
+    externeTicketHost("https://sauna-de-proef.nl.phish.example/tickets", bron),
+    "sauna-de-proef.nl.phish.example",
+  );
+  assert.equal(externeTicketHost("https://notsauna-de-proef.nl/tickets", bron), "notsauna-de-proef.nl");
+});
+
+test("externeTicketHost is conservatief als de bron-host onbekend is", () => {
+  // Niet kunnen vergelijken telt als extern: liever een handmatige check te
+  // veel dan een verkeerde redirect automatisch live.
+  assert.equal(externeTicketHost("https://ticketshop.example/e/1", undefined), "ticketshop.example");
+  assert.equal(externeTicketHost("https://ticketshop.example/e/1", "geen-url"), "ticketshop.example");
+});
+
+/* ---------- eventsFromMessage (mislukte extractie ≠ lege agenda) ---------- */
+
+function toolMessage(input: unknown, stop_reason = "tool_use") {
+  return {
+    stop_reason,
+    content: [{ type: "tool_use" as const, id: "toolu_1", name: "record_events", input }],
+  } as Parameters<typeof eventsFromMessage>[0];
+}
+
+test("eventsFromMessage leest de events uit een geslaagde tool-aanroep", () => {
+  const events = eventsFromMessage(toolMessage({ events: [rawEvent()] }));
+  assert.equal(events.length, 1);
+  assert.equal(events[0].titel, "Aufguss-avond");
+  // Een lege agenda is een geldig resultaat, geen fout.
+  assert.deepEqual(eventsFromMessage(toolMessage({ events: [] })), []);
+});
+
+test("eventsFromMessage gooit bij een weigering in plaats van stil 0 events", () => {
+  // Bij stop_reason "refusal" ontbreekt het tool_use-blok ondanks de
+  // geforceerde tool_choice; stil [] zou niet te onderscheiden zijn van een
+  // lege agenda en de bron elke run geruisloos zijn events kosten.
+  const geweigerd = { stop_reason: "refusal", content: [] } as Parameters<typeof eventsFromMessage>[0];
+  assert.throws(() => eventsFromMessage(geweigerd), /refusal/);
+});
+
+test("eventsFromMessage gooit bij een antwoord zonder tool-aanroep", () => {
+  const alleenTekst = {
+    stop_reason: "end_turn",
+    content: [{ type: "text" as const, text: "Ik kan geen events vinden.", citations: null }],
+  } as Parameters<typeof eventsFromMessage>[0];
+  assert.throws(() => eventsFromMessage(alleenTekst), /geen tool_use-blok/);
+});
+
+test("eventsFromMessage gooit bij een afgekapt antwoord", () => {
+  assert.throws(
+    () => eventsFromMessage(toolMessage({ events: [rawEvent()] }, "max_tokens")),
+    /afgekapt/,
+  );
+});
+
+test("eventsFromMessage vertrouwt geen tool-input bij een onverwachte stopreden", () => {
+  // Streaming bouwt tool_use.input incrementeel op, dus een aanwezig blok bij
+  // een vroegtijdig einde kan half geparseerd zijn — niet stil doorlaten.
+  assert.throws(
+    () => eventsFromMessage(toolMessage({ events: [rawEvent()] }, "pause_turn")),
+    /onvolledig afgesloten/,
+  );
+  // Een normaal afgesloten antwoord blijft gewoon werken.
+  assert.equal(eventsFromMessage(toolMessage({ events: [rawEvent()] }, "end_turn")).length, 1);
 });
 
 /* ---------- htmlToText entity-decodering ---------- */

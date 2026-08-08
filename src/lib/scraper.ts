@@ -113,8 +113,8 @@ function extractionPrompt(ctx: ScrapeContext): string {
     `Je haalt opgiet-/Aufguss-events op voor de agenda van ${ctx.saunaNaam}. Vandaag is ${ctx.vandaag}.`,
     `Extraheer ALLEEN echte events met een concrete kalenderdatum. Sla algemene info, arrangementen en losse pagina's zonder datum over.`,
     `Vaste week- of dagroosters ("dagelijks om 11:30", "elke zondag", "ma t/m vr") zijn GEEN events: sla ze over en leid er geen datums uit af.`,
-    `Vermeldt een datum geen jaartal, kies dan het eerstvolgende voorkomen op of na vandaag (rond de jaarwisseling is dat het volgende jaar).`,
-    `Datums in formaat YYYY-MM-DD. De paginatekst kan Nederlands of Frans zijn; vertaal maandnamen naar de juiste maand.`,
+    `Vermeldt een datum geen jaartal, kies dan het jaar waarin die datum het dichtst bij vandaag ligt. Voor een aangekondigd komend event is dat het eerstvolgende voorkomen op of na vandaag (rond de jaarwisseling dus het volgende jaar). Maar lijkt de datum kort geleden verstreken, of is het event nu bezig, gebruik dan dat recente jaar — ook als de datum daarmee in het verleden ligt. Tel er nooit een jaar bij op om een datum toekomstig te maken: verlopen events worden verderop automatisch afgevoerd, een verzonnen datum niet.`,
+    `Numerieke datums op de pagina staan altijd in Europese notatie, dag vóór maand — ook zonder jaartal en ook met streepjes: "05/10/2026" is 5 oktober (niet 10 mei) en "09-11" is 9 november (niet 11 september). Zet zo'n datum daarna pas om naar het ISO-formaat YYYY-MM-DD, waarin de maand juist vóór de dag staat. De paginatekst kan Nederlands of Frans zijn; vertaal maandnamen naar de juiste maand.`,
     `Bepaal het type: opgietweekend, thema, kampioenschap of regulier.`,
     `Schrijf per event een beschrijving van 60-120 woorden in vloeiend Nederlands op basis van wat de pagina vermeldt: wat het event inhoudt, wat de bezoeker kan verwachten en voor wie het leuk is. Gebruik uitsluitend feiten van de pagina; verzin geen tijden, prijzen, geuren of programmaonderdelen. Staat er weinig op de pagina, houd de beschrijving dan korter in plaats van te speculeren.`,
   ].join(" ");
@@ -271,11 +271,17 @@ const MAX_EXTRACT_INPUT_CHARS = 60000;
 async function claudeExtract(markdown: string, ctx: ScrapeContext): Promise<ScrapedEvent[]> {
   if (!markdown.trim()) return [];
 
-  const message = await getAnthropic().messages.create({
+  // Streamen omdat de SDK een non-streaming request boven deze grens weigert
+  // (risico op HTTP-timeout) — niet omdat we de tokens live willen zien.
+  // Gemeten: 60 events mét volledige beschrijvingen kosten ~10K output-tokens,
+  // dus het oude plafond van 16K kapte pas rond de 95 events af. Zeldzaam,
+  // maar het faalt dan hard (zie de max_tokens-check in eventsFromMessage) en
+  // juist bij de bronnen met de meeste events. 32K geeft ruimte voor ~190
+  // events; er wordt alleen betaald wat werkelijk gegenereerd wordt, dus de
+  // limiet begrenst hier vooral een op hol geslagen run.
+  const stream = getAnthropic().messages.stream({
     model: FALLBACK_MODEL,
-    // Ruim bemeten: 60-120 woorden beschrijving per event betekent dat een
-    // seizoensagenda met 25+ events anders tegen de limiet aanloopt.
-    max_tokens: 16384,
+    max_tokens: 32768,
     system:
       "Je bent een nauwkeurige extractie-assistent voor een sauna-opgietagenda. " +
       "Je roept altijd de tool record_events aan met alle gevonden events. Verzin niets.",
@@ -283,6 +289,15 @@ async function claudeExtract(markdown: string, ctx: ScrapeContext): Promise<Scra
       {
         name: "record_events",
         description: extractionPrompt(ctx),
+        // Met strict kan het model niet buiten het schema kleuren. Zonder dit
+        // belandt een net-verkeerde enum-waarde ("Thema") in sanitizeEvents,
+        // die het event dan geruisloos weggooit — een gemist event zonder spoor.
+        // De API verwerkt dit veld (een schema met additionalProperties: true
+        // wordt alléén mét strict geweigerd), maar de typings van SDK 0.70
+        // kennen het nog niet. Zodra de SDK bijwerkt, meldt TypeScript deze
+        // directive als overbodig — dat is het sein om hem te verwijderen.
+        // @ts-expect-error strict bestaat nog niet op Tool in @anthropic-ai/sdk 0.70
+        strict: true,
         input_schema: EVENT_JSON_SCHEMA as Anthropic.Tool.InputSchema,
       },
     ],
@@ -295,17 +310,44 @@ async function claudeExtract(markdown: string, ctx: ScrapeContext): Promise<Scra
     ],
   });
 
+  return eventsFromMessage(await stream.finalMessage());
+}
+
+/**
+ * Haalt de events uit een Claude-antwoord. Gooit wanneer het antwoord geen
+ * bruikbare tool-aanroep bevat, zodat de aanroeper een mislukte extractie als
+ * warning ziet in plaats van als lege agenda. Apart van claudeExtract omdat de
+ * regels hieronder puur zijn en zonder API-key getest kunnen worden.
+ */
+export function eventsFromMessage(
+  message: Pick<Anthropic.Message, "content" | "stop_reason">,
+): ScrapedEvent[] {
   // Afgekapte tool-input zou stil dataverlies zijn (sanitizeEvents maakt er
   // geruisloos minder/0 events van); hard falen zodat de aanroeper het als
   // warning ziet en eventueel de Firecrawl-route probeert.
   if (message.stop_reason === "max_tokens") {
     throw new Error("extractie afgekapt (max_tokens bereikt) — resultaat onbetrouwbaar");
   }
+  // Onder streaming bouwt de SDK tool_use.input incrementeel op met een
+  // tolerante JSON-parser en valideert bij het afsluiten niet opnieuw. Alleen
+  // een normaal afgesloten antwoord levert dus gegarandeerd een volledig
+  // object op; bij elke andere stopreden kan er een half geparseerde input
+  // staan die sanitizeEvents stilzwijgend zou uitdunnen tot minder events.
+  if (message.stop_reason !== "tool_use" && message.stop_reason !== "end_turn") {
+    throw new Error(`extractie onvolledig afgesloten (stop_reason: ${message.stop_reason})`);
+  }
 
   const toolUse = message.content.find(
     (b): b is Anthropic.ToolUseBlock => b.type === "tool_use" && b.name === "record_events"
   );
-  return toolUse ? sanitizeEvents(toolUse.input) : [];
+  // Zonder tool-aanroep is er niets geëxtraheerd — ook wanneer het model de
+  // opdracht weigert (stop_reason "refusal", mogelijk ondanks de geforceerde
+  // tool_choice). Stil [] teruggeven is niet te onderscheiden van een lege
+  // agenda: de bron zou dan elke run geruisloos zijn events verliezen.
+  if (!toolUse) {
+    throw new Error(`geen tool_use-blok in het antwoord (stop_reason: ${message.stop_reason})`);
+  }
+  return sanitizeEvents(toolUse.input);
 }
 
 /* ---------- Orkestratie ---------- */
@@ -398,10 +440,11 @@ export async function scrapeAgenda(url: string, ctx: ScrapeContext): Promise<Scr
   // Firecrawl-extractie viel tegen → fallback op Claude, mits we markdown hebben.
   if (markdown.trim()) {
     try {
+      // Ook 0 events is een geslaagde extractie (gewoon een lege agenda);
+      // "none" blijft voorbehouden aan echt falen, zodat scrape-events geen
+      // vals "extractie faalde" in het weekissue zet.
       const events = await claudeExtract(markdown, ctx);
-      if (events.length > 0) {
-        return { events, markdown, method: "claude-fallback", warnings };
-      }
+      return { events, markdown, method: "claude-fallback", warnings };
     } catch (err) {
       warnings.push(`Claude-fallback-fout: ${err instanceof Error ? err.message : String(err)}`);
     }
