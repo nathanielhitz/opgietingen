@@ -13,6 +13,8 @@ import { Mdx } from "@/components/Mdx";
 import { EventCard } from "@/components/EventCard";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { AffiliateButton } from "@/components/AffiliateButton";
+import { OpgietRoosterTabel } from "@/components/OpgietRoosterTabel";
+import { SaunaCard } from "@/components/SaunaCard";
 
 export function generateStaticParams() {
   return getAllSaunas().map((s) => ({ slug: s.slug }));
@@ -55,6 +57,13 @@ export default async function SaunaPage({
 
   const events = getEventsForSauna(sauna.slug);
   const komende = events.filter((e) => isUpcoming(e));
+
+  // Buursauna's in dezelfde provincie: interne links tussen saunapagina's
+  // onderling (SEO-PLAN §8). Zonder deze laag hangt elke saunapagina alleen aan
+  // /saunas en de footer, en dat is te weinig linkkracht om gecrawld te worden.
+  const buursaunas = getAllSaunas().filter(
+    (s) => s.slug !== sauna.slug && s.provincie === sauna.provincie,
+  );
 
   return (
     <article className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
@@ -112,17 +121,9 @@ export default async function SaunaPage({
               <h2 className="font-display text-xl font-semibold text-ink">
                 Vaste opgiettijden bij {sauna.naam}
               </h2>
-              <dl className="mt-4 overflow-hidden rounded-[--radius-card] border border-sand bg-surface">
-                {sauna.opgietRooster.map((regel, i) => (
-                  <div
-                    key={regel.dag}
-                    className={`flex flex-col gap-1 p-4 sm:flex-row sm:items-baseline sm:gap-6 ${i > 0 ? "border-t border-sand" : ""}`}
-                  >
-                    <dt className="w-40 flex-none text-sm font-semibold text-ink">{regel.dag}</dt>
-                    <dd className="text-sm text-ink-soft">{regel.tijden}</dd>
-                  </div>
-                ))}
-              </dl>
+              <div className="mt-4">
+                <OpgietRoosterTabel regels={sauna.opgietRooster} />
+              </div>
               <p className="mt-2 text-xs text-ink-faint">
                 {sauna.roosterGecheckt
                   ? `Gecontroleerd op ${formatDate(sauna.roosterGecheckt)} via de website van de sauna. `
@@ -192,6 +193,29 @@ export default async function SaunaPage({
           <p className="mt-3 text-ink-soft">Er staan nog geen opgietingen gepland bij deze sauna. Kom snel terug!</p>
         )}
       </section>
+
+      {buursaunas.length > 0 && (
+        <section className="mt-12">
+          <h2 className="font-display text-2xl font-semibold text-ink">
+            Andere sauna&rsquo;s in {sauna.provincie}
+          </h2>
+          <ul className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {buursaunas.slice(0, 6).map((s) => (
+              <li key={s.slug}>
+                <SaunaCard sauna={s} />
+              </li>
+            ))}
+          </ul>
+          {buursaunas.length > 6 && (
+            <Link
+              href={`/opgietingen/${slugify(sauna.provincie)}`}
+              className="mt-4 inline-block text-sm font-medium text-ember hover:underline"
+            >
+              Alle sauna&rsquo;s in {sauna.provincie} →
+            </Link>
+          )}
+        </section>
+      )}
 
       <div className="mt-10 flex flex-wrap gap-4 text-sm font-medium">
         <Link href="/saunas" className="text-ember hover:underline">

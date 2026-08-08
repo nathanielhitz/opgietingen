@@ -11,9 +11,12 @@ import { isUpcoming, monthYearSlug, todayISO } from "@/lib/dates";
  *   (SEO-PLAN §9). "Vandaag" is hier bewust build-tijd: de wekelijkse
  *   scraper-commit (en elke deploy) verst het venster.
  * - lastModified alleen waar het klopt: lijst-/agendapagina's veranderen met
- *   elke content-deploy (= build-datum), gidsen hebben `bijgewerkt`. Event- en
- *   saunapagina's krijgen géén lastMod: we kennen hun echte wijzigingsdatum
- *   niet, en een gefingeerde datum ondermijnt het signaal bij Google.
+ *   elke content-deploy (= build-datum), gidsen hebben `bijgewerkt`, en
+ *   saunapagina's `roosterGecheckt` — de datum waarop het opgietrooster
+ *   daadwerkelijk tegen de sauna-website is geverifieerd (check-roosters).
+ *   Sauna's zonder die datum en alle event-pagina's krijgen géén lastMod: hun
+ *   echte wijzigingsdatum kennen we niet, en een gefingeerde datum ondermijnt
+ *   het signaal bij Google.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
   const u = (p: string) => `${site.url}${p}`;
@@ -51,6 +54,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const saunas = getAllSaunas().map((s) => ({
     url: u(`/sauna/${s.slug}`),
+    ...(s.roosterGecheckt ? { lastModified: s.roosterGecheckt } : {}),
     changeFrequency: "monthly" as const,
     priority: 0.6,
   }));

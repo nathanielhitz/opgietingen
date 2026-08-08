@@ -9,13 +9,14 @@ import {
   slugify,
 } from "@/lib/content";
 import { COUNTRY_LABELS } from "@/lib/site";
-import { isUpcoming, todayISO } from "@/lib/dates";
+import { isUpcoming, todayISO, formatDate } from "@/lib/dates";
 import { eventItemListSchema } from "@/lib/schema";
 import { JsonLd } from "@/components/JsonLd";
 import { EventCard } from "@/components/EventCard";
 import { SaunaCard } from "@/components/SaunaCard";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { Mdx } from "@/components/Mdx";
+import { OpgietRoosterTabel } from "@/components/OpgietRoosterTabel";
 
 type Params = Promise<{ provincie: string }>;
 
@@ -68,6 +69,16 @@ export default async function ProvincePage({ params }: { params: Params }) {
           .filter((e) => slugify(e.sauna.provincie) !== provincie && isUpcoming(e))
           .slice(0, 3)
       : [];
+
+  // Vaste opgietroosters in de regio: blijvende, unieke inhoud die niet
+  // leegloopt zodra de laatste event-datum verstrijkt. Dit is precies wat een
+  // provinciepagina zonder geplande events nog wél te bieden heeft.
+  const roosterSaunas = saunas.filter((s) => s.opgietRooster && s.opgietRooster.length > 0);
+  const roosterGecheckt = roosterSaunas
+    .map((s) => s.roosterGecheckt)
+    .filter((d): d is string => Boolean(d))
+    .sort()
+    .at(-1);
 
   // Buurprovincies (zelfde land) voor interne links.
   const overigeProvincies = getProvincesWithSaunas().filter(
@@ -134,6 +145,40 @@ export default async function ProvincePage({ params }: { params: Params }) {
           </>
         )}
       </section>
+
+      {roosterSaunas.length > 0 && (
+        <section className="mt-12">
+          <h2 className="font-display text-2xl font-semibold text-ink">
+            Vaste opgiettijden in {found.provincie}
+          </h2>
+          <p className="mt-2 max-w-2xl text-ink-soft">
+            Ook zonder speciaal event wordt er opgegoten: dit zijn de vaste opgiettijden zoals de
+            sauna&rsquo;s in {found.provincie} ze zelf vermelden.
+          </p>
+          <div className="mt-6 space-y-8">
+            {roosterSaunas.map((sauna) => (
+              <div key={sauna.slug}>
+                <h3 className="font-display text-lg font-semibold text-ink">
+                  <Link href={`/sauna/${sauna.slug}`} className="hover:text-ember hover:underline">
+                    {sauna.naam}
+                  </Link>{" "}
+                  <span className="font-sans text-sm font-normal text-ink-faint">{sauna.plaats}</span>
+                </h3>
+                <div className="mt-3">
+                  <OpgietRoosterTabel regels={sauna.opgietRooster ?? []} />
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 max-w-2xl text-xs text-ink-faint">
+            {roosterGecheckt
+              ? `Laatst gecontroleerd op ${formatDate(roosterGecheckt)} via de websites van de sauna's. `
+              : ""}
+            Roosters wijzigen per seizoen; raadpleeg de website van de sauna voor het actuele
+            programma.
+          </p>
+        </section>
+      )}
 
       {saunas.length > 0 && (
         <section className="mt-12">
