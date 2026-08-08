@@ -368,8 +368,8 @@
       "website": "https://hotelspoorzichtspa.nl",
       "agendaUrl": "https://hotelspoorzichtspa.nl/faciliteiten-spa-loppersum/",
       "type": "website",
-      "status": "actief",
-      "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) — handmatig controleren.",
+      "status": "handmatig",
+      "notities": "Handmatig (2026-08-08): publiceert geen opgietrooster (\"opgietingen vinden alleen plaats bij voldoende gasten\") en kondigt opgietspecials uitsluitend aan op de nieuwspagina, waar het laatste bericht van 21-10-2024 dateert. Wekelijks scrapen leverde al bijna twee jaar niets op; periodiek met de hand checken op hotelspoorzichtspa.nl/nieuws/.",
       "laatstGecontroleerd": "2026-08-03"
     },
     {

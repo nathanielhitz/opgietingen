@@ -170,13 +170,17 @@ vier dunne pagina's bovenaan, maar het hoofdmedicijn is autoriteit + interne lin
       Dat is geen scrapeprobleem maar een bedrijfskeuze, en die profielen beschrijven het al
       correct in hun bodytekst. Niet opnieuw proberen.
 
-      **Enige overgebleven Firecrawl-kandidaat: `sauna-swoll`.** Die belooft letterlijk
-      "Wij hanteren het onderstaande opgietschema" met twee panelen (ma t/m za, zondag), maar
-      rendert de inhoud client-side. Eén Firecrawl-call zou dat rooster opleveren.
+      **`sauna-swoll`: Firecrawl geprobeerd op 2026-08-08, leverde niets op.** De pagina
+      belooft letterlijk "Wij hanteren het onderstaande opgietschema" met twee panelen
+      (ma t/m za, zondag), maar die panelen laden hun inhoud pas bij een klik — rendering
+      alleen is dus niet genoeg, en de tijden staan ook niet in de RSC-payload. Alles wat
+      Firecrawl wél teruggaf (de drie maandelijkse specials, het muntjes-systeem) stond al
+      in het profiel. **Niet nog eens proberen zonder een aanpak die daadwerkelijk klikt.**
+      Daarmee is de score definitief: 1 rooster gevonden (lago), 12 keer niets.
 
-      Nevenbevinding: `spa-loppersum` kondigt opgietspecials alleen aan op zijn nieuwspagina,
-      en het laatste bericht dateert van **21-10-2024**. Die bron levert al bijna twee jaar
-      niets op; overweeg de status te heroverwegen bij de volgende bronnenronde.
+      Nevenbevinding, afgehandeld: `spa-loppersum` kondigt opgietspecials alleen aan op zijn
+      nieuwspagina en het laatste bericht dateert van **21-10-2024**. Bron op `handmatig`
+      gezet — hij wordt niet meer wekelijks gescrapet en `verify-bronnen` laat hem met rust.
 - [ ] **2.3 Maandpagina's met weinig events** (`december-2026`, 4 events): geen technische
       ingreep, maar een contentopdracht — bronnen aanvullen zodat de maand vult. De scraper
       draait wekelijks; check `content/bronnen.json` op sauna's met status `geen-agenda` /
