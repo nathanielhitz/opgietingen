@@ -280,11 +280,12 @@
       "land": "NL",
       "provincie": "Noord-Holland",
       "website": "https://www.spaweesp.nl",
-      "agendaUrl": "https://bewellness.nl/aufguss-challenge",
+      "agendaUrl": "https://spaweesp.nl/wellnessrituelen/wellness-events",
       "type": "website",
       "status": "actief",
-      "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "notities": "Vaste URL (2026-08-08): eigen wellness-events-pagina van het resort. Stond eerder op de gedeelde groepspagina bewellness.nl/aufguss-challenge, waardoor deze bron en spasense/spaweesp dezelfde pagina scrapeten en identieke events onder twee sauna's terechtkwamen.",
+      "laatstGecontroleerd": "2026-08-03",
+      "agendaUrlVast": true
     },
     {
       "id": "spasense",
@@ -292,11 +293,12 @@
       "land": "NL",
       "provincie": "Noord-Brabant",
       "website": "https://www.spasense.nl",
-      "agendaUrl": "https://bewellness.nl/aufguss-challenge",
+      "agendaUrl": "https://spasense.nl/rituelen/wellness-events",
       "type": "website",
       "status": "actief",
-      "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "notities": "Vaste URL (2026-08-08): eigen wellness-events-pagina van het resort. Stond eerder op de gedeelde groepspagina bewellness.nl/aufguss-challenge, waardoor deze bron en spasense/spaweesp dezelfde pagina scrapeten en identieke events onder twee sauna's terechtkwamen.",
+      "laatstGecontroleerd": "2026-08-03",
+      "agendaUrlVast": true
     },
     {
       "id": "leeuwerikhoeve",
