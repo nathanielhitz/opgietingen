@@ -144,6 +144,39 @@ vier dunne pagina's bovenaan, maar het hoofdmedicijn is autoriteit + interne lin
       Bewust níét gedaan: Firecrawl inzetten om deze JS-pagina's te renderen. Credits zijn de
       schaarse resource en `check-roosters` mijdt Firecrawl om dezelfde reden — die afweging
       is aan jou, niet aan het script.
+
+      **Alle 13 handmatig nagelopen op 2026-08-08.** Werkwijze: sitemap van de sauna uitlezen,
+      zoeken naar een aparte opgiet-/programmapagina, en die pagina lezen. De vraag was steeds
+      of het script niets vond omdat er niets ís, of omdat het naar de verkeerde pagina keek.
+
+      | Sauna | Uitkomst | Bewijs |
+      |---|---|---|
+      | `lago` | **rooster gevonden** ✅ | verkeerde bron-URL; rooster stond op `/wellness/opgietsessies` |
+      | `sauna-zwaluwhoeve` | geen rooster | "Informeer bij de receptie voor de mogelijkheden op de dag zelf" |
+      | `spasense` | geen rooster | idem |
+      | `spawell` | geen rooster | idem |
+      | `sauna-elysium` | geen rooster | idem |
+      | `spaweesp` | geen rooster | idem |
+      | `thermen-holiday` | geen rooster | idem |
+      | `thermen-barendrecht` | geen rooster | zelfde beleid, andere formulering ("niet vooraf gereserveerd") |
+      | `thermen-bad-nieuweschans` | geen rooster | eigen opgietingen-pagina, wel thema's, geen tijden |
+      | `waer-waters` | geen rooster | 7 sessietypes zonder tijden; geen agendapagina in de sitemap |
+      | `palestra` | geen rooster | beschrijft opgietingen, publiceert geen tijden |
+      | `spa-loppersum` | geen rooster | "opgietingen vinden alleen plaats bij voldoende gasten" |
+      | `sauna-swoll` | **JS-only** ⚠️ | schema bestaat wél, maar in een client-side uitklappaneel |
+
+      **Conclusie: 11 van de 13 publiceren écht geen vast rooster** — grotendeels omdat de
+      BeWellness-resorts (7 van de 13) bewust met een dagprogramma bij de receptie werken.
+      Dat is geen scrapeprobleem maar een bedrijfskeuze, en die profielen beschrijven het al
+      correct in hun bodytekst. Niet opnieuw proberen.
+
+      **Enige overgebleven Firecrawl-kandidaat: `sauna-swoll`.** Die belooft letterlijk
+      "Wij hanteren het onderstaande opgietschema" met twee panelen (ma t/m za, zondag), maar
+      rendert de inhoud client-side. Eén Firecrawl-call zou dat rooster opleveren.
+
+      Nevenbevinding: `spa-loppersum` kondigt opgietspecials alleen aan op zijn nieuwspagina,
+      en het laatste bericht dateert van **21-10-2024**. Die bron levert al bijna twee jaar
+      niets op; overweeg de status te heroverwegen bij de volgende bronnenronde.
 - [ ] **2.3 Maandpagina's met weinig events** (`december-2026`, 4 events): geen technische
       ingreep, maar een contentopdracht — bronnen aanvullen zodat de maand vult. De scraper
       draait wekelijks; check `content/bronnen.json` op sauna's met status `geen-agenda` /
