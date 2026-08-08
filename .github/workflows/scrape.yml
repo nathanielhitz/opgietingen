@@ -74,6 +74,7 @@ jobs:
         run: npm run check-roosters
 
       - name: Commit resultaten op main
+        id: commit
         # Ook committen wanneer een eerdere stap faalde: geschreven events en
         # bijgewerkte bronnen/roosters mogen niet verloren gaan met de runner.
         if: always()
@@ -83,10 +84,22 @@ jobs:
           git add content/events content/bronnen.json content/saunas
           if git diff --cached --quiet; then
             echo "Geen wijzigingen om te committen."
+            echo "gecommit=false" >> "$GITHUB_OUTPUT"
           else
             git commit -m "chore(scraper): wekelijkse run — nieuwe events + bronnenstatus"
             git push origin HEAD:main
+            echo "gecommit=true" >> "$GITHUB_OUTPUT"
           fi
+
+      # Meld de zojuist gepubliceerde URL's aan bij IndexNow (Bing c.s.).
+      # Alleen na een échte commit: zonder wijziging zou HEAD~1 de vorige run
+      # opnieuw inleveren. Google doet niet mee aan IndexNow — daar blijft
+      # sitemap.xml het kanaal. Mislukt dit, dan is dat geen reden de run
+      # te laten falen.
+      - name: Meld nieuwe URL's aan bij IndexNow
+        if: always() && steps.commit.outputs.gecommit == 'true'
+        continue-on-error: true
+        run: npm run indexnow
 
       - name: Bouw probleemrapport
         id: report

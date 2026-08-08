@@ -41,6 +41,9 @@ yarn-error.log*
 # gegenereerd rooster-hercheck-rapport (input voor scrape-report)
 /rooster-check.json
 
+# gegenereerde rooster-voorstellen (handmatige review, niet in de repo)
+/rooster-voorstellen.json
+
 # gegenereerde scrape-waarschuwingen (input voor scrape-report)
 /scrape-warnings.json
 
