@@ -207,11 +207,12 @@
       "land": "BE",
       "provincie": "Antwerpen",
       "website": "https://www.lago.be/nl/lier",
-      "agendaUrl": "https://www.lago.be/nl/lier/events/opgietsessie-sauna",
+      "agendaUrl": "https://www.lago.be/nl/lier/wellness/opgietsessies",
       "type": "website",
       "status": "actief",
-      "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "notities": "Vaste URL (2026-08-08): de opgietsessies (datums + vaste tijdvakken) staan op /wellness/opgietsessies. De eerdere agendaUrl /events/opgietsessie-sauna is een losse aankondiging die blijft hangen op verlopen datums.",
+      "laatstGecontroleerd": "2026-08-03",
+      "agendaUrlVast": true
     },
     {
       "id": "vitae-goes",
