@@ -62,8 +62,27 @@ async function candidatesFromRoot(origin: string): Promise<string[]> {
   return [...urls];
 }
 
+/**
+ * Leesbare reden bij een Firecrawl-uitkomst die geen uitspraak oplevert. De
+ * SDK-melding komt van een externe server en is onbegrensd, dus hier ingekort
+ * en van newlines/pipes ontdaan — hij belandt in een logregel en (bij een
+ * niet-actieve bron) in een markdown-tabelcel van het weekissue.
+ */
+function firecrawlNotitie(md: { reden: "geen-key" | "leeg" | "fout"; melding?: string }): string {
+  if (md.reden === "geen-key") {
+    return "Firecrawl overgeslagen (geen API-key) — status ongewijzigd gelaten.";
+  }
+  const kort = (md.melding ?? "").replace(/[\r\n|]+/g, " ").trim().slice(0, 120);
+  return `Firecrawl-fout tijdens verificatie (${kort || "geen details"}) — status ongewijzigd gelaten.`;
+}
+
 interface Resolution {
-  status: "actief" | "geen-agenda" | "kapot";
+  /**
+   * De nieuwe status, of null wanneer de verificatie geen uitspraak kon doen
+   * (bv. een Firecrawl-storing): dan blijft de bestaande status staan. Een
+   * transiënte fout aan onze kant mag geen werkende bron degraderen.
+   */
+  status: "actief" | "geen-agenda" | "kapot" | null;
   url: string;
   notitie: string;
 }
@@ -124,8 +143,14 @@ async function resolveAgenda(bron: Bron): Promise<Resolution> {
     }
     if (check(bron.agendaUrl)) {
       const md = await firecrawlFetchMarkdown(bron.agendaUrl);
-      if (md && CONTENT_HINT.test(md)) {
+      if (md.ok && CONTENT_HINT.test(md.markdown)) {
         return { status: "actief", url: bron.agendaUrl, notitie: "Bevestigd via Firecrawl (vaste URL)." };
+      }
+      // Alles behalve een geslaagde-maar-lege pagina zegt niets over de bron
+      // zelf: een storing, een ontbrekende key of een leeg quotum mag geen
+      // werkende bron degraderen. Alleen "leeg" is een echte uitspraak.
+      if (!md.ok && md.reden !== "leeg") {
+        return { status: null, url: bron.agendaUrl, notitie: firecrawlNotitie(md) };
       }
     }
     return {
@@ -166,12 +191,16 @@ async function resolveAgenda(bron: Bron): Promise<Resolution> {
   // mogelijk JS-gerenderd. Probeer echte browser-rendering, robots blijft gelden.
   if (check(bron.agendaUrl)) {
     const md = await firecrawlFetchMarkdown(bron.agendaUrl);
-    if (md && CONTENT_HINT.test(md)) {
+    if (md.ok && CONTENT_HINT.test(md.markdown)) {
       return {
         status: "actief",
         url: bron.agendaUrl,
         notitie: "Bevestigd via Firecrawl (JS-gerenderd).",
       };
+    }
+    // Zie hierboven: alleen een geslaagde-maar-lege pagina is een uitspraak.
+    if (!md.ok && md.reden !== "leeg") {
+      return { status: null, url: bron.agendaUrl, notitie: firecrawlNotitie(md) };
     }
   }
 
@@ -200,11 +229,24 @@ async function main() {
 
   const todo = data.bronnen.filter((b) => !skip(b) && (all || b.status === "te-verifieren"));
   console.log(`Verifieer ${todo.length} van ${data.bronnen.length} bronnen…\n`);
+  /** Bronnen waarover de verificatie geen uitspraak kon doen. */
+  const onbeslist: { naam: string; reden: string }[] = [];
 
   for (const bron of data.bronnen) {
     if (!todo.includes(bron)) continue;
     process.stdout.write(`• ${bron.naam} (${bron.agendaUrl}) … `);
     const result = await resolveAgenda(bron);
+    if (result.status === null) {
+      // Geen uitspraak (Firecrawl-fout of geen key). Niets in het bestand
+      // aanraken: de bestaande status blijft staan, en de notitie ook — die is
+      // vaak een handmatige curatienotitie die verklaart waarom de URL
+      // vastgezet is, en de bewaarregel hieronder zou hem nooit meer
+      // terugzetten. De reden gaat naar stdout en naar de teller.
+      onbeslist.push({ naam: bron.naam, reden: result.notitie });
+      console.log(`${bron.status.toUpperCase()} (ongewijzigd) → ${result.url}\n  ${result.notitie}`);
+      await sleep(REQUEST_DELAY_MS);
+      continue;
+    }
     bron.status = result.status;
     bron.agendaUrl = result.url;
     // Curatienotities niet wegpoetsen: bij een simpele herbevestiging blijft
@@ -223,6 +265,15 @@ async function main() {
     `\nKlaar. actief: ${count("actief")}, geen-agenda: ${count("geen-agenda")}, ` +
       `handmatig: ${count("handmatig")}, kapot: ${count("kapot")}. bronnen.json bijgewerkt.`
   );
+  // Een run waarin niets geverifieerd kon worden ziet er in de telling
+  // hierboven identiek uit aan een schone run. Zonder deze regel blijft een
+  // verlopen Firecrawl-key of een aanhoudende storing wekenlang onopgemerkt.
+  if (onbeslist.length) {
+    console.log(
+      `\n⚠ ${onbeslist.length} bron(nen) niet geverifieerd — status ongewijzigd gelaten:`,
+    );
+    for (const o of onbeslist) console.log(`  - ${o.naam}: ${o.reden}`);
+  }
 }
 
 main().catch((err) => {

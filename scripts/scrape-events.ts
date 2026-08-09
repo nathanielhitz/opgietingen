@@ -137,11 +137,17 @@ async function main() {
     try {
       outcome = DRY_RUN
         ? mockOutcome()
-        : await scrapeAgenda(bron.agendaUrl, {
-            saunaNaam: bron.naam,
-            land: bron.land === "BE" ? "BE" : "NL",
-            vandaag: TODAY,
-          });
+        : await scrapeAgenda(
+            bron.agendaUrl,
+            {
+              saunaNaam: bron.naam,
+              land: bron.land === "BE" ? "BE" : "NL",
+              vandaag: TODAY,
+            },
+            // De check hierboven geldt de opgegeven URL; deze dekt het doel van
+            // een eventuele redirect, zodat robots ook daar wordt nageleefd.
+            isAllowed,
+          );
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       console.log(`  ✗ Fout: ${msg}\n`);

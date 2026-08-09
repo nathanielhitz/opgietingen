@@ -1,6 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { eventsFromMessage, sanitizeEvents } from "../../src/lib/scraper";
+import http from "node:http";
+import {
+  AGENDA_SIGNAAL,
+  eventsFromMessage,
+  plainFetchText,
+  sanitizeEvents,
+  scrapeAgenda,
+} from "../../src/lib/scraper";
 import { htmlToText } from "../../src/lib/html";
 import {
   escapeMdxText,
@@ -144,6 +151,239 @@ test("mdxExcerpt stript markdown en kapt af op een woordgrens", async () => {
   assert.ok(lang.length <= 81 && lang.endsWith("…"));
   // Ge-escapete MDX-syntax uit de scraper (\< en \{) wordt weer leesbare tekst.
   assert.equal(mdxExcerpt("Toegang \\<12 jaar en \\{gratis\\} entree."), "Toegang <12 jaar en {gratis} entree.");
+});
+
+/* ---------- plainFetchText (kale fetch-route: grootte, type, redirects) ---------- */
+
+/** Start een wegwerp-HTTP-server en geeft de basis-URL terug. */
+async function startServer(handler: http.RequestListener): Promise<{ base: string; stop: () => Promise<void> }> {
+  const server = http.createServer(handler);
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const { port } = server.address() as { port: number };
+  return {
+    base: `http://127.0.0.1:${port}`,
+    stop: () => new Promise<void>((resolve) => server.close(() => resolve())),
+  };
+}
+
+test("plainFetchText houdt multi-byte tekens heel over chunkgrenzen", async () => {
+  // Byte voor byte geschreven, zodat elk accent en elke emoji gegarandeerd
+  // over een chunkgrens valt — precies waar een verkeerd gebruikte
+  // TextDecoder replacement-tekens zou opleveren.
+  const zin = "<p>Opgieting — 14 februari — café ☕ bij 90°C</p>";
+  const { base, stop } = await startServer((_req, res) => {
+    res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+    for (const byte of Buffer.from(zin)) res.write(Buffer.from([byte]));
+    res.end();
+  });
+  try {
+    const res = await plainFetchText(base);
+    assert.ok(res.ok, "verwacht een geslaagde fetch");
+    const tekst = res.tekst;
+    assert.ok(tekst.includes("—") && tekst.includes("café") && tekst.includes("☕") && tekst.includes("90°C"));
+    assert.ok(!tekst.includes("�"), "geen replacement-tekens");
+  } finally {
+    await stop();
+  }
+});
+
+test("plainFetchText kapt een enorme respons af in plaats van alles te bufferen", async () => {
+  // htmlToText topt de tékst sowieso af, dus dat zegt niets over het bufferen.
+  // Wat de leeslimiet wél aantoonbaar verandert: de client stopt met lezen,
+  // waardoor de server zijn 40 MB nooit kwijt kan. Zonder limiet zou alles
+  // over de lijn komen en pas daarna worden weggegooid.
+  let verzonden = 0;
+  const { base, stop } = await startServer(async (_req, res) => {
+    res.writeHead(200, { "content-type": "text/html" });
+    res.write("<p>Opgieting 14 februari 2027. ");
+    const blok = "x".repeat(100_000);
+    for (let i = 0; i < 400; i++) {
+      if (res.writableEnded || res.destroyed) break;
+      const ruimte = res.write(blok);
+      verzonden += blok.length;
+      // Wachten op drain: anders buffert Node alles in het geheugen en meten
+      // we niets over wat de client daadwerkelijk heeft opgehaald.
+      if (!ruimte) await new Promise<void>((r) => res.once("drain", r));
+    }
+    if (!res.destroyed) res.end("</p>");
+  });
+  try {
+    const res = await plainFetchText(base);
+    assert.ok(res.ok, "verwacht een geslaagde fetch");
+    assert.ok(res.tekst.startsWith("Opgieting 14 februari"));
+    assert.ok(res.tekst.length <= 60_050, `onverwacht lang: ${res.tekst.length}`);
+    // Ruim onder de 40 MB die de server wilde sturen: de lezer is gestopt.
+    // Gemeten: ~5,6 MB van de 40 MB die de server wilde sturen. Zonder de
+    // leeslimiet zou alles binnenkomen en pas daarna worden weggegooid.
+    assert.ok(verzonden < 15_000_000, `te veel opgehaald: ${verzonden} bytes`);
+  } finally {
+    await stop();
+  }
+});
+
+test("plainFetchText weigert een niet-tekstueel content-type maar tolereert een ontbrekend type", async () => {
+  const { base, stop } = await startServer((req, res) => {
+    if (req.url === "/pdf") {
+      res.writeHead(200, { "content-type": "application/pdf" });
+      res.end("%PDF-1.4 " + "x".repeat(2000));
+      return;
+    }
+    // Geen content-type: niet elke server stuurt er een; dat mag geen reden
+    // zijn om een werkende bron over te slaan.
+    res.writeHead(200);
+    res.end("<p>Opgieting op 14 februari 2027 om 20:00 uur.</p>".repeat(30));
+  });
+  try {
+    const pdf = await plainFetchText(`${base}/pdf`);
+    assert.equal(pdf.ok, false);
+    assert.equal(pdf.ok === false && pdf.reden, "type");
+    assert.ok((await plainFetchText(`${base}/kaal`)).ok);
+  } finally {
+    await stop();
+  }
+});
+
+test("plainFetchText toetst het doel van een redirect opnieuw aan robots", async () => {
+  const { base, stop } = await startServer((req, res) => {
+    if (req.url === "/agenda") {
+      res.writeHead(302, { location: "/verboden" });
+      res.end();
+      return;
+    }
+    res.writeHead(200, { "content-type": "text/html" });
+    res.end("<p>Opgieting op 14 februari 2027 om 20:00 uur.</p>".repeat(30));
+  });
+  try {
+    const geweigerd = async (u: string) => !u.includes("/verboden");
+    const geblokt = await plainFetchText(`${base}/agenda`, geweigerd);
+    assert.equal(geblokt.ok, false);
+    // "robots" en niet "fout": scrapeAgenda mag hierna niet naar Firecrawl
+    // doorschakelen, want die zou dezelfde redirect alsnog volgen.
+    assert.equal(geblokt.ok === false && geblokt.reden, "robots");
+    // Zonder callback (of met een toestaande) komt de inhoud gewoon door.
+    assert.ok((await plainFetchText(`${base}/agenda`)).ok);
+    assert.ok((await plainFetchText(`${base}/agenda`, async () => true)).ok);
+  } finally {
+    await stop();
+  }
+});
+
+test("scrapeAgenda stopt bij een robots-blokkade en gaat niet door naar Firecrawl", async () => {
+  // Doorschakelen zou dezelfde URL via Firecrawl ophalen en dus dezelfde
+  // redirect volgen — dan is de robots-beslissing genomen door de route die
+  // niet draait. De test draait zonder API-keys: als de code tóch doorging,
+  // zou hij op de ontbrekende FIRECRAWL_API_KEY stuklopen in plaats van
+  // netjes met een robots-warning terug te keren.
+  const { base, stop } = await startServer((req, res) => {
+    if (req.url === "/agenda") {
+      res.writeHead(302, { location: "/verboden" });
+      res.end();
+      return;
+    }
+    res.writeHead(200, { "content-type": "text/html" });
+    res.end("<p>Opgieting op 14 februari 2027 om 20:00 uur.</p>".repeat(30));
+  });
+  try {
+    const out = await scrapeAgenda(
+      `${base}/agenda`,
+      { saunaNaam: "Test", land: "NL", vandaag: "2026-08-09" },
+      async (u) => !u.includes("/verboden"),
+    );
+    assert.equal(out.events.length, 0);
+    assert.equal(out.method, "none");
+    assert.equal(out.markdown, "");
+    assert.ok(
+      out.warnings.some((w) => w.includes("robots.txt")),
+      `verwacht een robots-warning, kreeg: ${JSON.stringify(out.warnings)}`,
+    );
+  } finally {
+    await stop();
+  }
+});
+
+/* ---------- AGENDA_SIGNAAL (wanneer vertrouwen we 0 events van de kale route?) ---------- */
+
+test("AGENDA_SIGNAAL herkent Nederlandse én Franse agenda-inhoud", () => {
+  assert.ok(AGENDA_SIGNAAL.test("Opgietavond op 14 februari, aanvang 20:00"));
+  assert.ok(AGENDA_SIGNAAL.test("Aufguss-programma"));
+  assert.ok(AGENDA_SIGNAAL.test("Séance le 14 février à 20h"));
+  assert.ok(AGENDA_SIGNAAL.test("Programme du 3 août"));
+  assert.ok(AGENDA_SIGNAAL.test("Infusion aux agrumes"));
+  assert.ok(AGENDA_SIGNAAL.test("Data: 05-10-2027"));
+});
+
+test("AGENDA_SIGNAAL respecteert woordgrenzen bij korte maandnamen", () => {
+  // Zonder \b matcht "mai" in "mail" en "mars" in "Marsepein" — dan zou de
+  // footer van vrijwel elke sauna-site als agenda-signaal gelden. Deze
+  // assertions falen bij een implementatie waaruit de woordgrenzen wegvallen.
+  assert.ok(!AGENDA_SIGNAAL.test("Stuur een mail naar info@sauna.nl of bel ons."));
+  assert.ok(!AGENDA_SIGNAAL.test("Onze marsepeinen lekkernij bij de thee."));
+  assert.ok(!AGENDA_SIGNAAL.test("Bekijk het domein en de meiden van de receptie."));
+  // De echte korte maandnamen matchen wel.
+  assert.ok(AGENDA_SIGNAAL.test("Opgieting in mei"));
+  assert.ok(AGENDA_SIGNAAL.test("Séance en mars"));
+  assert.ok(AGENDA_SIGNAAL.test("Séance en juin"));
+});
+
+test("AGENDA_SIGNAAL herkent ook accentloos gespelde Franse maanden", () => {
+  // Veel sites schrijven zonder accenten; de regex dekt beide vormen.
+  assert.ok(AGENDA_SIGNAAL.test("Le 3 fevrier"));
+  assert.ok(AGENDA_SIGNAAL.test("Le 5 aout"));
+  assert.ok(AGENDA_SIGNAAL.test("Le 1 decembre"));
+});
+
+test("AGENDA_SIGNAAL vuurt niet op kale openingstijden in een footer", () => {
+  // Dit is precies het geval waarvoor de check bestaat: nav + footer halen de
+  // tekendrempel terwijl de agenda zelf JS-gerenderd is. Een tijd alleen mag
+  // die boilerplate niet als "echte agenda" laten doorgaan.
+  assert.ok(!AGENDA_SIGNAAL.test("Openingstijden: ma t/m zo 10:00 - 23:00. Contact: 010-1234567"));
+  assert.ok(!AGENDA_SIGNAAL.test("Welkom bij onze sauna. Wellness, massages en meer."));
+});
+
+/* ---------- sanitizeEvents: hardening tegen rommelige extractie-output ---------- */
+
+test("sanitizeEvents slaat null-items over zonder de geldige events te verliezen", () => {
+  const events = sanitizeEvents({ events: [null, "kapot", 42, rawEvent()] });
+  assert.equal(events.length, 1);
+  assert.equal(events[0].titel, "Aufguss-avond");
+});
+
+test("sanitizeEvents weigert datums die het formaat halen maar niet bestaan", () => {
+  assert.equal(sanitizeEvents({ events: [rawEvent({ startDatum: "2027-11-31" })] }).length, 0);
+  assert.equal(sanitizeEvents({ events: [rawEvent({ startDatum: "2027-13-05" })] }).length, 0);
+  // Een niet-bestaande einddatum wordt gedropt, het event zelf blijft.
+  const [ev] = sanitizeEvents({ events: [rawEvent({ eindDatum: "2027-02-30" })] });
+  assert.equal(ev.eindDatum, undefined);
+  // Schrikkeljaar blijft gewoon geldig.
+  assert.equal(sanitizeEvents({ events: [rawEvent({ startDatum: "2028-02-29" })] }).length, 1);
+});
+
+test("sanitizeEvents haalt links uit de beschrijving maar houdt de tekst leesbaar", () => {
+  const [md] = sanitizeEvents({
+    events: [rawEvent({ beschrijving: "Reserveer via [deze pagina](https://phish.example/x) vooraf." })],
+  });
+  assert.equal(md.beschrijving, "Reserveer via deze pagina vooraf.");
+  // assert.equal en niet "bevat geen http": een implementatie die alléén kale
+  // URL's weghaalt laat `![banner]()` staan, wat geldige MDX-afbeeldings-
+  // syntax blijft en op de pagina een gebroken <img> oplevert.
+  const [img] = sanitizeEvents({
+    events: [rawEvent({ beschrijving: "Sfeerbeeld ![banner](https://x.example/b.png) van de sauna." })],
+  });
+  assert.equal(img.beschrijving, "Sfeerbeeld banner van de sauna.");
+  const [kaal] = sanitizeEvents({
+    events: [rawEvent({ beschrijving: "Meer info op https://sauna.example/agenda ." })],
+  });
+  assert.equal(kaal.beschrijving, "Meer info op.");
+  // Een URL tussen haakjes laat geen leeg "()" achter.
+  const [haakjes] = sanitizeEvents({
+    events: [rawEvent({ beschrijving: "Kaarten via de webshop (https://sauna.example/shop) verkrijgbaar." })],
+  });
+  assert.equal(haakjes.beschrijving, "Kaarten via de webshop verkrijgbaar.");
+  // Blijft er geen tekst over, dan valt de beschrijving terug op de titel.
+  const [leeg] = sanitizeEvents({ events: [rawEvent({ beschrijving: "https://sauna.example" })] });
+  assert.equal(leeg.beschrijving, "Aufguss-avond");
+  const [alleenHaakjes] = sanitizeEvents({ events: [rawEvent({ beschrijving: "(https://sauna.example)" })] });
+  assert.equal(alleenHaakjes.beschrijving, "Aufguss-avond");
 });
 
 /* ---------- externeTicketHost (auto-publicatie van vreemde redirects) ---------- */
