@@ -45,10 +45,13 @@ test("parseGalleryDlOutput dedupliceert dezelfde post op id en behoudt caption +
   assert.deepEqual(posts[1], { caption: "Regenachtige dag? Kom lekker genieten.", datum: "2026-06-01" });
 });
 
-test("parseGalleryDlOutput slaat items zonder caption of zonder id over", () => {
+test("parseGalleryDlOutput slaat items zonder caption over", () => {
+  // `id` is geen onderdeel meer van FacebookPost en wordt niet meer gecontroleerd
+  // (dedup gebeurt op caption, zie de aparte dedup-test hieronder) — alleen een
+  // ontbrekende caption is nog een geldige skip-reden.
   const stdout = JSON.stringify([
     [2, { date: "2026-08-24 08:30:03", id: "111" }], // geen caption
-    [3, "https://scontent.example/x.jpg", { caption: "Tekst zonder id", date: "2026-08-24 08:30:03" }], // geen id
+    [3, "https://scontent.example/x.jpg", { date: "2026-08-24 08:30:03" }], // ook geen caption
   ]);
   assert.deepEqual(parseGalleryDlOutput(stdout), []);
 });
@@ -59,6 +62,21 @@ test("parseGalleryDlOutput geeft een lege lijst bij ongeldige JSON", () => {
 
 test("parseGalleryDlOutput geeft een lege lijst bij een niet-array top-level waarde", () => {
   assert.deepEqual(parseGalleryDlOutput(JSON.stringify({ foo: "bar" })), []);
+});
+
+test("parseGalleryDlOutput dedupliceert twee foto's van dezelfde post (zelfde caption, verschillende id's) tot één", () => {
+  const stdout = JSON.stringify([
+    [3, "https://scontent.example/a.jpg", { caption: "Zelfde post, twee foto's.", date: "2026-08-24 08:30:03", id: "111" }],
+    [3, "https://scontent.example/b.jpg", { caption: "Zelfde post, twee foto's.", date: "2026-08-24 08:30:03", id: "222" }],
+  ]);
+  assert.equal(parseGalleryDlOutput(stdout).length, 1);
+});
+
+test("parseGalleryDlOutput slaat een post met een onherkenbare datum over", () => {
+  const stdout = JSON.stringify([
+    [2, { caption: "Post met kapotte datum.", date: "[Invalid DateTime]", id: "333" }],
+  ]);
+  assert.deepEqual(parseGalleryDlOutput(stdout), []);
 });
 
 test("filterRecentePosts sluit posts uit die ouder zijn dan de grens; exact op de grens telt nog mee", () => {

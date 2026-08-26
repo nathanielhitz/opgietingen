@@ -8,6 +8,8 @@
   gaat als een doorgestuurde nieuwsbrief-mail (src/lib/scraper.ts).
 */
 
+import { addDaysISO } from "./dates";
+
 export interface FacebookPost {
   caption: string;
   datum: string; // ISO YYYY-MM-DD, uit het date-veld van gallery-dl
@@ -22,9 +24,14 @@ export interface FacebookFetchResult {
  * Parst de ruwe `gallery-dl -j`-output. Elke post komt meerdere keren voor
  * (één keer per Message-type — Directory, Url, …), telkens als een array
  * waarvan het LAATSTE element de post-metadata is (zowel bij een 2-elements
- * Directory-entry als een 3-elements Url-entry). Dedupliceert op het
- * `id`-veld van die metadata en houdt alleen posts met een niet-lege
- * `caption` over — sfeerposts zonder tekst leveren toch geen event op.
+ * Directory-entry als een 3-elements Url-entry). De `/photos`-route loopt de
+ * fototijdlijn foto voor foto af, niet post voor post: één aankondiging met
+ * meerdere foto's levert dus meerdere entries met verschillende `id`'s maar
+ * dezelfde caption + datum op. Dedupliceert daarom op de getrimde `caption`
+ * en houdt alleen posts met een niet-lege caption én een herkenbare
+ * `YYYY-MM-DD`-datum over — sfeerposts zonder tekst leveren toch geen event
+ * op, en een onherkenbare datum (bv. gallery-dl's `[Invalid DateTime]`-
+ * fallback) mag niet stilzwijgend de ouderdomsfilter omzeilen.
  */
 export function parseGalleryDlOutput(stdout: string): FacebookPost[] {
   let ruw: unknown;
@@ -42,11 +49,10 @@ export function parseGalleryDlOutput(stdout: string): FacebookPost[] {
     const meta = entry[entry.length - 1];
     if (meta === null || typeof meta !== "object") continue;
     const m = meta as Record<string, unknown>;
-    const id = typeof m.id === "string" ? m.id : undefined;
     const caption = typeof m.caption === "string" ? m.caption.trim() : "";
-    const datum = typeof m.date === "string" ? m.date.slice(0, 10) : "";
-    if (!id || !caption || !datum || gezien.has(id)) continue;
-    gezien.add(id);
+    const datum = typeof m.date === "string" && /^\d{4}-\d{2}-\d{2}/.test(m.date) ? m.date.slice(0, 10) : "";
+    if (!caption || !datum || gezien.has(caption)) continue;
+    gezien.add(caption);
     posts.push({ caption, datum });
   }
   return posts;
@@ -62,8 +68,6 @@ export function filterRecentePosts(
   vandaag: string,
   maxOuderdomDagen: number,
 ): FacebookPost[] {
-  const grens = new Date(`${vandaag}T00:00:00Z`);
-  grens.setUTCDate(grens.getUTCDate() - maxOuderdomDagen);
-  const grensISO = grens.toISOString().slice(0, 10);
+  const grensISO = addDaysISO(vandaag, -maxOuderdomDagen);
   return posts.filter((p) => p.datum >= grensISO);
 }
