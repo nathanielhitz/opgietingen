@@ -31,6 +31,7 @@ import {
   type NewEvent,
 } from "./lib/content";
 import { evaluateEvent, OPGIET_RE } from "./lib/quality-gate";
+import { appendScrapeWarnings } from "./lib/warnings";
 import { isAllowed, sleep, REQUEST_DELAY_MS } from "./lib/net";
 import { todayISOInTimeZone } from "../src/lib/dates";
 import { scrapeAgenda, type ScrapeOutcome, type ScrapedEvent } from "../src/lib/scraper";
@@ -49,8 +50,6 @@ const DOEL_DIR = process.argv.includes("--dry-run")
   : undefined;
 const TODAY = todayISOInTimeZone();
 const AUTO_PUBLISH = process.env.SCRAPE_AUTOPUBLISH === "true";
-/** Waarschuwingen per run; scrape-report neemt ze mee in het wekelijkse issue. */
-const WARNINGS_PATH = "scrape-warnings.json";
 
 /** Mock-extractie voor --dry-run: twee toekomstige events per bron. */
 function mockOutcome(): ScrapeOutcome {
@@ -297,15 +296,10 @@ async function main() {
     if (!DRY_RUN) await sleep(REQUEST_DELAY_MS);
   }
 
-  if (!DRY_RUN) {
-    fs.writeFileSync(
-      WARNINGS_PATH,
-      JSON.stringify({ run: TODAY, warnings: rapportWarnings }, null, 2) + "\n",
-    );
-  }
+  if (!DRY_RUN) appendScrapeWarnings(TODAY, rapportWarnings);
   console.log(
     `Klaar. ${written} nieuw event(s), ${skipped} overgeslagen (dedup), ` +
-      `${rapportWarnings.length} waarschuwing(en)${DRY_RUN ? "" : ` → ${WARNINGS_PATH}`}.`,
+      `${rapportWarnings.length} waarschuwing(en)${DRY_RUN ? "" : " → scrape-warnings.json"}.`,
   );
 }
 
