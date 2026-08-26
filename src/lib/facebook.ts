@@ -8,6 +8,9 @@
   gaat als een doorgestuurde nieuwsbrief-mail (src/lib/scraper.ts).
 */
 
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+
 import { addDaysISO } from "./dates";
 
 export interface FacebookPost {
@@ -74,4 +77,48 @@ export function filterRecentePosts(
 ): FacebookPost[] {
   const grensISO = addDaysISO(vandaag, -maxOuderdomDagen);
   return posts.filter((p) => p.datum >= grensISO);
+}
+
+const execFileAsync = promisify(execFile);
+
+/** Aantal recente foto-posts dat per bron wordt opgehaald. */
+export const DEFAULT_RANGE = "1-15";
+/** Posts ouder dan dit aantal dagen worden niet meer geëxtraheerd. */
+export const DEFAULT_MAX_OUDERDOM_DAGEN = 60;
+
+export interface FetchFacebookPostsContext {
+  /** Referentiedatum (ISO YYYY-MM-DD) voor het leeftijdsfilter. */
+  vandaag: string;
+  maxOuderdomDagen?: number;
+  range?: string;
+}
+
+/**
+ * Haalt de recente foto-posts van een publieke Facebook-pagina op via
+ * gallery-dl. Faalt de subprocess (gallery-dl ontbreekt, pagina geblokkeerd/
+ * onbereikbaar, onverwachte output) dan wordt dat NOOIT doorgegooid: de
+ * aanroeper (scrape-facebook.ts) moet die ene bron kunnen overslaan zonder de
+ * hele run te laten crashen — zelfde filosofie als de per-bron try/catch in
+ * scrape-events.ts.
+ */
+export async function fetchFacebookPosts(
+  facebookUrl: string,
+  ctx: FetchFacebookPostsContext,
+): Promise<FacebookFetchResult> {
+  const range = ctx.range ?? DEFAULT_RANGE;
+  const maxOuderdomDagen = ctx.maxOuderdomDagen ?? DEFAULT_MAX_OUDERDOM_DAGEN;
+  const url = `${facebookUrl.replace(/\/+$/, "")}/photos`;
+  try {
+    const { stdout } = await execFileAsync(
+      "python3",
+      ["-m", "gallery_dl", "-j", "--range", range, url],
+      { timeout: 60000, maxBuffer: 10_000_000 },
+    );
+    const alle = parseGalleryDlOutput(stdout);
+    const posts = filterRecentePosts(alle, ctx.vandaag, maxOuderdomDagen);
+    return { posts, warnings: [] };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { posts: [], warnings: [`gallery-dl-fout voor ${facebookUrl}: ${msg}`] };
+  }
 }
