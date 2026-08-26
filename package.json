@@ -11,6 +11,7 @@
     "bronnen-report": "tsx scripts/bronnen-report.ts",
     "scrape": "tsx scripts/scrape-events.ts",
     "scrape-mail": "tsx scripts/scrape-mail.ts",
+    "scrape-facebook": "tsx scripts/scrape-facebook.ts",
     "check-roosters": "tsx scripts/check-roosters.ts",
     "vind-roosters": "tsx scripts/vind-roosters.ts",
     "indexnow": "tsx scripts/indexnow.ts",
