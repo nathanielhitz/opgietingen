@@ -54,6 +54,7 @@ export function periodeVoorKeuze(keuze: PeriodeKeuze, vandaag: string): { van: s
 /** Welke keuze hoort bij dit van/tot? Leeg = "alles", geen exacte match = "custom". */
 export function keuzeVoorPeriode(van: string, tot: string, vandaag: string): PeriodeKeuze {
   if (!van && !tot) return "alles";
+  if (!vandaag) return "custom"; // vóór hydratie is "vandaag" nog onbekend
   for (const keuze of SNELKEUZES) {
     const p = periodeVoorKeuze(keuze, vandaag);
     if (p && p.van === van && p.tot === tot) return keuze;

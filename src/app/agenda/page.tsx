@@ -99,7 +99,7 @@ export default async function AgendaPage({
       </header>
 
       <div className="mt-6">
-        <AgendaFilters provinces={provinceOptions} filters={filters} error={filterError} />
+        <AgendaFilters provinces={provinceOptions} filters={filters} error={filterError} resultaatAantal={events.length} />
       </div>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">

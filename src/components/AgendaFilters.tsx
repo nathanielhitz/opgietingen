@@ -4,22 +4,26 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { EventFilters } from "@/lib/filters";
 import { EVENT_TYPES, COUNTRY_LABELS, type Country, type EventType } from "@/lib/site";
+import { todayISO } from "@/lib/dates";
+import { labelVoorDatumbereik } from "@/lib/filter-presets";
+import { DesktopFilterPanel } from "./agenda-filters/DesktopFilterPanel";
+import { FilterSheet } from "./agenda-filters/FilterSheet";
+import { MobileFilterButton } from "./agenda-filters/MobileFilterBar";
+import type { ProvinceOption } from "./agenda-filters/types";
 
-export interface ProvinceOption {
-  land: Country;
-  provincie: string;
-  slug: string;
-  count: number;
-}
+export type { ProvinceOption } from "./agenda-filters/types";
 
 export function AgendaFilters({
   provinces,
   filters,
   error,
+  resultaatAantal,
 }: {
   provinces: ProvinceOption[];
   filters: EventFilters;
   error: string | null;
+  /** Aantal events na filtering (voor "Toon N events" in de sheet). */
+  resultaatAantal: number;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -38,6 +42,12 @@ export function AgendaFilters({
   const pendingParamsRef = useRef<string | null>(null);
   const draftRevisionRef = useRef(0);
   const submittedSearchRef = useRef<{ value: string; revision: number } | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  // "Vandaag" pas na mount zetten: server en client zouden anders kunnen verschillen.
+  const [vandaag, setVandaag] = useState("");
+  useEffect(() => {
+    setVandaag(todayISO());
+  }, []);
 
   // Eigen router-updates kunnen in een andere volgorde renderen dan ze zijn aangevraagd.
   // Alleen de nieuwste bevestigen we; een onbekende URL behandelen we als externe navigatie.
@@ -114,22 +124,21 @@ export function AgendaFilters({
     router.replace(pathname, { scroll: false });
   }, [pathname, router]);
 
-  const visibleProvinces = provinces.filter((p) => !land || p.land === land);
+  const datumLabel = van || tot ? labelVoorDatumbereik(van, tot, vandaag) : null;
   const activeFilters = [
     q.trim() ? { key: "q", label: `Zoeken: “${q.trim()}”` } : null,
-    land ? { key: "land", label: `Land: ${COUNTRY_LABELS[land as Country] ?? land}` } : null,
+    land ? { key: "land", label: COUNTRY_LABELS[land as Country] ?? land } : null,
     provincie
-      ? {
-          key: "provincie",
-          label: `Provincie: ${provinces.find((p) => p.slug === provincie)?.provincie ?? provincie}`,
-        }
+      ? { key: "provincie", label: provinces.find((p) => p.slug === provincie)?.provincie ?? provincie }
       : null,
-    type
-      ? { key: "type", label: `Type: ${EVENT_TYPES[type as EventType] ?? type}` }
-      : null,
-    van ? { key: "van", label: `Vanaf: ${van}` } : null,
-    tot ? { key: "tot", label: `Tot en met: ${tot}` } : null,
+    type ? { key: "type", label: EVENT_TYPES[type as EventType] ?? type } : null,
+    datumLabel ? { key: "datum", label: datumLabel } : null,
   ].filter((filter): filter is { key: string; label: string } => filter !== null);
+  const filterTeller = activeFilters.filter((f) => f.key !== "q").length;
+
+  function verwijderFilter(key: string) {
+    update(key === "datum" ? { van: "", tot: "" } : { [key]: "" });
+  }
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -158,74 +167,36 @@ export function AgendaFilters({
           />
           <button
             type="submit"
-            className="min-h-11 rounded-lg bg-ember px-4 text-sm font-medium text-white transition-colors hover:bg-ember/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember focus-visible:ring-offset-2"
+            aria-label="Zoeken"
+            className="flex min-h-11 items-center rounded-lg bg-ember px-3 text-sm font-medium text-white transition-colors hover:bg-ember/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember focus-visible:ring-offset-2 sm:px-4"
           >
-            Zoeken
+            <svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4 sm:hidden" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <circle cx="9" cy="9" r="5.5" />
+              <path d="M13.5 13.5 17 17" />
+            </svg>
+            <span className="hidden sm:inline">Zoeken</span>
           </button>
+          <div className="sm:hidden">
+            <MobileFilterButton aantal={filterTeller} onClick={() => setSheetOpen(true)} />
+          </div>
         </div>
       </form>
 
-      {/* Land */}
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        <Pill active={!land} onClick={() => update({ land: "" })}>
-          Alle landen
-        </Pill>
-        {(["NL", "BE"] as Country[]).map((c) => (
-          <Pill key={c} active={land === c} onClick={() => update({ land: c })}>
-            {COUNTRY_LABELS[c]}
-          </Pill>
-        ))}
+      {/* Volledig paneel vanaf sm; op mobiel zit alles in de sheet. */}
+      <div className="hidden sm:block">
+        <DesktopFilterPanel filters={filters} provinces={provinces} update={update} vandaag={vandaag} />
       </div>
-
-      {/* Type */}
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Pill active={!type} onClick={() => update({ type: "" })}>
-          Alle types
-        </Pill>
-        {(Object.keys(EVENT_TYPES) as EventType[]).map((t) => (
-          <Pill key={t} active={type === t} onClick={() => update({ type: t })}>
-            {EVENT_TYPES[t]}
-          </Pill>
-        ))}
-      </div>
-
-      {/* Provincie + datumbereik */}
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        <label className="block">
-          <span className="mb-1 block text-xs font-medium text-ink-faint">Provincie</span>
-          <select
-            value={provincie}
-            onChange={(e) => update({ provincie: e.target.value })}
-            className="min-h-11 w-full rounded-lg border border-sand bg-cream px-3 py-2 text-sm text-ink focus-visible:border-ember focus-visible:ring-2 focus-visible:ring-ember/40"
-          >
-            <option value="">Alle provincies</option>
-            {visibleProvinces.map((p) => (
-              <option key={p.slug} value={p.slug}>
-                {p.provincie} ({p.count})
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="block">
-          <span className="mb-1 block text-xs font-medium text-ink-faint">Vanaf</span>
-          <input
-            type="date"
-            value={van}
-            onChange={(e) => update({ van: e.target.value })}
-            className="min-h-11 w-full rounded-lg border border-sand bg-cream px-3 py-2 text-sm text-ink focus-visible:border-ember focus-visible:ring-2 focus-visible:ring-ember/40"
-          />
-        </label>
-
-        <label className="block">
-          <span className="mb-1 block text-xs font-medium text-ink-faint">Tot en met</span>
-          <input
-            type="date"
-            value={tot}
-            onChange={(e) => update({ tot: e.target.value })}
-            className="min-h-11 w-full rounded-lg border border-sand bg-cream px-3 py-2 text-sm text-ink focus-visible:border-ember focus-visible:ring-2 focus-visible:ring-ember/40"
-          />
-        </label>
+      <div className="sm:hidden">
+        <FilterSheet
+          open={sheetOpen}
+          onClose={() => setSheetOpen(false)}
+          resultaatAantal={resultaatAantal}
+          resetFilters={resetFilters}
+          filters={filters}
+          provinces={provinces}
+          update={update}
+          vandaag={vandaag}
+        />
       </div>
 
       {error && (
@@ -244,7 +215,7 @@ export function AgendaFilters({
             <button
               key={filter.key}
               type="button"
-              onClick={() => update({ [filter.key]: "" })}
+              onClick={() => verwijderFilter(filter.key)}
               aria-label={`${filter.label} verwijderen`}
               className="min-h-11 rounded-full bg-cream px-3 text-sm font-medium text-ink-soft transition-colors hover:bg-sand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember focus-visible:ring-offset-2"
             >
@@ -264,25 +235,3 @@ export function AgendaFilters({
   );
 }
 
-function Pill({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`min-h-11 whitespace-nowrap rounded-full px-3.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ember focus-visible:ring-offset-2 ${
-        active ? "bg-ember text-white shadow-sm" : "bg-cream text-ink-soft hover:bg-sand"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}

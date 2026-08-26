@@ -18,10 +18,10 @@ Spec: `docs/superpowers/specs/2026-08-26-mobiele-filter-sheet-agenda-design.md`
 - Create: `src/lib/filter-presets.ts`
 - Test: `scripts/lib/filter-presets.test.ts`
 
-- [ ] Schrijf tests voor `periodeVoorKeuze`, `keuzeVoorPeriode`, `waarValue`/`parseWaar`, `labelVoorDatumbereik` (weekend voor elke weekdag via `weekendRange`, maandgrenzen dec→jan en feb, round-trips).
-- [ ] `npm test` → FAIL (module ontbreekt).
-- [ ] Implementeer met bestaande `weekendRange`/`addDaysISO`/`parseISO`/`formatDate` uit `src/lib/dates.ts`.
-- [ ] `npm test` → PASS. Commit `feat(agenda): snelkeuze-helpers voor mobiele filters`.
+- [x] Schrijf tests voor `periodeVoorKeuze`, `keuzeVoorPeriode`, `waarValue`/`parseWaar`, `labelVoorDatumbereik` (weekend voor elke weekdag via `weekendRange`, maandgrenzen dec→jan en feb, round-trips).
+- [x] `npm test` → FAIL (module ontbreekt).
+- [x] Implementeer met bestaande `weekendRange`/`addDaysISO`/`parseISO`/`formatDate` uit `src/lib/dates.ts`.
+- [x] `npm test` → PASS. Commit `feat(agenda): snelkeuze-helpers voor mobiele filters`.
 
 ### Task 2: Presentatiecomponenten
 
@@ -31,8 +31,8 @@ Spec: `docs/superpowers/specs/2026-08-26-mobiele-filter-sheet-agenda-design.md`
 - Create: `src/components/agenda-filters/FilterSheet.tsx` (`<dialog>`, Waar/Type/Periode-selects, datumvelden bij `custom`, "Toon N events")
 - Create: `src/components/agenda-filters/DateInput.tsx` (gedeeld datumveld met iOS-fix)
 
-- [ ] Bouw de vier componenten; props: `filters`, `provinces`, `update(changes)`, `resetFilters()`, `resultaatAantal`, `vandaag`.
-- [ ] Commit `feat(agenda): filter-sheet-componenten`.
+- [x] Bouw de vier componenten; props: `filters`, `provinces`, `update(changes)`, `resetFilters()`, `resultaatAantal`, `vandaag`.
+- [x] Commit `feat(agenda): filter-sheet-componenten`.
 
 ### Task 3: `AgendaFilters.tsx` + `page.tsx` koppelen
 
@@ -40,9 +40,9 @@ Spec: `docs/superpowers/specs/2026-08-26-mobiele-filter-sheet-agenda-design.md`
 - Modify: `src/components/AgendaFilters.tsx` (render desktop/mobiel, chip-labels via `labelVoorDatumbereik`, `vandaag` in state via `useEffect`, nieuwe prop `resultaatAantal`)
 - Modify: `src/app/agenda/page.tsx:102` (geef `resultaatAantal={events.length}`)
 
-- [ ] Koppel, verwijder oude inline markup.
-- [ ] `npm run lint && npm run build && npm test` groen.
-- [ ] Commit `feat(agenda): mobiele filter-sheet (C2 + D1) en iOS-datumfix`.
+- [x] Koppel, verwijder oude inline markup.
+- [x] `npm run lint && npm run build && npm test` groen.
+- [x] Commit `feat(agenda): mobiele filter-sheet (C2 + D1) en iOS-datumfix`.
 
 ### Task 4: Handmatige check
-- [ ] `npm run dev`, DevTools 390px: sheet open/sluit (knop, backdrop, Escape), teller, chips, deeplink `?van=2026-09-01&tot=2026-09-15` → "Kies datums…" met gevulde velden. Desktop ongewijzigd.
+- [x] `npm run dev`, DevTools 390px: sheet open/sluit (knop, backdrop, Escape), teller, chips, deeplink `?van=2026-09-01&tot=2026-09-15` → "Kies datums…" met gevulde velden. Desktop ongewijzigd.
