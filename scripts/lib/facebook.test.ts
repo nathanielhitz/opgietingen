@@ -81,6 +81,17 @@ test("parseGalleryDlOutput slaat een post met een onherkenbare datum over", () =
   assert.deepEqual(parseGalleryDlOutput(stdout), []);
 });
 
+test("parseGalleryDlOutput houdt twee verschillende posts met dezelfde caption maar verschillende datums allebei", () => {
+  const stdout = JSON.stringify([
+    [2, { caption: "Kom gezellig langs voor een opgieting!", date: "2026-08-01 10:00:00", id: "111" }],
+    [2, { caption: "Kom gezellig langs voor een opgieting!", date: "2026-08-15 10:00:00", id: "222" }],
+  ]);
+  assert.deepEqual(parseGalleryDlOutput(stdout), [
+    { caption: "Kom gezellig langs voor een opgieting!", datum: "2026-08-01" },
+    { caption: "Kom gezellig langs voor een opgieting!", datum: "2026-08-15" },
+  ]);
+});
+
 test("filterRecentePosts sluit posts uit die ouder zijn dan de grens; exact op de grens telt nog mee", () => {
   const posts = [
     { caption: "vandaag", datum: "2026-08-26" },
