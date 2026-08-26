@@ -69,7 +69,9 @@ test("parseGalleryDlOutput dedupliceert twee foto's van dezelfde post (zelfde ca
     [3, "https://scontent.example/a.jpg", { caption: "Zelfde post, twee foto's.", date: "2026-08-24 08:30:03", id: "111" }],
     [3, "https://scontent.example/b.jpg", { caption: "Zelfde post, twee foto's.", date: "2026-08-24 08:30:03", id: "222" }],
   ]);
-  assert.equal(parseGalleryDlOutput(stdout).length, 1);
+  assert.deepEqual(parseGalleryDlOutput(stdout), [
+    { caption: "Zelfde post, twee foto's.", datum: "2026-08-24" },
+  ]);
 });
 
 test("parseGalleryDlOutput slaat een post met een onherkenbare datum over", () => {

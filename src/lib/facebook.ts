@@ -27,11 +27,14 @@ export interface FacebookFetchResult {
  * Directory-entry als een 3-elements Url-entry). De `/photos`-route loopt de
  * fototijdlijn foto voor foto af, niet post voor post: één aankondiging met
  * meerdere foto's levert dus meerdere entries met verschillende `id`'s maar
- * dezelfde caption + datum op. Dedupliceert daarom op de getrimde `caption`
- * en houdt alleen posts met een niet-lege caption én een herkenbare
- * `YYYY-MM-DD`-datum over — sfeerposts zonder tekst leveren toch geen event
- * op, en een onherkenbare datum (bv. gallery-dl's `[Invalid DateTime]`-
- * fallback) mag niet stilzwijgend de ouderdomsfilter omzeilen.
+ * dezelfde caption + datum op. Dedupliceert daarom op de combinatie van
+ * getrimde `caption` én datum (caption alleen zou twee écht verschillende
+ * posts met een identieke, sjabloonmatige caption op andere datums onterecht
+ * samenvoegen) en houdt alleen posts met een niet-lege caption én een
+ * herkenbare `YYYY-MM-DD`-datum over — sfeerposts zonder tekst leveren toch
+ * geen event op, en een onherkenbare datum (bv. gallery-dl's
+ * `[Invalid DateTime]`-fallback) mag niet stilzwijgend de ouderdomsfilter
+ * omzeilen.
  */
 export function parseGalleryDlOutput(stdout: string): FacebookPost[] {
   let ruw: unknown;
@@ -51,8 +54,9 @@ export function parseGalleryDlOutput(stdout: string): FacebookPost[] {
     const m = meta as Record<string, unknown>;
     const caption = typeof m.caption === "string" ? m.caption.trim() : "";
     const datum = typeof m.date === "string" && /^\d{4}-\d{2}-\d{2}/.test(m.date) ? m.date.slice(0, 10) : "";
-    if (!caption || !datum || gezien.has(caption)) continue;
-    gezien.add(caption);
+    const sleutel = `${caption}|${datum}`;
+    if (!caption || !datum || gezien.has(sleutel)) continue;
+    gezien.add(sleutel);
     posts.push({ caption, datum });
   }
   return posts;
