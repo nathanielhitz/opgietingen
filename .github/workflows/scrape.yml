@@ -51,7 +51,19 @@ jobs:
             npm run scrape
           fi
 
-      # Stap 3 — verwerk nieuwsbrieven uit de gedeelde inbox (events@opgietingen.nl).
+      # Stap 3 — haal Facebook-postaankondigingen op (gratis, via gallery-dl,
+      # geen login) voor bronnen met een facebook-veld en verwerk ze door
+      # dezelfde extractie/poort/dedup-keten als de website-scraper.
+      - name: Setup gallery-dl
+        run: pip install gallery-dl
+
+      - name: Scrape Facebook-pagina's (poort → gepubliceerd/concept in content/events/)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SCRAPE_AUTOPUBLISH: "true"
+        run: npm run scrape-facebook
+
+      # Stap 4 — verwerk nieuwsbrieven uit de gedeelde inbox (events@opgietingen.nl).
       # Slaat zichzelf over als de IMAP-secrets nog niet gezet zijn.
       - name: Scrape nieuwsbrieven (IMAP → poort → concept/gepubliceerd)
         env:
@@ -65,7 +77,7 @@ jobs:
           SCRAPE_AUTOPUBLISH: "true"
         run: npm run scrape-mail
 
-      # Stap 4 — hercontroleer verouderde opgietroosters (> 60 dagen niet
+      # Stap 5 — hercontroleer verouderde opgietroosters (> 60 dagen niet
       # bevestigd) tegen de sauna-website; bevestigde roosters krijgen een
       # verse roosterGecheckt-datum, afwijkingen komen in het scraper-issue.
       - name: Hercheck opgietroosters
