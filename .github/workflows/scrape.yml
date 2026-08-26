@@ -55,6 +55,7 @@ jobs:
       # geen login) voor bronnen met een facebook-veld en verwerk ze door
       # dezelfde extractie/poort/dedup-keten als de website-scraper.
       - name: Setup gallery-dl
+        continue-on-error: true
         run: pip install gallery-dl
 
       - name: Scrape Facebook-pagina's (poort → gepubliceerd/concept in content/events/)
