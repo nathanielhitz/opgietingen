@@ -32,9 +32,10 @@ export interface Bron {
   website?: string;
   /**
    * URL van de Facebook-pagina van de sauna. Matching-anker voor doorgestuurde
-   * social-posts in scrape-mail (matchBronByContent). Automatisch FB-scrapen is
-   * bewust NIET gebouwd (fase B blijft op papier), zie
-   * docs/superpowers/specs/2026-08-02-facebook-doorstuurkanaal-design.md.
+   * social-posts in scrape-mail (matchBronByContent) én bron voor het
+   * automatische scrape-facebook-kanaal, zie
+   * docs/superpowers/specs/2026-08-02-facebook-doorstuurkanaal-design.md en
+   * docs/superpowers/specs/2026-08-26-facebook-postscraper-design.md.
    */
   facebook?: string;
   agendaUrl: string;
