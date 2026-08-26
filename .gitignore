@@ -49,3 +49,6 @@ yarn-error.log*
 
 # Onderzoeks-input (ChatGPT sauna-events pack) — lokaal houden, niet in repo
 opgietingen_research_pack_2026/
+
+# GSC-exports (Search Console coverage/drilldown CSV's) — lokale analyse-input
+/GSC reports/
