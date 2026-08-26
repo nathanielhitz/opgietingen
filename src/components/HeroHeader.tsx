@@ -1,4 +1,5 @@
 import { getImageProps } from "next/image";
+import Link from "next/link";
 import { getProvincesWithEvents, slugify } from "@/lib/content";
 import { EVENT_TYPES, COUNTRY_LABELS, type EventType } from "@/lib/site";
 
@@ -54,10 +55,7 @@ export default function HeroHeader({
       {/* Inhoud */}
       {/* De site-header zweeft transparant over de foto; pt compenseert zijn hoogte. */}
       <div className="relative mx-auto max-w-6xl px-4 pb-14 pt-28 sm:px-6 sm:pb-20 sm:pt-32">
-        <p className="text-sm font-semibold uppercase tracking-wider text-ember-soft">
-          Opgietingen · Aufguss · NL &amp; BE
-        </p>
-        <h1 className="mt-3 max-w-3xl font-display text-4xl font-semibold leading-tight text-white sm:text-5xl">
+        <h1 className="max-w-3xl font-display text-4xl font-semibold leading-tight text-white sm:text-5xl">
           Vind de mooiste opgietingen bij jou in de buurt
         </h1>
         <p className="mt-4 max-w-xl text-lg text-cream/85">
@@ -116,6 +114,23 @@ export default function HeroHeader({
           >
             Zoek opgietingen
           </button>
+          {/* Secundaire route: hele regel is één link (touchdoel ≥ 44px via py-3).
+              Grid-gap (12px) + mt-1 (4px) = 16px onder de zoekknop. */}
+          <Link
+            href="/agenda"
+            className="group mt-1 flex items-center justify-center gap-1 py-3 text-center text-sm text-cream/80 sm:col-span-2 lg:col-span-4"
+          >
+            <span>Of</span>
+            <span className="border-b border-ember/40 font-semibold text-ember transition-colors duration-150 group-hover:border-ember-soft/60 group-hover:text-ember-soft">
+              bekijk alle komende opgietingen
+            </span>
+            <span
+              aria-hidden
+              className="text-ember transition-transform duration-150 group-hover:translate-x-[3px] group-hover:text-ember-soft motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
+            >
+              →
+            </span>
+          </Link>
         </form>
       </div>
     </section>
