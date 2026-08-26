@@ -12,7 +12,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "sauna-elysium",
@@ -24,7 +24,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "thermae-2000",
@@ -36,7 +36,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Pad bijgewerkt (score 40).",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "thermen-berendonck",
@@ -48,7 +48,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "thermen-soesterberg",
@@ -60,7 +60,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "thermen-binnenmaas",
@@ -74,7 +74,7 @@
       "matchToken": "thermenbinnenmaas",
       "status": "actief",
       "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) (opgegeven pad gaf HTTP 404) — handmatig controleren.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "sauna-drome",
@@ -86,7 +86,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "sauna-zwaluwhoeve",
@@ -98,7 +98,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "veluwse-bron",
@@ -110,7 +110,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Pad bijgewerkt (score 30).",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "spawell",
@@ -122,7 +122,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "waer-waters",
@@ -134,7 +134,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Vaste URL (2026-07-25): dedicated opgietsessies-pagina (7 vaste sessietypes), via sitemap gevonden.",
-      "laatstGecontroleerd": "2026-08-03",
+      "laatstGecontroleerd": "2026-08-24",
       "agendaUrlVast": true
     },
     {
@@ -147,7 +147,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Vaste URL (2026-07-25): vast dagrooster onder Praktisch; geen losse events te scrapen.",
-      "laatstGecontroleerd": "2026-08-03",
+      "laatstGecontroleerd": "2026-08-24",
       "agendaUrlVast": true
     },
     {
@@ -160,7 +160,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "thermen-londerzeel",
@@ -172,7 +172,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Vaste URL (2026-07-25): vast dagrooster onder Praktisch; geen losse events te scrapen.",
-      "laatstGecontroleerd": "2026-08-03",
+      "laatstGecontroleerd": "2026-08-24",
       "agendaUrlVast": true
     },
     {
@@ -186,7 +186,7 @@
       "matchToken": "boetfort",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "thermae-grimbergen",
@@ -199,7 +199,7 @@
       "matchToken": "grimbergen",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "lago",
@@ -211,7 +211,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Vaste URL (2026-08-08): de opgietsessies (datums + vaste tijdvakken) staan op /wellness/opgietsessies. De eerdere agendaUrl /events/opgietsessie-sauna is een losse aankondiging die blijft hangen op verlopen datums.",
-      "laatstGecontroleerd": "2026-08-03",
+      "laatstGecontroleerd": "2026-08-24",
       "agendaUrlVast": true
     },
     {
@@ -224,7 +224,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "vitae-roosendaal",
@@ -236,7 +236,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "centre-du-lac",
@@ -248,7 +248,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "thermen-maarssen",
@@ -260,7 +260,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "thermen-la-mer",
@@ -272,7 +272,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Pad bijgewerkt (score 30).",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "spaweesp",
@@ -284,7 +284,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Vaste URL (2026-08-08): eigen wellness-events-pagina van het resort. Stond eerder op de gedeelde groepspagina bewellness.nl/aufguss-challenge, waardoor deze bron en spasense/spaweesp dezelfde pagina scrapeten en identieke events onder twee sauna's terechtkwamen.",
-      "laatstGecontroleerd": "2026-08-03",
+      "laatstGecontroleerd": "2026-08-24",
       "agendaUrlVast": true
     },
     {
@@ -297,7 +297,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Vaste URL (2026-08-08): eigen wellness-events-pagina van het resort. Stond eerder op de gedeelde groepspagina bewellness.nl/aufguss-challenge, waardoor deze bron en spasense/spaweesp dezelfde pagina scrapeten en identieke events onder twee sauna's terechtkwamen.",
-      "laatstGecontroleerd": "2026-08-03",
+      "laatstGecontroleerd": "2026-08-24",
       "agendaUrlVast": true
     },
     {
@@ -309,8 +309,8 @@
       "agendaUrl": "https://leeuwerikhoeve.nl/opgietingen/",
       "type": "website",
       "status": "actief",
-      "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "notities": "Host onbereikbaar: fetch failed",
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "sauna-flevo-natuur",
@@ -334,7 +334,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "sauna-zuidwolde",
@@ -346,7 +346,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "thermen-bad-nieuweschans",
@@ -358,7 +358,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Pad bijgewerkt (score 50).",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "spa-loppersum",
@@ -382,7 +382,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "sauna-ridderrode",
@@ -394,7 +394,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) — handmatig controleren.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "thermen-holiday",
@@ -406,7 +406,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Pad bijgewerkt (score 10).",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "thermen-barendrecht",
@@ -418,7 +418,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Pad bijgewerkt (score 10).",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "thermen-goirle",
@@ -430,7 +430,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "spa-wellness-venlo",
@@ -442,7 +442,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Bevestigd.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "palestra",
@@ -454,7 +454,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Host bereikbaar, maar geen aparte agendapagina gevonden (mogelijk JS-gerenderd) — handmatig controleren.",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "elaisa-wellness",
@@ -466,7 +466,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Pad bijgewerkt (score 50).",
-      "laatstGecontroleerd": "2026-08-03"
+      "laatstGecontroleerd": "2026-08-24"
     },
     {
       "id": "asanti",
@@ -477,8 +477,8 @@
       "agendaUrl": "https://asanti.be/wellness/asanti-rituals/",
       "type": "website",
       "status": "actief",
-      "notities": "Vaste URL (2026-07-25): rooster + opgietweekends staan op de Rituals-pagina; discovery koos eerder een blogartikel.",
-      "laatstGecontroleerd": "2026-08-03",
+      "notities": "Host onbereikbaar: fetch failed",
+      "laatstGecontroleerd": "2026-08-24",
       "agendaUrlVast": true
     },
     {
@@ -491,7 +491,7 @@
       "type": "website",
       "status": "actief",
       "notities": "Vaste URL (2026-07-25): de kalenderpagina bevat het jaaroverzicht met thema-opgietdagen (scrapebron); het vaste rooster staat op /nl/opgietsessies/.",
-      "laatstGecontroleerd": "2026-08-03",
+      "laatstGecontroleerd": "2026-08-24",
       "agendaUrlVast": true
     },
     {
@@ -505,7 +505,7 @@
       "matchToken": "brugge",
       "status": "actief",
       "notities": "Vaste URL (2026-07-25): opgietsessies staan op de Wellness Nights-pagina; discovery koos eerder een verlopen actiepagina.",
-      "laatstGecontroleerd": "2026-08-03",
+      "laatstGecontroleerd": "2026-08-24",
       "agendaUrlVast": true
     },
     {
