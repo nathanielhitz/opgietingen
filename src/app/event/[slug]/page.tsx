@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { getAllEvents, getEventBySlug, findNextEdition, getRelatedEvents, slugify } from "@/lib/content";
 import { COUNTRY_LABELS } from "@/lib/site";
 import { formatDateRange, isUpcoming, todayISO, monthYearSlug, monthYearLabel, addDaysISO } from "@/lib/dates";
-import { plainSummary } from "@/lib/text";
+import { eventMetaTitle, eventMetaDescription } from "@/lib/event-meta";
 import { eventSchema, absoluteUrl } from "@/lib/schema";
 import { JsonLd } from "@/components/JsonLd";
 import { TypeBadge } from "@/components/TypeBadge";
@@ -32,14 +32,20 @@ export async function generateMetadata({
   const event = getEventBySlug(slug);
   if (!event) return {};
 
-  // Gescrapete events hebben vaak een (te) korte body; val dan terug op een
-  // beschrijvende template zodat de meta description nooit dun is.
-  const samenvatting = plainSummary(event.body);
-  const description =
-    samenvatting.length >= 70
-      ? samenvatting
-      : `${event.titel} bij ${event.sauna.naam} in ${event.sauna.plaats} op ${formatDateRange(event.startDatum, event.eindDatum)}. Bekijk tijden, programma en praktische informatie.`;
-  const title = `${event.titel} bij ${event.sauna.naam}`;
+  // SEO-snippet (GSC: veel vertoningen, 0% CTR): titel en description met
+  // event, datum, sauna/plaats en een concrete hook — zie src/lib/event-meta.ts.
+  // Afgelopen events zeggen dat expliciet, zodat de snippet geen tickets
+  // suggereert die er niet meer zijn.
+  const afgelopen = !isUpcoming(event, todayISO());
+  const metaInput = {
+    titel: event.titel,
+    startDatum: event.startDatum,
+    eindDatum: event.eindDatum,
+    sauna: { naam: event.sauna.naam, plaats: event.sauna.plaats },
+    afgelopen,
+  };
+  const title = eventMetaTitle(metaInput);
+  const description = eventMetaDescription(metaInput);
 
   // Index-hygiëne (audit V6): ruim afgelopen events krijgen noindex. Een
   // grace-periode van 90 dagen behoudt de "is geweest"-pagina met
