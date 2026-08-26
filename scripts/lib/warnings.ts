@@ -22,6 +22,7 @@ export function appendScrapeWarnings(run: string, nieuw: ScrapeWarning[]): void 
       const data = JSON.parse(fs.readFileSync(bestandspad, "utf-8")) as { warnings?: ScrapeWarning[] };
       bestaand = data.warnings ?? [];
     } catch {
+      console.warn(`scrape-warnings.json bestond al maar was onleesbaar (geen geldige JSON) — wordt overschreven.`);
       bestaand = [];
     }
   }
