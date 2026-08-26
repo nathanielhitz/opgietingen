@@ -32,6 +32,7 @@ import {
   externeTicketHost,
   dedupKey,
   titelDatumKey,
+  slugify,
   writeEventMdx,
   type Bron,
   type NewEvent,
@@ -65,7 +66,15 @@ const CAPTION_SCHEIDING = "\n\n---\n\n";
  * aanroep per bron volstaat — geen aparte Claude-call per post nodig.
  */
 function samengesteldeTekst(posts: FacebookPost[]): string {
-  return posts.map((p) => `Post van ${p.datum}:\n${p.caption}`).join(CAPTION_SCHEIDING);
+  // Zonder deze instructie ziet het model één samengevoegd tekstblok en zou
+  // het in theorie een datum uit het ene blok met een titel/beschrijving uit
+  // een ander blok kunnen combineren — bij tot 15 posts per aanroep een reëel
+  // risico, en zo'n foutieve combinatie zou de blokkade-checks (die alleen het
+  // resulterende event beoordelen, niet de herkomst) ongemerkt passeren.
+  const preambule =
+    "De onderstaande blokken zijn losse, onafhankelijke Facebook-posts van dezelfde sauna. " +
+    "Combineer geen datum, titel of details uit verschillende blokken — behandel elk blok als een eigen, zelfstandig bericht.";
+  return [preambule, ...posts.map((p) => `Post van ${p.datum}:\n${p.caption}`)].join(CAPTION_SCHEIDING);
 }
 
 /** Mock-extractie voor --dry-run: dekt zowel het autopublish-pad als een blokkade. */
@@ -154,6 +163,16 @@ async function main() {
         const key = dedupKey(bron.id, ev.startDatum);
         if (existing.has(key) || seen.has(key)) {
           console.log(`  = dedup: ${ev.titel} (${ev.startDatum}) bestaat al.`);
+          // De grove dedup-sleutel (sauna+dag) laat één event per dag toe; wijkt
+          // de titel duidelijk af, dan is er mogelijk een tweede echt event →
+          // mens laten kijken via het weekissue.
+          const bestaande = existing.get(key);
+          if (bestaande && slugify(bestaande) !== slugify(ev.titel)) {
+            rapportWarnings.push({
+              bron: bron.naam,
+              melding: `mogelijk tweede event op ${ev.startDatum}: "${ev.titel}" naast bestaand "${bestaande}" (dedup liet het vallen)`,
+            });
+          }
           skipped++;
           continue;
         }
