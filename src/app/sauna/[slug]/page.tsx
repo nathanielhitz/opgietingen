@@ -3,9 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllSaunas, getSaunaBySlug, getEventsForSauna, slugify } from "@/lib/content";
 import { COUNTRY_LABELS } from "@/lib/site";
-import { isUpcoming, formatDate } from "@/lib/dates";
-import { plainSummary } from "@/lib/text";
-import { saunaSchema, absoluteUrl } from "@/lib/schema";
+import { isUpcoming, formatDate, todayISO } from "@/lib/dates";
+import { saunaMetaDescription } from "@/lib/sauna-meta";
+import { saunaSchema, eventItemListSchema, absoluteUrl } from "@/lib/schema";
 import { JsonLd } from "@/components/JsonLd";
 import { CoverImage } from "@/components/CoverImage";
 import { MapEmbed } from "@/components/MapEmbed";
@@ -15,10 +15,19 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { AffiliateButton } from "@/components/AffiliateButton";
 import { OpgietRoosterTabel } from "@/components/OpgietRoosterTabel";
 import { SaunaCard } from "@/components/SaunaCard";
+import { EerstvolgendeOpgietingen } from "@/components/EerstvolgendeOpgietingen";
 
 export function generateStaticParams() {
   return getAllSaunas().map((s) => ({ slug: s.slug }));
 }
+
+// ISR: "eerstvolgende opgietingen", de vandaag-markering in het rooster en de
+// meta description hangen af van de request-datum; zonder revalidate zouden
+// afgelopen events tot de volgende deploy als "komend" blijven staan.
+export const revalidate = 3600;
+
+/** Maximaal aantal EventCards in de volledige sectie; daarboven een agenda-link. */
+const MAX_EVENT_KAARTEN = 6;
 
 export async function generateMetadata({
   params,
@@ -29,7 +38,14 @@ export async function generateMetadata({
   const sauna = getSaunaBySlug(slug);
   if (!sauna) return {};
 
-  const description = plainSummary(sauna.body);
+  const komende = getEventsForSauna(sauna.slug).filter((e) => isUpcoming(e, todayISO()));
+  const description = saunaMetaDescription({
+    naam: sauna.naam,
+    plaats: sauna.plaats,
+    provincie: sauna.provincie,
+    komende,
+    heeftRooster: Boolean(sauna.opgietRooster?.length),
+  });
   const title = `${sauna.naam}: opgietingen & Aufguss in ${sauna.plaats}`;
   return {
     title,
@@ -55,8 +71,8 @@ export default async function SaunaPage({
   const sauna = getSaunaBySlug(slug);
   if (!sauna) notFound();
 
-  const events = getEventsForSauna(sauna.slug);
-  const komende = events.filter((e) => isUpcoming(e));
+  const vandaag = todayISO();
+  const komende = getEventsForSauna(sauna.slug).filter((e) => isUpcoming(e, vandaag));
 
   // Buursauna's in dezelfde provincie: interne links tussen saunapagina's
   // onderling (SEO-PLAN §8). Zonder deze laag hangt elke saunapagina alleen aan
@@ -67,7 +83,10 @@ export default async function SaunaPage({
 
   return (
     <article className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
-      <JsonLd data={saunaSchema(sauna)} />
+      <JsonLd data={saunaSchema(sauna, { komende })} />
+      {komende.length > 0 && (
+        <JsonLd data={eventItemListSchema(komende, `Komende opgietingen bij ${sauna.naam}`, vandaag)} />
+      )}
 
       <Breadcrumb items={[{ href: "/saunas", label: "Sauna's" }, { label: sauna.naam }]} />
 
@@ -110,6 +129,9 @@ export default async function SaunaPage({
         </div>
       </div>
 
+      {/* Conversie-blok (item 1): datums binnen het eerste scherm op mobiel. */}
+      <EerstvolgendeOpgietingen sauna={sauna} komende={komende} vandaag={vandaag} />
+
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_320px]">
         <div className="min-w-0">
           <Mdx source={sauna.body} />
@@ -146,6 +168,51 @@ export default async function SaunaPage({
               </ul>
             </section>
           )}
+
+          {/* Komende events in de hoofdkolom: op mobiel vóór de affiliate-kaart
+              en de kaart, zodat de agenda-conversie vóór de exit-klik komt. */}
+          <section id="komende-opgietingen" className="mt-10 scroll-mt-24">
+            <h2 className="font-display text-2xl font-semibold text-ink">Komende opgietingen</h2>
+            {komende.length > 0 ? (
+              <>
+                <ul className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  {komende.slice(0, MAX_EVENT_KAARTEN).map((event) => (
+                    <li key={event.slug}>
+                      <EventCard event={event} />
+                    </li>
+                  ))}
+                </ul>
+                {komende.length > MAX_EVENT_KAARTEN && (
+                  <p className="mt-3 text-sm text-ink-soft">
+                    Nog {komende.length - MAX_EVENT_KAARTEN} meer gepland:{" "}
+                    <Link
+                      href={`/agenda?q=${encodeURIComponent(sauna.naam)}`}
+                      className="font-medium text-ember hover:underline"
+                    >
+                      alle events bij {sauna.naam} in de agenda →
+                    </Link>
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="mt-3 text-ink-soft">
+                Er staan nog geen opgietingen gepland bij deze sauna.
+                {sauna.opgietRooster ? " Kijk naar de vaste opgiettijden hierboven, of " : " Bekijk "}
+                <Link href={`/opgietingen/${slugify(sauna.provincie)}`} className="font-medium text-ember hover:underline">
+                  opgietingen elders in {sauna.provincie}
+                </Link>
+                .
+              </p>
+            )}
+            <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 text-sm font-medium">
+              <Link href="/agenda" className="text-ember hover:underline">
+                Volledige agenda →
+              </Link>
+              <Link href={`/opgietingen/${slugify(sauna.provincie)}`} className="text-ember hover:underline">
+                Opgietingen in {sauna.provincie} →
+              </Link>
+            </div>
+          </section>
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
@@ -177,22 +244,6 @@ export default async function SaunaPage({
           </div>
         </aside>
       </div>
-
-      {/* Komende events */}
-      <section className="mt-12">
-        <h2 className="font-display text-2xl font-semibold text-ink">Komende opgietingen</h2>
-        {komende.length > 0 ? (
-          <ul className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {komende.map((event) => (
-              <li key={event.slug}>
-                <EventCard event={event} />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-3 text-ink-soft">Er staan nog geen opgietingen gepland bij deze sauna. Kom snel terug!</p>
-        )}
-      </section>
 
       {buursaunas.length > 0 && (
         <section className="mt-12">

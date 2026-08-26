@@ -224,7 +224,8 @@ export function gidsItemListSchema(gidsen: Gids[], name: string) {
 }
 
 /** schema.org LocalBusiness JSON-LD voor een saunapagina. */
-export function saunaSchema(sauna: Sauna) {
+export function saunaSchema(sauna: Sauna, opts: { komende?: OpgietEvent[] } = {}) {
+  const komende = opts.komende ?? [];
   return {
     "@context": "https://schema.org",
     "@type": ["LocalBusiness", "HealthAndBeautyBusiness"],
@@ -251,6 +252,20 @@ export function saunaSchema(sauna: Sauna) {
       name: naam,
       value: true,
     })),
+    // Venue ↔ event expliciet: de saunapagina krijgt het merkverkeer, de
+    // events staan er als compacte verwijzingen (volledige Event-objecten
+    // staan in de ItemList op dezelfde pagina en op de eventpagina zelf).
+    ...(komende.length > 0
+      ? {
+          event: komende.map((e) => ({
+            "@type": "Event",
+            name: e.titel,
+            startDate: e.startDatum,
+            ...(e.eindDatum ? { endDate: e.eindDatum } : {}),
+            url: absoluteUrl(`/event/${e.slug}`),
+          })),
+        }
+      : {}),
   };
 }
 
