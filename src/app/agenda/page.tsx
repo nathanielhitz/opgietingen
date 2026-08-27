@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getAllEvents, getProvincesWithEvents, slugify } from "@/lib/content";
 import { parseFilters, filterEvents, validateDateRange, activeFilterCount, type SearchParams, type EventFilters } from "@/lib/filters";
-import { todayISO, monthYearSlug } from "@/lib/dates";
+import { todayISO, monthYearSlug, monthYearLabel } from "@/lib/dates";
 import { AgendaFilters, type ProvinceOption } from "@/components/AgendaFilters";
 import { AgendaEventCard } from "@/components/AgendaEventCard";
 import { AgendaKalender, maandSlugNaarISO, maandPlus } from "@/components/AgendaKalender";
@@ -64,6 +64,19 @@ export default async function AgendaPage({
     .at(-1);
   const laatsteMaand =
     laatsteEventISO && laatsteEventISO > vandaag ? monthYearSlug(laatsteEventISO) : huidigeMaand;
+
+  // Crawlbare maandnavigatie. De hub linkte naar géén enkele /agenda/[maand-jaar]:
+  // de enige maandlink zat in de kalenderweergave, en die URL canonicaliseert naar
+  // /agenda, dus Google zag hem niet. Zelfde venster als de sitemap (huidige maand
+  // en verder); verleden maanden zijn archief en worden niet actief aangeboden.
+  const maandLinks = [
+    ...new Map(
+      getAllEvents()
+        .filter((e) => e.startDatum.slice(0, 7) >= vandaag.slice(0, 7))
+        .sort((a, b) => a.startDatum.localeCompare(b.startDatum))
+        .map((e) => [e.startDatum.slice(0, 7), monthYearSlug(e.startDatum)] as const),
+    ).values(),
+  ];
 
   const gevraagdeMaand = Array.isArray(sp.maand) ? sp.maand[0] : sp.maand;
   const gevraagdISO = gevraagdeMaand ? maandSlugNaarISO(gevraagdeMaand) : null;
@@ -163,6 +176,31 @@ export default async function AgendaPage({
             Wis alle filters
           </Link>
         </div>
+      )}
+
+      {/* Maandpagina's: interne links vanaf de hub (SEO) + snelle navigatie */}
+      {maandLinks.length > 0 && (
+        <nav
+          aria-label="Opgietingen per maand"
+          className="mt-10 rounded-[--radius-card] border border-sand bg-surface p-5"
+        >
+          <h2 className="font-display text-lg font-semibold text-ink">Opgietingen per maand</h2>
+          <p className="mt-1 text-sm text-ink-soft">
+            Bekijk de agenda per maand, van deze maand tot het laatst aangekondigde event.
+          </p>
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {maandLinks.map((slug) => (
+              <li key={slug}>
+                <Link
+                  href={`/agenda/${slug}`}
+                  className="inline-flex rounded-full border border-sand bg-cream px-4 py-2 text-sm font-medium text-ink-soft transition-colors hover:border-ember hover:text-ember"
+                >
+                  {monthYearLabel(slug)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       )}
 
       {/* Retentie: abonneerbare agenda (webcal/ICS) + RSS van nieuwe events */}
