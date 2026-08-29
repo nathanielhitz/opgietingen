@@ -24,7 +24,7 @@ Opgietingen.nl is dé agenda voor opgiet-evenementen (Aufguss-sessies, opgietwee
 | Fonts | `next/font/google` — Fraunces (display) + Inter (body) |
 | Hosting | Vercel (auto-deploy via git push) |
 | Kaart | Leaflet + OpenStreetMap (overzichtskaart op `/saunas`; OSM-iframe-embed op detailpagina's) |
-| Analytics | Vercel Web Analytics + Speed Insights (in `src/app/layout.tsx`) |
+| Analytics | Vercel Web Analytics + Speed Insights (in `src/app/(site)/layout.tsx`, dus niet op `/keystatic`) |
 | Beheer | Keystatic (git-based CMS op /keystatic; GitHub-mode = commits op main) |
 
 ## Projectstructuur
@@ -143,7 +143,7 @@ Flags: `-- --limit N` (eerste N bronnen), `-- --dry-run` (mock-extractie incl. a
 
 ## Beheer (Keystatic)
 
-`/keystatic` is het beheerpaneel: concepts beoordelen, sauna-profielen, gidsen en `content/bronnen.json` bewerken in de browser. Git blijft de bron van waarheid: in GitHub-mode is elke save een commit op `main` onder het GitHub-account van de ingelogde gebruiker, waarna Vercel deployt. Schema's staan in `keystatic.config.ts` en zijn 1-op-1 op de frontmatter/JSON; `scripts/lib/keystatic-schema.test.ts` bewaakt twee richtingen — elk contentveld staat in het schema (een onbekend veld zou bij een save verdwijnen) én elke entry haalt de schema-validatie via het Keystatic-reader-pad (wat daar faalt, kan in het paneel niet worden opgeslagen). Toegang = schrijfrecht op de repo. Zonder de `KEYSTATIC_*`-env-vars (zie `.env.example`) draait het paneel in local-mode en bewerkt het bestanden op schijf.
+`/keystatic` is het beheerpaneel: concepts beoordelen, sauna-profielen, gidsen en `content/bronnen.json` bewerken in de browser. Git blijft de bron van waarheid: in GitHub-mode is elke save een commit op `main` onder het GitHub-account van de ingelogde gebruiker, waarna Vercel deployt. Schema's staan in `keystatic.config.ts` en zijn 1-op-1 op de frontmatter/JSON; `scripts/lib/keystatic-schema.test.ts` bewaakt twee richtingen — elk contentveld staat in het schema (een onbekend veld zou bij een save verdwijnen) én elke entry haalt de schema-validatie via het Keystatic-reader-pad (wat daar faalt, kan in het paneel niet worden opgeslagen). Toegang = schrijfrecht op de repo. Zonder de `KEYSTATIC_*`-env-vars (zie `.env.example`) draait het paneel in local-mode en bewerkt het bestanden op schijf. Local-mode is onbeveiligd en bestaat daarom alleen in development: in productie zonder `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` geven `/keystatic` en `/api/keystatic` 404 (`src/lib/beheer.ts`, test `scripts/lib/beheer.test.ts`). Zet op Vercel altijd alle vier de `KEYSTATIC_*`-variabelen tegelijk.
 
 Gebruiksregels:
 - **Concepts niet verwijderen.** Dedup werkt op `saunaSlug + startDatum`; een verwijderd concept komt de volgende run terug. Afwijzen = op `concept` laten of op `afgelopen` zetten.
@@ -151,6 +151,7 @@ Gebruiksregels:
 - Slugs van bestaande events/sauna's/gidsen niet wijzigen (URL's en koppelingen).
 - Machine-velden (`laatstGecontroleerd`, `roosterGecheckt`, `laatstBijgewerkt`) worden door de scripts gezet; `laatstBijgewerkt` en `$comment` zijn in het paneel onzichtbaar (`fields.ignored`).
 - Beelden niet via het paneel: pad invullen, bestand in `public/images/` plaatsen (zie `docs/image-prompts.md`).
+- Product-ids in gidsen zijn globaal uniek over álle gidsen heen (ze vormen `/uit/product/<id>`).
 - MDX-valkuilen: het paneel opent geen body met HTML-tags, `{…}`-expressies of een ongeëscapete `<` (bv. `<12 jaar`), en footnotes (`[^1]`) raken verminkt. De scraper escapet `<`/`{`/`}` al (`escapeMdxText`); handmatige bodies moeten dat ook.
 
 Eerste save van een bestaand bestand geeft een eenmalige, cosmetische diff: frontmatter in schemavolgorde en herquotet, datums ongequote (YAML-Date; de loader en scripts, incl. `indexnow`, lezen dat via `toISODate`), `-`-lijsten worden `*`, defaults worden gematerialiseerd (`logoAchtergrond: licht`, `bron: handmatig`, `agendaUrlVast: false`, `producten: []`), lege strings in `bronnen.json` verdwijnen als sleutel, `#`-commentaar in frontmatter gaat verloren, en een kale URL in een body wordt een markdown-link. Vanaf de tweede save is de diff minimaal.

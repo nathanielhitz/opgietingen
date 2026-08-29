@@ -27,7 +27,7 @@ Supabase krijgt in dit traject een rol voor **runtime-data** (affiliate-kliks, d
 `@keystatic/core`, `@keystatic/next`. Geen database.
 
 ### Bestanden
-- `keystatic.config.ts` (repo-root) — storage `github` (`nathanielhitz/opgietingen`, branch `main`); valt terug op `local` wanneer `KEYSTATIC_GITHUB_CLIENT_ID` ontbreekt, zodat `npm run dev` zonder GitHub App werkt.
+- `keystatic.config.ts` (repo-root) — storage `github` (`nathanielhitz/opgietingen`, branch `main`); valt terug op `local` wanneer `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` ontbreekt (de config wordt ook in de browser gebundeld, dus de schakelaar moet `NEXT_PUBLIC_` zijn), zodat `npm run dev` zonder GitHub App werkt; in productie zonder die variabele geven paneel en API 404 (`src/lib/beheer.ts`), omdat local-mode onbeveiligd is.
 - `src/app/keystatic/[[...params]]/page.tsx` + `layout.tsx` — het paneel (Keystatic's eigen UI; client component; buiten ons Tailwind-thema).
 - `src/app/api/keystatic/[...params]/route.ts` — Keystatic's API-handler (GitHub OAuth-callback + bestandsoperaties).
 
@@ -108,7 +108,7 @@ Drie schrijvers op dezelfde bestanden: scraper-bot (CI), Keystatic (paneel), lok
 | `KEYSTATIC_SECRET` | Vercel secret (sessie-signing, random), `.env` lokaal |
 | `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` | Vercel, `.env` lokaal |
 
-Ontbreken ze → `local`-storage.
+Ontbreekt `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` → `local`-storage in development; in productie → 404 (local-mode is onbeveiligd). Alle vier tegelijk zetten: alleen de slug zonder de andere drie laat de API-handler bij het laden falen.
 
 **Autorisatie:** inloggen via GitHub; toegang vereist schrijfrecht op `nathanielhitz/opgietingen`. Geen aparte gebruikerslijst. Iemand toelaten = collaborator-toegang op de repo.
 
