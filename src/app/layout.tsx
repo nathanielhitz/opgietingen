@@ -51,7 +51,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="nl" className={`${fraunces.variable} ${inter.variable}`}>
-      <body className="min-h-dvh flex flex-col">
+      <body>
         {children}
         <Analytics />
         <SpeedInsights />

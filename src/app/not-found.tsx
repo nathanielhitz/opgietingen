@@ -2,8 +2,8 @@ import Link from "next/link";
 import { SiteChrome } from "@/components/SiteChrome";
 
 export default function NotFound() {
+  // De globale 404 valt buiten de (site)-route group en krijgt de chrome daarom zelf.
   return (
-    // De globale 404 valt buiten de (site)-route group en krijgt de chrome daarom zelf.
     <SiteChrome>
       <div className="mx-auto flex max-w-2xl flex-col items-start px-4 py-16 sm:px-6 sm:py-24">
         <p className="text-sm font-semibold uppercase tracking-wider text-ember">404</p>
