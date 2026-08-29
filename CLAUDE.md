@@ -25,6 +25,7 @@ Opgietingen.nl is dé agenda voor opgiet-evenementen (Aufguss-sessies, opgietwee
 | Hosting | Vercel (auto-deploy via git push) |
 | Kaart | Leaflet + OpenStreetMap (overzichtskaart op `/saunas`; OSM-iframe-embed op detailpagina's) |
 | Analytics | Vercel Web Analytics + Speed Insights (in `src/app/layout.tsx`) |
+| Beheer | Keystatic (git-based CMS op /keystatic; GitHub-mode = commits op main) |
 
 ## Projectstructuur
 
@@ -34,13 +35,14 @@ content/
   events/*.mdx      # opgiet-events (frontmatter + beschrijving/programma)
   bronnen.json      # scraper-bronnen (agendaUrl per sauna, status)
 src/
-  app/              # App Router routes (zie hieronder)
+  app/              # App Router routes: publieke routes in (site)/ met SiteChrome, /keystatic (beheer) ernaast
   components/       # herbruikbare UI (SiteHeader, EventCard, filters, ...)
   lib/
     site.ts         # site-config, EVENT_TYPES, PROVINCES, COUNTRY_LABELS
     content.ts      # content-loader: leest & parseert MDX, joint events↔saunas
     clicks.ts       # affiliate klik-logging (fase 1: append naar data/clicks.log)
     scraper.ts      # scraper-laag: Firecrawl (markdown + extractie) + Claude-fallback
+keystatic.config.ts  # schema's van het beheerpaneel (1-op-1 op de frontmatter)
 scripts/
   verify-bronnen.ts # verifieert agendaUrl's in bronnen.json (robots, discovery)
   scrape-events.ts  # scrapet actieve bronnen → events via kwaliteitspoort (gepubliceerd/concept)
@@ -79,6 +81,7 @@ Optioneel veld `bron: scraper` markeert automatisch gescrapete events. Optioneel
 | `/gids/[slug]` | Gidsartikel + `Article` structured data + bol.com affiliate-producten |
 | `/uit/[slug]` | Affiliate-redirect (event/sauna) met klik-logging |
 | `/uit/product/[id]` | Affiliate-redirect (bol.com-product) met klik-logging + subid |
+| `/keystatic` | Beheerpaneel (Keystatic); noindex + robots-disallow, niet in sitemap |
 | `/over`, `/contact`, `/voor-saunas` | Statische pagina's (B2B-pitch) |
 
 Nieuwsbrief-opt-in is **uitgesteld** naar een latere sessie.
@@ -137,6 +140,22 @@ Flags: `-- --limit N` (eerste N bronnen), `-- --dry-run` (mock-extractie incl. a
 **Automatisering (hands-off):** `.github/workflows/scrape.yml` draait elke maandag 06:00 UTC (+ handmatig via `workflow_dispatch`): eerst `verify-bronnen -- --all`, dan `scrape` met `SCRAPE_AUTOPUBLISH=true`, dan `scrape-facebook`, dan `scrape-mail`, dan `check-roosters`. De resultaten (nieuwe events + bijgewerkte `bronnen.json`) worden **direct op `main` gecommit** (Vercel deployt automatisch); daarna meldt `indexnow` de gewijzigde URL's aan; concept-events komen mee maar zijn onzichtbaar (loader filtert ze). Daarna bouwt `npm run scrape-report` een rapport en beheert de workflow **één** GitHub-issue met label `scraper-probleem`: bij twijfelgevallen/kapotte bronnen/ontbrekende profielen wordt het geopend of geactualiseerd (GitHub's notificatiemail = de melding); een schone run sluit het. Geen review vooraf; steekproef achteraf.
 
 > Model: de fallback-extractie gebruikt bewust `claude-haiku-4-5` (snel/goedkoop). Wijzig via `FALLBACK_MODEL` in `src/lib/scraper.ts`.
+
+## Beheer (Keystatic)
+
+`/keystatic` is het beheerpaneel: concepts beoordelen, sauna-profielen, gidsen en `content/bronnen.json` bewerken in de browser. Git blijft de bron van waarheid: in GitHub-mode is elke save een commit op `main` onder het GitHub-account van de ingelogde gebruiker, waarna Vercel deployt. Schema's staan in `keystatic.config.ts` en zijn 1-op-1 op de frontmatter/JSON; `scripts/lib/keystatic-schema.test.ts` bewaakt twee richtingen — elk contentveld staat in het schema (een onbekend veld zou bij een save verdwijnen) én elke entry haalt de schema-validatie via het Keystatic-reader-pad (wat daar faalt, kan in het paneel niet worden opgeslagen). Toegang = schrijfrecht op de repo. Zonder de `KEYSTATIC_*`-env-vars (zie `.env.example`) draait het paneel in local-mode en bewerkt het bestanden op schijf.
+
+Gebruiksregels:
+- **Concepts niet verwijderen.** Dedup werkt op `saunaSlug + startDatum`; een verwijderd concept komt de volgende run terug. Afwijzen = op `concept` laten of op `afgelopen` zetten.
+- `keurNotitie` laten staan (historie); publiceren gaat via `status`. Keystatic kent geen alleen-lezen veld, dus dit is een afspraak, geen slot.
+- Slugs van bestaande events/sauna's/gidsen niet wijzigen (URL's en koppelingen).
+- Machine-velden (`laatstGecontroleerd`, `roosterGecheckt`, `laatstBijgewerkt`) worden door de scripts gezet; `laatstBijgewerkt` en `$comment` zijn in het paneel onzichtbaar (`fields.ignored`).
+- Beelden niet via het paneel: pad invullen, bestand in `public/images/` plaatsen (zie `docs/image-prompts.md`).
+- MDX-valkuilen: het paneel opent geen body met HTML-tags, `{…}`-expressies of een ongeëscapete `<` (bv. `<12 jaar`), en footnotes (`[^1]`) raken verminkt. De scraper escapet `<`/`{`/`}` al (`escapeMdxText`); handmatige bodies moeten dat ook.
+
+Eerste save van een bestaand bestand geeft een eenmalige, cosmetische diff: frontmatter in schemavolgorde en herquotet, datums ongequote (YAML-Date; de loader en scripts, incl. `indexnow`, lezen dat via `toISODate`), `-`-lijsten worden `*`, defaults worden gematerialiseerd (`logoAchtergrond: licht`, `bron: handmatig`, `agendaUrlVast: false`, `producten: []`), lege strings in `bronnen.json` verdwijnen als sleutel, `#`-commentaar in frontmatter gaat verloren, en een kale URL in een body wordt een markdown-link. Vanaf de tweede save is de diff minimaal.
+
+Het paneel staat in `robots.ts` op disallow, niet in de sitemap, en de layout zet `noindex` (test: `scripts/lib/beheer-routes.test.ts`). Publieke routes staan in `src/app/(site)/` met `SiteChrome` (skip-link, header, main, footer) en daar staan ook Vercel Analytics en Speed Insights; het paneel valt daarbuiten en wordt niet gemeten. Spec: [docs/superpowers/specs/2026-08-29-keystatic-beheerpaneel-design.md](docs/superpowers/specs/2026-08-29-keystatic-beheerpaneel-design.md).
 
 ## Commando's
 
