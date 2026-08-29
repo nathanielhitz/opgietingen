@@ -108,7 +108,7 @@ Drie schrijvers op dezelfde bestanden: scraper-bot (CI), Keystatic (paneel), lok
 | `KEYSTATIC_SECRET` | Vercel secret (sessie-signing, random), `.env` lokaal |
 | `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` | Vercel, `.env` lokaal |
 
-Ontbreekt `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` → `local`-storage in development; in productie → 404 (local-mode is onbeveiligd). Alle vier tegelijk zetten: alleen de slug zonder de andere drie laat de API-handler bij het laden falen.
+Ontbreekt `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` → `local`-storage in development; in productie → 404 (local-mode is onbeveiligd). Alle vier tegelijk zetten: alleen de slug zonder de andere drie laat de build falen (module-evaluatie in "Collecting page data"), zodat zo'n half geconfigureerde deploy nooit live komt.
 
 **Autorisatie:** inloggen via GitHub; toegang vereist schrijfrecht op `nathanielhitz/opgietingen`. Geen aparte gebruikerslijst. Iemand toelaten = collaborator-toegang op de repo.
 
