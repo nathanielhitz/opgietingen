@@ -95,6 +95,8 @@ Drie schrijvers op dezelfde bestanden: scraper-bot (CI), Keystatic (paneel), lok
 
 **Verwijderen van concepts — gebruiksregel.** Dedup werkt op `saunaSlug + startDatum`. Een verwijderd concept wordt de volgende run opnieuw aangemaakt. Daarom: *afwijzen = status op `concept` laten of op `afgelopen` zetten; niet verwijderen.* Een expliciete `status: afgewezen` zou loader, poort en rapport raken en is een mogelijke follow-up.
 
+**Uitkomst round-trip (2026-08-29):** in local-mode via de UI getest — **go voor alle vier de ingangen, gidsen inbegrepen**: alle tien gidsen openen, saven en houden elke `<Product id="…" />` en `<ProductGrid />` op dezelfde plek met dezelfde id, met identieke kopjes, links, vet en lijstitems; ook het event (`slug`, `keurNotitie`, `bron: scraper` behouden), de sauna en `content/bronnen.json` (44 bronnen, `$comment` en `laatstBijgewerkt` intact) komen inhoudelijk ongeschonden terug, en een tweede save wijzigt alleen de bewerkte regel. De verschillen zijn cosmetisch: frontmatter wordt herordend (slugveld eerst) en opnieuw gequote/gevouwen, de witregel na de frontmatter verdwijnt, body-lijsten worden `*` in plaats van `-`, lege optionele velden verschijnen als default (`producten: []`, `agendaUrlVast: false`) of verdwijnen als ze leeg waren (`agendaUrl: ""`), en een kale URL in de body wordt geautolinkt (`www.svb.be` → `[www.svb.be](http://www.svb.be)`).
+
 ## 6. Toegang en configuratie
 
 **GitHub App (eenmalig):** aanmaken via Keystatic's setup-flow (`/keystatic/setup` in local-mode), met callback-URL's voor `https://opgietingen.nl/api/keystatic/github/oauth/callback` en de Vercel-preview-variant. Installatie alleen op deze repo, permissie *Contents: read/write*.
