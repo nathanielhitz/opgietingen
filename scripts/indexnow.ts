@@ -32,7 +32,7 @@ import { execFileSync } from "node:child_process";
 import matter from "gray-matter";
 import { site } from "../src/lib/site";
 import { monthYearSlug } from "../src/lib/dates";
-import { slugify } from "../src/lib/content";
+import { slugify, toISODate } from "../src/lib/content";
 
 const PUBLIC_DIR = path.join(process.cwd(), "public");
 const ENDPOINT = "https://api.indexnow.org/indexnow";
@@ -98,7 +98,9 @@ async function main() {
       urls.add(`${site.url}/event/${slug}`);
       lijstpaginas.add(`${site.url}/`);
       lijstpaginas.add(`${site.url}/agenda`);
-      const start = typeof data.startDatum === "string" ? data.startDatum : undefined;
+      // Keystatic's fields.date schrijft datums ongequote terug (startDatum: 2026-09-14),
+      // wat YAML als Date-object parseert; toISODate normaliseert beide vormen.
+      const start = toISODate(data.startDatum);
       if (start) lijstpaginas.add(`${site.url}/agenda/${monthYearSlug(start)}`);
       // Provinciepagina via de sauna waar het event bij hoort.
       const saunaSlug = typeof data.saunaSlug === "string" ? data.saunaSlug : undefined;

@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import { createReader } from "@keystatic/core/reader";
 import keystaticConfig, { bronVelden } from "../../keystatic.config";
 
 const ROOT = process.cwd();
@@ -54,4 +55,30 @@ test("Keystatic-paden wijzen naar de mappen die de loader leest", () => {
   assert.equal(collecties.saunas.path, "content/saunas/*");
   assert.equal(collecties.gidsen.path, "content/gidsen/*");
   assert.equal(keystaticConfig.singletons!.bronnen.path, "content/bronnen");
+});
+
+// De dekkingstest bewaakt "schema dekt content"; deze test bewaakt de andere
+// richting: elke entry haalt ook de validatie van het schema (verplichte velden,
+// bereiken, URL-vorm). Het reader-pad gebruikt dezelfde parse/validate als het
+// paneel, dus wat hier faalt kan in het paneel niet opgeslagen worden.
+test("alle content valideert tegen het Keystatic-schema (reader-pad)", async () => {
+  const reader = createReader(ROOT, keystaticConfig);
+  const fouten: string[] = [];
+  for (const naam of ["events", "saunas", "gidsen"] as const) {
+    for (const slug of await reader.collections[naam].list()) {
+      try {
+        const entry = await reader.collections[naam].read(slug);
+        if (!entry) fouten.push(`${naam}/${slug}: leeg`);
+      } catch (e) {
+        fouten.push(`${naam}/${slug}: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
+  }
+  try {
+    const bronnen = await reader.singletons.bronnen.read();
+    if (!bronnen) fouten.push("bronnen: leeg");
+  } catch (e) {
+    fouten.push(`bronnen: ${e instanceof Error ? e.message : String(e)}`);
+  }
+  assert.deepEqual(fouten, [], fouten.join("\n"));
 });

@@ -8,6 +8,7 @@ import { EVENT_TYPES, PROVINCES } from "./src/lib/site";
 
 // GitHub-mode zodra de GitHub App geconfigureerd is (NEXT_PUBLIC_ zodat de
 // keuze ook client-side bekend is); anders local-mode voor `npm run dev`.
+// De waarde zelf wordt hier niet gebruikt: Keystatic leest de app-slug zelf uit de env; dit is alleen de aan/uit-schakelaar.
 const githubAppSlug = process.env.NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG;
 
 const alleProvincies = [...PROVINCES.NL, ...PROVINCES.BE].map((p) => ({ label: p, value: p }));
@@ -43,7 +44,10 @@ export const bronVelden = {
     label: "Facebook-pagina",
     description: "Matching-anker voor doorgestuurde posts én bron voor scrape-facebook.",
   }),
-  agendaUrl: fields.url({ label: "Agenda-URL", validation: { isRequired: true } }),
+  agendaUrl: fields.url({
+    label: "Agenda-URL",
+    description: "Leeg laten bij status aanvullen/opzetten of bij een niet-website-kanaal (mail, Facebook).",
+  }),
   agendaUrlVast: fields.checkbox({
     label: "Agenda-URL vast",
     description: "Aan = verify-bronnen doet geen discovery/herschrijving meer voor deze bron.",
@@ -224,6 +228,7 @@ export default config({
       slugField: "titel",
       format: { contentField: "body" },
       columns: ["titel", "bijgewerkt"],
+      // Long-form artikel: editor centraal, metadata in de zijbalk.
       entryLayout: "content",
       schema: {
         titel: fields.slug({
@@ -240,9 +245,18 @@ export default config({
         }),
         producten: fields.array(
           fields.object({
-            id: fields.text({ label: "Id", description: "Globaal uniek; gebruikt in /uit/product/<id>.", validation: { isRequired: true } }),
+            id: fields.text({
+              label: "Id",
+              description: "Globaal uniek over alle gidsen heen; gebruikt in /uit/product/<id>.",
+              validation: { isRequired: true },
+            }),
             naam: fields.text({ label: "Naam", validation: { isRequired: true } }),
-            bolUrl: fields.url({ label: "bol.com-URL", validation: { isRequired: true } }),
+            bolUrl: fields.url({
+              label: "bol.com-URL",
+              description:
+                "Gewone bol.com-productlink volstaat: /uit/product/<id> maakt er automatisch een partner-link van (site-ID) en logt de klik.",
+              validation: { isRequired: true },
+            }),
             afbeelding: fields.url({ label: "Afbeelding (media.s-bol.com)" }),
             prijsIndicatie: fields.text({ label: "Prijsindicatie" }),
             beschrijving: fields.text({ label: "Beschrijving", multiline: true }),

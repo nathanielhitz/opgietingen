@@ -109,7 +109,7 @@ export interface Gids {
  * YAML parseert kale datums (2026-07-25) als Date-objecten. We willen overal
  * ISO-strings (YYYY-MM-DD). Deze helper normaliseert beide gevallen.
  */
-function toISODate(value: unknown): string | undefined {
+export function toISODate(value: unknown): string | undefined {
   if (value == null || value === "") return undefined;
   if (value instanceof Date) return value.toISOString().slice(0, 10);
   return String(value);

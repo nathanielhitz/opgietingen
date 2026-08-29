@@ -7,7 +7,7 @@ import { SiteFooter } from "@/components/SiteFooter";
   route group valt). Het beheerpaneel (/keystatic) gebruikt dit bewust niet.
   De sticky-footer-container (min-h-dvh flex flex-col) staat hier en niet op <body>, zodat /keystatic die niet erft.
 */
-export function SiteChrome({ children }: { children: React.ReactNode }) {
+export function SiteChrome({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <div className="min-h-dvh flex flex-col">
       <a href="#hoofdinhoud" className="skip-link">
