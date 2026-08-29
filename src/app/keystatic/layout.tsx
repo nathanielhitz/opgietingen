@@ -3,7 +3,7 @@ import KeystaticApp from "./keystatic";
 
 // Beheerpaneel: geen site-chrome, nooit indexeren (ook in robots.ts uitgesloten).
 export const metadata: Metadata = {
-  title: "Beheer",
+  title: { absolute: "Beheer" },
   robots: { index: false, follow: false },
 };
 
