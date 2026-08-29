@@ -868,37 +868,37 @@ git commit -m "docs: beheerpaneel (Keystatic) gedocumenteerd in CLAUDE.md en .en
 
 **Files:** `.env` (lokaal, gitignored); Vercel-projectinstellingen.
 
-- [ ] **Step 1: Push de branch/main**
+- [x] **Step 1: Push de branch/main**
 
 Run: `git push origin main`
 Expected: Vercel-deploy slaagt; `https://opgietingen.nl/keystatic` toont het paneel in local-mode-weergave (kan nog niets opslaan op Vercel — read-only filesystem; dat is verwacht).
 
-- [ ] **Step 2: GitHub App aanmaken**
+- [x] **Step 2: GitHub App aanmaken**
 
 Run lokaal: `npm run dev`, open `http://127.0.0.1:3000/keystatic`. Omdat `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` nog leeg is, draait het paneel local. Zet tijdelijk in `.env`: `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG=setup` en herstart; het paneel toont nu de GitHub-login met de knop **Create GitHub App**. Vul als deployed URL `https://opgietingen.nl` in, naam bv. `opgietingen-beheer`. Volg de flow; installeer de app op alleen `nathanielhitz/opgietingen`.
 Expected: Keystatic schrijft de vier `KEYSTATIC_*`-regels naar `.env` (vervangt de tijdelijke slug). Herstart de dev-server; je bent ingelogd in GitHub-mode (branch-dropdown zichtbaar).
 
-- [ ] **Step 3: Callback-URL's controleren**
+- [x] **Step 3: Callback-URL's controleren**
 
 Open `https://github.com/settings/apps/<app-slug>` → *Callback URLs*.
 Expected: bevat `https://opgietingen.nl/api/keystatic/github/oauth/callback` en `http://127.0.0.1:3000/api/keystatic/github/oauth/callback`. Ontbreekt de productie-URL, voeg toe via *Add Callback URL* en Save.
 
-- [ ] **Step 4: Env-vars op Vercel**
+- [x] **Step 4: Env-vars op Vercel**
 
 Vercel → project → Settings → Environment Variables: voeg de vier vars toe voor **Production** én **Preview** (`KEYSTATIC_GITHUB_CLIENT_SECRET` en `KEYSTATIC_SECRET` als Sensitive). Redeploy (Deployments → ⋯ → Redeploy).
 Expected: `https://opgietingen.nl/keystatic` toont *Log in with GitHub*; inloggen lukt met het account dat schrijfrecht heeft.
 
-- [ ] **Step 5: Acceptatie — concept publiceren**
+- [x] **Step 5: Acceptatie — concept publiceren**
 
 In het live paneel: Events → kies één concept dat je inhoudelijk goedkeurt → *Status* op *Gepubliceerd* → Save.
 Expected: commit op `main` door jouw GitHub-account met het gewijzigde bestand (`git pull && git log -1 --stat`); Vercel deployt; na ~2 min staat het event op `/agenda`.
 
-- [ ] **Step 6: Acceptatie — sauna en bron**
+- [x] **Step 6: Acceptatie — sauna en bron**
 
 Sauna's → wijzig één veld (bv. een faciliteit toevoegen) → Save. Scraper-bronnen → zet bij één bron *Notities* aan → Save.
 Expected: twee commits; `npm run verify-bronnen -- --dry-run` (of `npm run bronnen-report`) leest `bronnen.json` zonder fouten; `npm test` groen na `git pull`.
 
-- [ ] **Step 7: Afronden**
+- [x] **Step 7: Afronden**
 
 Run: `git pull && npm test && npm run build`
 Expected: groen. Werk `docs/superpowers/plans/2026-08-29-keystatic-beheerpaneel.md` bij: alle vakjes aangevinkt; commit `docs(plan): keystatic-beheerpaneel afgerond`.
