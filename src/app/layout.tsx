@@ -3,8 +3,6 @@ import { Fraunces, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { site } from "@/lib/site";
-import { SiteHeader } from "@/components/SiteHeader";
-import { SiteFooter } from "@/components/SiteFooter";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -54,14 +52,7 @@ export default function RootLayout({
   return (
     <html lang="nl" className={`${fraunces.variable} ${inter.variable}`}>
       <body className="min-h-dvh flex flex-col">
-        <a href="#hoofdinhoud" className="skip-link">
-          Ga naar de hoofdinhoud
-        </a>
-        <SiteHeader />
-        <main id="hoofdinhoud" tabIndex={-1} className="flex-1">
-          {children}
-        </main>
-        <SiteFooter />
+        {children}
         <Analytics />
         <SpeedInsights />
       </body>
