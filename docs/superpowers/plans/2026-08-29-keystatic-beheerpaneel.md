@@ -46,17 +46,17 @@
 **Files:**
 - Modify: `package.json`, `package-lock.json`
 
-- [ ] **Step 1: Installeer Keystatic**
+- [x] **Step 1: Installeer Keystatic**
 
 Run: `npm install @keystatic/core@^0.6.9 @keystatic/next@^5.0.5`
 Expected: geen peer-dependency-fouten; `package.json` bevat beide onder `dependencies`.
 
-- [ ] **Step 2: Controleer dat de build nog slaagt**
+- [x] **Step 2: Controleer dat de build nog slaagt**
 
 Run: `npm run build`
 Expected: `✓ Compiled successfully`, geen fouten.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add package.json package-lock.json
@@ -76,7 +76,7 @@ De root-layout rendert nu header, `<main>` en footer om elke route. Keystatic mo
 - Modify: `src/app/not-found.tsx`
 - Move: publieke route-mappen en `src/app/page.tsx` → `src/app/(site)/`
 
-- [ ] **Step 1: Maak `SiteChrome`**
+- [x] **Step 1: Maak `SiteChrome`**
 
 ```tsx
 // src/components/SiteChrome.tsx
@@ -104,7 +104,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
 }
 ```
 
-- [ ] **Step 2: Versimpel de root-layout**
+- [x] **Step 2: Versimpel de root-layout**
 
 Vervang in `src/app/layout.tsx` de imports van `SiteHeader`/`SiteFooter` en de body-inhoud:
 
@@ -134,7 +134,7 @@ export default function RootLayout({
 }
 ```
 
-- [ ] **Step 3: Maak de site-layout**
+- [x] **Step 3: Maak de site-layout**
 
 ```tsx
 // src/app/(site)/layout.tsx
@@ -145,7 +145,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-- [ ] **Step 4: Verhuis de publieke routes**
+- [x] **Step 4: Verhuis de publieke routes**
 
 ```bash
 mkdir -p "src/app/(site)"
@@ -157,12 +157,12 @@ done
 
 Blijven in `src/app/`: `layout.tsx`, `globals.css`, `not-found.tsx`, `robots.ts`, `sitemap.ts`, `feed.xml/`, `agenda.ics/`, `uit/` (route handlers, geen layout nodig), `icon.svg`, `apple-icon.tsx`, `opengraph-image.tsx`.
 
-- [ ] **Step 5: Controleer op relatieve imports die door de verhuizing breken**
+- [x] **Step 5: Controleer op relatieve imports die door de verhuizing breken**
 
 Run: `grep -rn "from \"\.\.\?/" "src/app/(site)"`
 Expected: geen uitvoer (er waren er geen; alles gebruikt `@/`). Levert het wél regels op, zet die imports om naar `@/…`.
 
-- [ ] **Step 6: Wikkel de globale 404 in de chrome**
+- [x] **Step 6: Wikkel de globale 404 in de chrome**
 
 Pas `src/app/not-found.tsx` aan: importeer `SiteChrome` en wikkel de bestaande `<div …>` erin.
 
@@ -182,17 +182,17 @@ export default function NotFound() {
 }
 ```
 
-- [ ] **Step 7: Build, lint en tests**
+- [x] **Step 7: Build, lint en tests**
 
 Run: `npm run build && npm run lint && npm test`
 Expected: build slaagt met dezelfde routes als voorheen (controleer in de route-lijst dat `/`, `/agenda`, `/event/[slug]`, `/sauna/[slug]`, `/gids/[slug]`, `/uit/[slug]`, `/robots.txt`, `/sitemap.xml` er staan); lint schoon; alle tests groen.
 
-- [ ] **Step 8: Steekproef in de dev-server**
+- [x] **Step 8: Steekproef in de dev-server**
 
 Run: `npm run dev` en open `http://localhost:3000/`, `/agenda`, `/saunas`, en een niet-bestaande URL zoals `/bestaat-niet`.
 Expected: header en footer zichtbaar op alle vier; 404-pagina toont de bestaande tekst met header/footer.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add -A src/app src/components/SiteChrome.tsx
@@ -209,7 +209,7 @@ renderen. Geen functionele wijziging voor bezoekers."
 **Files:**
 - Create: `keystatic.config.ts`
 
-- [ ] **Step 1: Schrijf de config**
+- [x] **Step 1: Schrijf de config**
 
 ```ts
 // keystatic.config.ts
@@ -495,12 +495,12 @@ export default config({
 });
 ```
 
-- [ ] **Step 2: Typecheck**
+- [x] **Step 2: Typecheck**
 
 Run: `npx tsc --noEmit -p tsconfig.json`
 Expected: geen fouten. Faalt `validation` op `fields.slug`'s `name`, verwijder dan die `validation`-optie alleen daar (het veld is dan alsnog verplicht als slugField).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add keystatic.config.ts
@@ -516,7 +516,7 @@ Voorkomt dat een frontmatter-veld dat in de content voorkomt maar niet in het sc
 **Files:**
 - Create: `scripts/lib/keystatic-schema.test.ts`
 
-- [ ] **Step 1: Schrijf de test**
+- [x] **Step 1: Schrijf de test**
 
 ```ts
 // scripts/lib/keystatic-schema.test.ts
@@ -578,17 +578,17 @@ test("Keystatic-paden wijzen naar de mappen die de loader leest", () => {
 });
 ```
 
-- [ ] **Step 2: Draai de test**
+- [x] **Step 2: Draai de test**
 
 Run: `node --import tsx --test scripts/lib/keystatic-schema.test.ts`
 Expected: 5 tests, alle `ok`. Faalt een dekkingstest met een veldnaam, voeg dat veld dan toe aan het schema in `keystatic.config.ts` (als bewerkbaar veld, of `fields.ignored()` als het door een script beheerd wordt) — niet de test versoepelen.
 
-- [ ] **Step 3: Volledige testsuite**
+- [x] **Step 3: Volledige testsuite**
 
 Run: `npm test`
 Expected: alle tests groen.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add scripts/lib/keystatic-schema.test.ts keystatic.config.ts
@@ -605,7 +605,7 @@ git commit -m "test(beheer): dekkingstest — elk contentveld bestaat in het Key
 - Create: `src/app/keystatic/[[...params]]/page.tsx`
 - Create: `src/app/api/keystatic/[...params]/route.ts`
 
-- [ ] **Step 1: Client-component met het paneel**
+- [x] **Step 1: Client-component met het paneel**
 
 ```tsx
 // src/app/keystatic/keystatic.tsx
@@ -616,7 +616,7 @@ import config from "../../../keystatic.config";
 export default makePage(config);
 ```
 
-- [ ] **Step 2: Layout met noindex**
+- [x] **Step 2: Layout met noindex**
 
 ```tsx
 // src/app/keystatic/layout.tsx
@@ -634,7 +634,7 @@ export default function KeystaticLayout() {
 }
 ```
 
-- [ ] **Step 3: Lege pagina (Keystatic vereist de route)**
+- [x] **Step 3: Lege pagina (Keystatic vereist de route)**
 
 ```tsx
 // src/app/keystatic/[[...params]]/page.tsx
@@ -643,7 +643,7 @@ export default function KeystaticPage() {
 }
 ```
 
-- [ ] **Step 4: API-route**
+- [x] **Step 4: API-route**
 
 ```ts
 // src/app/api/keystatic/[...params]/route.ts
@@ -653,17 +653,17 @@ import config from "../../../../../keystatic.config";
 export const { POST, GET } = makeRouteHandler({ config });
 ```
 
-- [ ] **Step 5: Build**
+- [x] **Step 5: Build**
 
 Run: `npm run build`
 Expected: slaagt; de route-lijst bevat `/keystatic/[[...params]]` en `/api/keystatic/[...params]` (dynamisch, ƒ).
 
-- [ ] **Step 6: Paneel openen in local-mode**
+- [x] **Step 6: Paneel openen in local-mode**
 
 Run: `npm run dev`, open `http://127.0.0.1:3000/keystatic`.
 Expected: Keystatic-dashboard met brand "Opgietingen.nl · beheer", navigatie *Content* (Events, Sauna's, Gidsen) en *Scraper* (Scraper-bronnen). Geen site-header/footer. Events-lijst toont ~115 items met kolommen titel/sauna/startdatum/status.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/app/keystatic src/app/api/keystatic
@@ -678,7 +678,7 @@ git commit -m "feat(beheer): keystatic-paneel op /keystatic + api-route"
 - Modify: `src/app/robots.ts`
 - Create: `scripts/lib/beheer-routes.test.ts`
 
-- [ ] **Step 1: Schrijf de falende test**
+- [x] **Step 1: Schrijf de falende test**
 
 ```ts
 // scripts/lib/beheer-routes.test.ts
@@ -704,12 +704,12 @@ test("sitemap bevat geen beheer-URL's", () => {
 });
 ```
 
-- [ ] **Step 2: Draai de test — moet falen**
+- [x] **Step 2: Draai de test — moet falen**
 
 Run: `node --import tsx --test scripts/lib/beheer-routes.test.ts`
 Expected: eerste test FAIL met "/keystatic ontbreekt in disallow"; tweede test PASS.
 
-- [ ] **Step 3: Pas robots.ts aan**
+- [x] **Step 3: Pas robots.ts aan**
 
 ```ts
 // src/app/robots.ts
@@ -730,12 +730,12 @@ export default function robots(): MetadataRoute.Robots {
 }
 ```
 
-- [ ] **Step 4: Draai de test — moet slagen**
+- [x] **Step 4: Draai de test — moet slagen**
 
 Run: `node --import tsx --test scripts/lib/beheer-routes.test.ts`
 Expected: 2 tests `ok`.
 
-- [ ] **Step 5: Controleer de gegenereerde robots.txt**
+- [x] **Step 5: Controleer de gegenereerde robots.txt**
 
 Run: `npm run build && npm run start` en `curl -s http://localhost:3000/robots.txt`
 Expected:
@@ -747,7 +747,7 @@ Disallow: /keystatic
 Disallow: /api/keystatic
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/app/robots.ts scripts/lib/beheer-routes.test.ts
@@ -762,36 +762,36 @@ Keystatic heeft geen publieke writer-API, dus de round-trip loopt via het paneel
 
 **Files:** geen codewijzigingen; mogelijk `keystatic.config.ts` (bij no-go).
 
-- [ ] **Step 1: Schone start**
+- [x] **Step 1: Schone start**
 
 Run: `git status --short`
 Expected: geen uitvoer. Start daarna `npm run dev`.
 
-- [ ] **Step 2: Round-trip event**
+- [x] **Step 2: Round-trip event**
 
 Open in `/keystatic` → Events het concept `asanti-nationale-saunaweek-asanti-2026-09-14`. Wijzig alleen *Tijden* naar `10:00–22:00`, Save.
 Run: `git diff content/events/asanti-nationale-saunaweek-asanti-2026-09-14.mdx`
 Expected: diff toont de nieuwe `tijden`-regel; frontmatter-volgorde/quoting mag veranderen; **body-tekst is inhoudelijk identiek** (geen ontbrekende zinnen, geen geëscapete tekens die voorheen niet geëscaped waren, `keurNotitie` nog aanwezig, `slug` nog aanwezig, `bron: scraper` nog aanwezig). Draai `git checkout content/events/` na inspectie.
 
-- [ ] **Step 3: Round-trip sauna**
+- [x] **Step 3: Round-trip sauna**
 
 Open Sauna's → `elaisa-wellness`. Wijzig *Rooster gecheckt op* naar vandaag, Save.
 Run: `git diff content/saunas/elaisa-wellness.mdx`
 Expected: `roosterGecheckt` gewijzigd; `faciliteiten` (6 items) en `opgietRooster` (1 regel met `dag`/`tijden`) compleet; body met drie `##`-kopjes en het `**meerdere opgietingen per dag**`-vet intact. `git checkout content/saunas/`.
 
-- [ ] **Step 4: Round-trip gidsen — go/no-go**
+- [x] **Step 4: Round-trip gidsen — go/no-go**
 
 Voor **elke** gids in `content/gidsen/` (10 stuks): open, zet *Bijgewerkt op* op vandaag, Save.
 Run: `git diff --stat content/gidsen/ && git diff content/gidsen/ | grep '^[-+]' | grep -v '^[-+][-+]' | grep -v 'bijgewerkt' | grep -vE '^[-+]\s*$' | head -80`
 Expected (**go**): de overgebleven regels zijn alleen frontmatter-herordening, verwijderde `#`-commentaarregels (gaan verloren — acceptabel) en quoting-verschillen. Elke `<Product id="…" />` en `<ProductGrid />` staat nog op zijn plek, tabellen/lijsten zijn compleet.
 **No-go** als een gids een lege body krijgt, componenten verliest, of Keystatic bij openen een parse-fout toont ("HTML tags not supported" e.d.).
 
-- [ ] **Step 5a (go): commit de bijgewerkt-datums? Nee — herstel**
+- [x] **Step 5a (go): commit de bijgewerkt-datums? Nee — herstel**
 
 Run: `git checkout content/`
 Expected: schone tree. De echte eerste saves gebeuren straks via GitHub-mode.
 
-- [ ] **Step 5b (no-go): gidsen buiten het paneel**
+- [x] **Step 5b (no-go): gidsen buiten het paneel**
 
 Verwijder in `keystatic.config.ts` de hele `gidsen: collection({...})` en de `"gidsen"` uit `ui.navigation.Content`. Verwijder in `scripts/lib/keystatic-schema.test.ts` de regel `["gidsen", "content/gidsen"],` en in de paden-test de `gidsen`-assert. Herstel content: `git checkout content/`.
 Run: `npm test && npm run build`
@@ -801,7 +801,7 @@ git add keystatic.config.ts scripts/lib/keystatic-schema.test.ts
 git commit -m "feat(beheer): gidsen buiten het paneel — MDX-round-trip niet schoon (zie plan Task 7)"
 ```
 
-- [ ] **Step 6: Noteer de uitkomst**
+- [x] **Step 6: Noteer de uitkomst**
 
 Voeg onder de spec-sectie *5. Samenleven met de scraper* één regel toe: `**Uitkomst round-trip (datum):** gidsen go/no-go, met reden.` Commit: `git commit -am "docs(spec): uitkomst round-trip-verificatie vastgelegd"`.
 
@@ -813,7 +813,7 @@ Voeg onder de spec-sectie *5. Samenleven met de scraper* één regel toe: `**Uit
 - Modify: `.env.example`
 - Modify: `CLAUDE.md`
 
-- [ ] **Step 1: Env-vars documenteren**
+- [x] **Step 1: Env-vars documenteren**
 
 Voeg onderaan `.env.example` toe:
 
@@ -829,7 +829,7 @@ Voeg onderaan `.env.example` toe:
 # NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG=
 ```
 
-- [ ] **Step 2: CLAUDE.md — projectstructuur en nieuwe sectie**
+- [x] **Step 2: CLAUDE.md — projectstructuur en nieuwe sectie**
 
 In het blok *Projectstructuur* onder `src/app/`:
 ```
@@ -855,7 +855,7 @@ Het paneel staat in `robots.ts` op disallow, niet in de sitemap, en de layout ze
 
 Pas de gidsen-alinea aan als Task 7 op no-go uitkwam ("Gidsen vallen buiten het paneel: …").
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add .env.example CLAUDE.md
