@@ -41,13 +41,22 @@ export function naarMethode(m: ExtractionMethod): Methode {
   }
 }
 
+/** Valt terug op een lege array wanneer de JSON geldig maar vormloos is. */
+const arr = <T,>(x: unknown): T[] => (Array.isArray(x) ? (x as T[]) : []);
+
 /** Leest het tijdelijke bestand; ontbreekt het of is het onleesbaar → null. */
 export function leesMetrics(): MetricsBestand | null {
-  const p = METRICS_BESTAND();
-  if (!fs.existsSync(p)) return null;
   try {
+    const p = METRICS_BESTAND();
+    if (!fs.existsSync(p)) return null;
     const d = JSON.parse(fs.readFileSync(p, "utf8")) as Partial<MetricsBestand>;
-    return { ...leeg(), ...d };
+    return {
+      ...leeg(),
+      ...d,
+      bronStatusWijzigingen: arr<BronStatusWijziging>(d.bronStatusWijzigingen),
+      bronResultaten: arr<BronResultaat & { kanaal: Kanaal }>(d.bronResultaten),
+      events: arr<RunEvent>(d.events),
+    };
   } catch {
     return null;
   }

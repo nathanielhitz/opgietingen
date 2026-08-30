@@ -75,10 +75,24 @@ test("een onleesbaar bestand wordt met een waarschuwing overschreven, nooit gego
 test("een schrijffout wordt geslikt", () => {
   withTmpCwd(() => {
     fs.mkdirSync(METRICS_BESTAND()); // pad is nu een map → writeFileSync faalt
+    const warns: string[] = [];
+    const orig = console.warn;
+    console.warn = (msg: string) => { warns.push(String(msg)); };
+    try {
+      assert.doesNotThrow(() => maakMetrics({ actief: true }).bron("website", legeTeller("a")));
+    } finally { console.warn = orig; }
+    assert.ok(warns.length >= 1, "spec eist een console.warn");
+  });
+});
+
+test("een bestand met geldige JSON maar verkeerde vorm blokkeert de run niet", () => {
+  withTmpCwd(() => {
+    fs.writeFileSync(METRICS_BESTAND(), JSON.stringify({ bronResultaten: {}, events: null }));
     const orig = console.warn;
     console.warn = () => {};
     try {
       assert.doesNotThrow(() => maakMetrics({ actief: true }).bron("website", legeTeller("a")));
     } finally { console.warn = orig; }
+    assert.equal(leesMetrics()?.bronResultaten.length, 1); // vorm hersteld, melding bewaard
   });
 });
