@@ -22,6 +22,11 @@ const git = (...args: string[]) => execFileSync("git", args, { encoding: "utf8" 
 const log = git("log", "--format=%x01%H|%aI|%s", "--name-only", "--diff-filter=A", "--", "content/events");
 const blokken = log.split("\x01").filter((b) => b.trim());
 
+// Beperking van de reconstructie: de wekelijkse workflow commit website-, facebook-
+// en mail-events in één commit, dus alles in zo'n commit telt als "website"; alleen
+// losse Facebook-/mail-commits zijn herkenbaar. Runs zonder nieuwe events hebben
+// geen commit met toegevoegde bestanden en krijgen dus geen record (gat in de
+// trend, geen nulkolom). autopublish staat sinds 2026-07-11 aan, vóór de eerste run.
 function kanaalUit(commitOnderwerp: string): Kanaal {
   if (/facebook/i.test(commitOnderwerp)) return "facebook";
   if (/mail|nieuwsbrief/i.test(commitOnderwerp)) return "mail";

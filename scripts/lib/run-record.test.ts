@@ -68,6 +68,7 @@ test("samenvatting is de commit-regel", () => {
     samenvatting(bouwRunRecord(metricsMetBronfout, ctx)),
     "6 kandidaten, 1 gepubliceerd, 3 concept, 1 bronfout",
   );
+  assert.equal(samenvatting({ ...bouwRunRecord(null, ctx), fout: "metrics onleesbaar" }), "metrics onleesbaar");
 });
 
 test("historieVerdacht stopt bij een corrupt bestand, niet bij een echt lege historie", () => {
@@ -76,4 +77,5 @@ test("historieVerdacht stopt bij een corrupt bestand, niet bij een echt lege his
   assert.equal(historieVerdacht('{"runs":[{"id":"x"', []), true); // afgekapte JSON
   assert.equal(historieVerdacht('{"runs":[{"id":"x"}]}', []), true); // half record, geweerd door de loader
   assert.equal(historieVerdacht('{"runs":[]}', [bouwRunRecord(null, ctx)]), false);
+  assert.equal(historieVerdacht('{"runs":[{},{},{}]}', [bouwRunRecord(null, ctx)]), true); // partieel verlies
 });

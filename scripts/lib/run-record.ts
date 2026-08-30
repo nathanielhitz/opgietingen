@@ -47,10 +47,11 @@ export function bouwRunRecord(metrics: MetricsBestand | null, ctx: RunContext): 
  */
 export function historieVerdacht(rauw: string | null, gelezen: ScrapeRun[]): boolean {
   if (rauw === null) return false; // geen bestand → eerste run
-  if (gelezen.length > 0) return false; // records gelezen → niets te verliezen
   try {
     const data = JSON.parse(rauw) as { runs?: unknown };
-    return !(Array.isArray(data.runs) && data.runs.length === 0);
+    if (!Array.isArray(data.runs)) return true;
+    // Meer records in het bestand dan de loader accepteert = er zou stil iets verdwijnen.
+    return data.runs.length > gelezen.length;
   } catch {
     return true;
   }
@@ -63,7 +64,7 @@ export function voegRunToe(runs: ScrapeRun[], record: ScrapeRun): ScrapeRun[] {
 
 /** Eén regel voor het commit-bericht. */
 export function samenvatting(run: ScrapeRun): string {
-  if (run.fout === "geen metrics") return "geen metrics";
+  if (run.fout) return run.fout;
   const t = runTotalen(run);
   const delen = [`${t.kandidaten ?? 0} kandidaten`, `${t.gepubliceerd} gepubliceerd`, `${t.concept} concept`];
   const bronfouten = KANALEN.reduce((acc, k) => acc + run.kanalen[k].bronnen.filter((b) => b.fout).length, 0);
