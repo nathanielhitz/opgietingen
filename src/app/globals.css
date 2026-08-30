@@ -28,6 +28,17 @@
   --color-steam: #93a39d;
   --color-steam-tint: #e6ece9;
 
+  /* Beheer: kanaalkleuren (CVD-gevalideerd; aqua altijd met tekstlabel) en statuskleuren */
+  --color-kanaal-website: #c1592a;
+  --color-kanaal-facebook: #2a78d6;
+  --color-kanaal-mail: #1baf7a;
+  --color-ok: #2f7d46;
+  --color-ok-tint: #e2f0e5;
+  --color-warn: #a4690c;
+  --color-warn-tint: #f6ead2;
+  --color-bad: #b3402b;
+  --color-bad-tint: #f7ddd6;
+
   /* Lettertypen (via next/font variabelen) */
   --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
