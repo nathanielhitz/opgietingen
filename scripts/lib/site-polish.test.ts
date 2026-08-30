@@ -8,7 +8,7 @@ import {
   parseFilters,
   validateDateRange,
 } from "../../src/lib/filters";
-import { eventSchema, eventItemListSchema } from "../../src/lib/schema";
+import { eventSchema, eventItemListSchema, saunaSchema } from "../../src/lib/schema";
 import type { OpgietEvent } from "../../src/lib/content";
 
 const event: OpgietEvent = {
@@ -166,6 +166,22 @@ test("eventItemListSchema geeft komende events een volledig Event-object (V3)", 
   // Zonder referentie: het oude, kale gedrag
   const kaal = eventItemListSchema([event], "Test") as { itemListElement: Record<string, unknown>[] };
   assert.equal(kaal.itemListElement[0].item, undefined);
+});
+
+test("saunaSchema geeft geneste events een location mee (GSC: ontbrekend veld 'location')", () => {
+  const schema = saunaSchema(event.sauna, { komende: [event] }) as { event: Record<string, unknown>[] };
+  assert.equal(schema.event.length, 1);
+  const genest = schema.event[0];
+  assert.equal(genest["@type"], "Event");
+  assert.equal(genest.name, "Midzomernacht Löyly");
+  assert.equal(genest.startDate, "2026-07-18");
+  const location = genest.location as { "@type": string; address: { addressLocality: string } };
+  assert.equal(location["@type"], "Place");
+  assert.equal(location.address.addressLocality, "Voorst");
+
+  // Zonder komende events geen (lege) event-sleutel
+  const leeg = saunaSchema(event.sauna) as { event?: unknown };
+  assert.equal(leeg.event, undefined);
 });
 
 test("parsePrijs parseert alleen ondubbelzinnige bedragen", () => {

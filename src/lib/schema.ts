@@ -253,19 +253,11 @@ export function saunaSchema(sauna: Sauna, opts: { komende?: OpgietEvent[] } = {}
       value: true,
     })),
     // Venue ↔ event expliciet: de saunapagina krijgt het merkverkeer, de
-    // events staan er als compacte verwijzingen (volledige Event-objecten
-    // staan in de ItemList op dezelfde pagina en op de eventpagina zelf).
-    ...(komende.length > 0
-      ? {
-          event: komende.map((e) => ({
-            "@type": "Event",
-            name: e.titel,
-            startDate: e.startDatum,
-            ...(e.eindDatum ? { endDate: e.eindDatum } : {}),
-            url: absoluteUrl(`/event/${e.slug}`),
-          })),
-        }
-      : {}),
+    // events hangen eraan als volledige Event-objecten. Google valideert elk
+    // genest Event apart en eist daar `location`; een compacte verwijzing
+    // (alleen naam/datum/url) gaf in GSC "Ontbrekend veld 'location'" en
+    // maakte het item ongeldig voor rich results.
+    ...(komende.length > 0 ? { event: komende.map((e) => eventJson(e)) } : {}),
   };
 }
 
