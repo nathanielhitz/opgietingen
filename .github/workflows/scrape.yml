@@ -30,6 +30,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Starttijd van de run = sleutel van het run-record (data/scrape-runs.json).
+      - name: Leg starttijd vast
+        run: echo "RUN_GESTART=$(date -u +%FT%TZ)" >> "$GITHUB_ENV"
+
       # Stap 1 — verifieer bronnen (robots, redirects, agendapagina-discovery,
       # Firecrawl-fallback voor JS-gerenderde pagina's). Werkt bronnen.json bij;
       # kapotte/gewijzigde bronnen worden gemeld via het scraper-issue.
@@ -86,6 +90,17 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: npm run check-roosters
 
+      # Vouw de metrics van verify-bronnen en de drie scrapers tot één
+      # run-record voor /beheer. Altijd, ook na een gefaalde stap: een run die
+      # niets opleverde is óók een datapunt.
+      - name: Bouw run-record
+        id: runrecord
+        if: always()
+        env:
+          SCRAPE_AUTOPUBLISH: "true"
+        run: npm run run-record
+
+      # Het run-record verandert elke week, dus er is nu elke run een commit — bewust.
       - name: Commit resultaten op main
         id: commit
         # Ook committen wanneer een eerdere stap faalde: geschreven events en
@@ -94,12 +109,12 @@ jobs:
         run: |
           git config user.name "opgietingen-bot"
           git config user.email "bot@opgietingen.nl"
-          git add content/events content/bronnen.json content/saunas
+          git add content/events content/bronnen.json content/saunas data/scrape-runs.json
           if git diff --cached --quiet; then
             echo "Geen wijzigingen om te committen."
             echo "gecommit=false" >> "$GITHUB_OUTPUT"
           else
-            git commit -m "chore(scraper): wekelijkse run — nieuwe events + bronnenstatus"
+            git commit -m "chore(scraper): run $(date -u +%d-%m) — ${{ steps.runrecord.outputs.samenvatting || 'geen samenvatting' }}"
             git push origin HEAD:main
             echo "gecommit=true" >> "$GITHUB_OUTPUT"
           fi
