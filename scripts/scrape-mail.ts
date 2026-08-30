@@ -36,6 +36,7 @@ import {
   type NewEvent,
 } from "./lib/content";
 import { evaluateEvent } from "./lib/quality-gate";
+import { maakMetrics, legeTeller, naarMethode } from "./lib/metrics";
 import { extractEventsFromText, type ScrapeOutcome, type ScrapedEvent } from "../src/lib/scraper";
 import { fetchUnseenMail, markMailSeen, readMailConfig, type MailConfig, type MailMessage } from "./lib/mail";
 import { todayISOInTimeZone } from "../src/lib/dates";
@@ -46,6 +47,8 @@ function argValue(name: string): string | undefined {
 }
 
 const DRY_RUN = process.argv.includes("--dry-run");
+// Run-metrics voor /beheer (scripts/lib/metrics.ts); in dry-run niets schrijven.
+const metrics = maakMetrics({ actief: !DRY_RUN });
 // Dry-run schrijft naar een tijdelijke map (zelfde reden als scrape-events:
 // mock-events mogen nooit in content/events/ belanden).
 const DOEL_DIR = process.argv.includes("--dry-run")
@@ -182,6 +185,7 @@ async function main() {
     const land: "NL" | "BE" = bron?.land === "BE" ? "BE" : "NL";
 
     console.log(`— ${mail.from} · "${mail.subject}" → ${matchRoute}`);
+    const teller = legeTeller(bron?.id ?? "onbekend");
 
     let outcome: ScrapeOutcome;
     try {
@@ -190,17 +194,22 @@ async function main() {
         : await extractEventsFromText(mail.markdown, { saunaNaam: bron?.naam ?? mail.from, land, vandaag: TODAY });
     } catch (err) {
       console.log(`  ✗ Fout: ${err instanceof Error ? err.message : String(err)}\n`);
+      metrics.bron("mail", { ...teller, fout: `extractie-fout: ${err instanceof Error ? err.message : String(err)}` });
       continue;
     }
 
     for (const w of outcome.warnings) console.log(`  · ${w}`);
     console.log(`  Extractie: ${outcome.method}, ${outcome.events.length} kandidaat-event(s).`);
+    teller.methode = naarMethode(outcome.method);
+    teller.kandidaten = outcome.events.length;
+    if (outcome.method === "none") teller.fout = "extractie faalde";
 
     for (const ev of outcome.events) {
       const key = dedupKey(saunaSlug, ev.startDatum);
       if (existing.has(key) || seen.has(key)) {
         console.log(`  = dedup: ${ev.titel} (${ev.startDatum}) bestaat al.`);
         skipped++;
+        teller.dedup++;
         continue;
       }
 
@@ -249,14 +258,25 @@ async function main() {
       if (mdxPad) {
         seen.add(key);
         written++;
+        teller.concept++; // mail publiceert nooit automatisch
+        if (!verdict.passed) teller.afgekeurd++;
+        metrics.event({
+          slug: path.basename(mdxPad, ".mdx"),
+          kanaal: "mail",
+          bron: bron?.id ?? "onbekend",
+          status,
+          ...(redenen.length ? { reden: redenen.join("; ") } : {}),
+        });
         console.log(
           `  + ${status}${redenen.length ? " (afgekeurd: " + redenen.join("; ") + ")" : ""} — ${ev.titel}`,
         );
       } else {
         skipped++;
+        teller.dedup++;
         console.log(`  = bestand bestaat al voor: ${ev.titel}`);
       }
     }
+    metrics.bron("mail", teller);
     // Alleen na een geslaagde extractie als gelezen markeren. 0 events telt
     // daarbij als verwerkt (een mail zonder events is gewoon klaar), maar bij
     // method "none" faalde de extractie — extractEventsFromText vangt zo'n
@@ -269,6 +289,11 @@ async function main() {
     }
     console.log("");
   }
+
+  metrics.mail({
+    mails: mails.length,
+    onbekendeAfzenders: mails.filter((m) => !matchBronBySender(data.bronnen, m.from)).length,
+  });
 
   if (!DRY_RUN && mailConfig && verwerkteUids.length) {
     try {

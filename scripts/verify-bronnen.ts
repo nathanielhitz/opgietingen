@@ -14,9 +14,11 @@ import { readBronnen, writeBronnen, type Bron } from "./lib/content";
 import { fetchUrl, getRobots, isPathAllowed, sleep, REQUEST_DELAY_MS, type FetchResult } from "./lib/net";
 import { scoreUrl, type Scored } from "./lib/discovery";
 import { firecrawlFetchMarkdown } from "../src/lib/scraper";
+import { maakMetrics } from "./lib/metrics";
 
 const CONTENT_HINT = /(aufguss|opgiet|agenda)/i;
 const TODAY = new Date().toISOString().slice(0, 10);
+const metrics = maakMetrics({ actief: true }); // verify heeft geen dry-run
 
 function sameHost(a: string, b: string): boolean {
   try {
@@ -247,6 +249,9 @@ async function main() {
       await sleep(REQUEST_DELAY_MS);
       continue;
     }
+    if (bron.status !== result.status) {
+      metrics.bronStatus({ id: bron.id, van: bron.status, naar: result.status, notitie: result.notitie });
+    }
     bron.status = result.status;
     bron.agendaUrl = result.url;
     // Curatienotities niet wegpoetsen: bij een simpele herbevestiging blijft
@@ -259,6 +264,7 @@ async function main() {
     await sleep(REQUEST_DELAY_MS);
   }
 
+  metrics.verify({ gecontroleerd: todo.length });
   writeBronnen(data);
   const count = (s: string) => data.bronnen.filter((b) => b.status === s).length;
   console.log(
