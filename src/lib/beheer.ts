@@ -17,7 +17,7 @@ export function beheerBeschikbaar(
  */
 export function keystaticUrl(
   pad: string,
-  env: { NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG?: string } = process.env,
+  env: Record<string, string | undefined> = process.env,
   branch = "main",
 ): string {
   const basis = env.NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG ? `/keystatic/branch/${branch}` : "/keystatic";
