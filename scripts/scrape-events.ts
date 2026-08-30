@@ -21,9 +21,11 @@ import path from "node:path";
 import {
   readBronnen,
   existingEventTitles,
+  existingAfwijsIndex,
   existingTitelDatumIndex,
   existingSaunaSlugs,
   externeTicketHost,
+  afwijsKey,
   dedupKey,
   titelDatumKey,
   slugify,
@@ -120,6 +122,8 @@ async function main() {
   // Groeit tijdens de run mee met wat we wegschrijven, zodat twee sauna's die
   // in dezelfde run hetzelfde event aankondigen elkaar ook opvangen.
   const perTitelDatum = existingTitelDatumIndex();
+  // Titels die in Keystatic op `afgewezen` zijn gezet: die slaan we per sauna over, ongeacht de datum.
+  const afgewezen = existingAfwijsIndex();
   const saunaSlugs = existingSaunaSlugs();
   const seen = new Set<string>(); // dedup binnen deze run
   const rapportWarnings: { bron: string; melding: string }[] = [];
@@ -202,6 +206,18 @@ async function main() {
         }
         skipped++;
         teller.dedup++;
+        continue;
+      }
+
+      // Afwijs-index ("leerstap"): dezelfde titel is bij deze sauna al eens handmatig
+      // op `afgewezen` gezet (geen opgieting). Overslaan zonder bestand: de index
+      // zelf is het anker, dus het komt ook volgende run niet terug. Telt als dedup.
+      const afwijsHit = afgewezen.get(afwijsKey(bron.id, ev.titel));
+      if (afwijsHit !== undefined) {
+        console.log(`  = afgewezen: ${ev.titel} (${ev.startDatum}) — titel eerder handmatig afgewezen.`);
+        skipped++;
+        teller.dedup++;
+        teller.afgewezen = (teller.afgewezen ?? 0) + 1;
         continue;
       }
 

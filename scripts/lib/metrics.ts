@@ -29,7 +29,7 @@ function leeg(): MetricsBestand {
 }
 
 export function legeTeller(id: string): BronResultaat {
-  return { id, kandidaten: 0, dedup: 0, verleden: 0, afgekeurd: 0, concept: 0, gepubliceerd: 0, fout: null, methode: "geen" };
+  return { id, kandidaten: 0, dedup: 0, afgewezen: 0, verleden: 0, afgekeurd: 0, concept: 0, gepubliceerd: 0, fout: null, methode: "geen" };
 }
 
 export function naarMethode(m: ExtractionMethod): Methode {

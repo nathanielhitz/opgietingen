@@ -19,6 +19,8 @@ export interface BronResultaat {
   id: string;
   kandidaten: number;
   dedup: number;
+  /** Deelverzameling van dedup: titel eerder handmatig op `afgewezen` gezet (afwijs-index). Ontbreekt in oudere records. */
+  afgewezen?: number;
   verleden: number;
   /** Deelverzameling van concept: de kwaliteitspoort faalde. */
   afgekeurd: number;
@@ -66,6 +68,8 @@ export interface ScrapeRun {
 export interface Totalen {
   kandidaten: number | null;
   dedup: number | null;
+  /** Deelverzameling van dedup (afwijs-index); null bij backfill. */
+  afgewezen: number | null;
   verleden: number | null;
   afgekeurd: number | null;
   concept: number;
@@ -83,7 +87,7 @@ export interface RunTotalen extends Totalen {
 export const SCRAPE_RUNS_PATH = path.join(process.cwd(), "data", "scrape-runs.json");
 
 function leegTotaal(): Totalen {
-  return { kandidaten: 0, dedup: 0, verleden: 0, afgekeurd: 0, concept: 0, gepubliceerd: 0 };
+  return { kandidaten: 0, dedup: 0, afgewezen: 0, verleden: 0, afgekeurd: 0, concept: 0, gepubliceerd: 0 };
 }
 
 function telKanaal(bronnen: BronResultaat[]): Totalen {
@@ -91,6 +95,7 @@ function telKanaal(bronnen: BronResultaat[]): Totalen {
   for (const b of bronnen) {
     t.kandidaten = (t.kandidaten ?? 0) + b.kandidaten;
     t.dedup = (t.dedup ?? 0) + b.dedup;
+    t.afgewezen = (t.afgewezen ?? 0) + (b.afgewezen ?? 0);
     t.verleden = (t.verleden ?? 0) + b.verleden;
     t.afgekeurd = (t.afgekeurd ?? 0) + b.afgekeurd;
     t.concept += b.concept;
@@ -102,7 +107,7 @@ function telKanaal(bronnen: BronResultaat[]): Totalen {
 function telEvents(events: RunEvent[], kanaal?: Kanaal): Totalen {
   const sel = kanaal ? events.filter((e) => e.kanaal === kanaal) : events;
   return {
-    kandidaten: null, dedup: null, verleden: null, afgekeurd: null,
+    kandidaten: null, dedup: null, afgewezen: null, verleden: null, afgekeurd: null,
     concept: sel.filter((e) => e.status === "concept").length,
     gepubliceerd: sel.filter((e) => e.status === "gepubliceerd").length,
   };
@@ -122,6 +127,7 @@ export function runTotalen(run: ScrapeRun): RunTotalen {
   return {
     kandidaten: som("kandidaten"),
     dedup: som("dedup"),
+    afgewezen: som("afgewezen"),
     verleden: som("verleden"),
     afgekeurd: som("afgekeurd"),
     concept: som("concept") ?? 0,

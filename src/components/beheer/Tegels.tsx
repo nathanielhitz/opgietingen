@@ -23,7 +23,11 @@ export function Tegels({ t, backfill }: { t: RunTotalen; backfill: boolean }) {
       <Tegel
         n={backfill ? "?" : t.fouten}
         label="aandacht"
-        detail={backfill ? "niet gereconstrueerd" : `${t.dedup ?? "?"} dedup · ${t.verleden ?? "?"} verleden`}
+        detail={
+          backfill
+            ? "niet gereconstrueerd"
+            : `${t.dedup ?? "?"} dedup${t.afgewezen ? ` (${t.afgewezen} eerder afgewezen)` : ""} · ${t.verleden ?? "?"} verleden`
+        }
         kleur="text-bad"
       />
     </div>

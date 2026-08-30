@@ -300,21 +300,54 @@ export function existingEventTitles(): Map<string, string> {
 }
 
 /** Frontmatter van alle events met een bruikbare saunaSlug + startDatum. */
-function readEventFrontmatter(): { saunaSlug: string; startDatum: string; titel: string }[] {
-  if (!fs.existsSync(EVENTS_DIR)) return [];
-  const out: { saunaSlug: string; startDatum: string; titel: string }[] = [];
-  for (const file of fs.readdirSync(EVENTS_DIR)) {
+function readEventFrontmatter(
+  dir: string = EVENTS_DIR,
+): { saunaSlug: string; startDatum: string; titel: string; status: string }[] {
+  if (!fs.existsSync(dir)) return [];
+  const out: { saunaSlug: string; startDatum: string; titel: string; status: string }[] = [];
+  for (const file of fs.readdirSync(dir)) {
     if (!file.endsWith(".mdx")) continue;
-    const { data } = matter(fs.readFileSync(path.join(EVENTS_DIR, file), "utf-8"));
+    const { data } = matter(fs.readFileSync(path.join(dir, file), "utf-8"));
     const startDatum = toISODate(data.startDatum);
     if (!data.saunaSlug || !startDatum) continue;
     out.push({
       saunaSlug: String(data.saunaSlug),
       startDatum,
       titel: String(data.titel ?? ""),
+      status: String(data.status ?? "gepubliceerd"),
     });
   }
   return out;
+}
+
+/**
+ * Sleutel voor de afwijs-index: sauna + genormaliseerde titel, bewust zónder
+ * datum. Een sauna kondigt dezelfde niet-opgieting (Nationale Saunaweek,
+ * kerstbrunch, yogaweekend) elke editie opnieuw aan, en omdat de datum dan
+ * verschuift ziet de dedup op saunaSlug + startDatum er telkens een nieuw
+ * event in.
+ */
+export function afwijsKey(saunaSlug: string, titel: string): string {
+  return `${saunaSlug}|${slugify(titel)}`;
+}
+
+/**
+ * afwijsKey → titel van het event dat in Keystatic op `afgewezen` is gezet.
+ * Dit is de "leerstap" van het systeem: één handmatige afwijzing volstaat, en
+ * elke latere editie met dezelfde titel bij dezelfde sauna wordt door de
+ * scrapers overgeslagen zonder bestand, notitie of regel in het weekrapport.
+ * Bewust alleen exacte titelmatch per sauna, geen fuzzy matching: een gemiste
+ * herkenning kost één extra concept, een valse herkenning laat een echte
+ * opgieting stil verdwijnen.
+ */
+export function existingAfwijsIndex(dir: string = EVENTS_DIR): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const ev of readEventFrontmatter(dir)) {
+    if (ev.status !== "afgewezen" || !ev.titel) continue;
+    const key = afwijsKey(ev.saunaSlug, ev.titel);
+    if (!map.has(key)) map.set(key, ev.titel);
+  }
+  return map;
 }
 
 /**

@@ -24,11 +24,13 @@ import os from "node:os";
 import path from "node:path";
 import {
   readBronnen,
+  existingAfwijsIndex,
   existingEventKeys,
   existingSaunaSlugs,
   isVertrouwdeAfzender,
   matchBronByContent,
   matchBronBySender,
+  afwijsKey,
   dedupKey,
   slugify,
   writeEventMdx,
@@ -129,6 +131,8 @@ function mockOutcome(mail: MailMessage): ScrapeOutcome {
 async function main() {
   const data = readBronnen();
   const existing = existingEventKeys();
+  // Titels die in Keystatic op `afgewezen` zijn gezet: die slaan we per sauna over, ongeacht de datum.
+  const afgewezen = existingAfwijsIndex();
   const saunaSlugs = existingSaunaSlugs();
   const seen = new Set<string>(); // dedup binnen deze run
   let written = 0;
@@ -210,6 +214,18 @@ async function main() {
         console.log(`  = dedup: ${ev.titel} (${ev.startDatum}) bestaat al.`);
         skipped++;
         teller.dedup++;
+        continue;
+      }
+
+      // Afwijs-index ("leerstap"): dezelfde titel is bij deze sauna al eens handmatig
+      // op `afgewezen` gezet (geen opgieting). Overslaan zonder bestand: de index
+      // zelf is het anker, dus het komt ook volgende run niet terug. Telt als dedup.
+      const afwijsHit = afgewezen.get(afwijsKey(saunaSlug, ev.titel));
+      if (afwijsHit !== undefined) {
+        console.log(`  = afgewezen: ${ev.titel} (${ev.startDatum}) — titel eerder handmatig afgewezen.`);
+        skipped++;
+        teller.dedup++;
+        teller.afgewezen = (teller.afgewezen ?? 0) + 1;
         continue;
       }
 

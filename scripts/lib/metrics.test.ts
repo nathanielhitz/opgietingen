@@ -17,7 +17,7 @@ function withTmpCwd(fn: () => void): void {
 
 test("legeTeller start op nul met methode 'geen'", () => {
   assert.deepEqual(legeTeller("a"), {
-    id: "a", kandidaten: 0, dedup: 0, verleden: 0, afgekeurd: 0, concept: 0, gepubliceerd: 0, fout: null, methode: "geen",
+    id: "a", kandidaten: 0, dedup: 0, afgewezen: 0, verleden: 0, afgekeurd: 0, concept: 0, gepubliceerd: 0, fout: null, methode: "geen",
   });
 });
 

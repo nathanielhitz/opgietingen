@@ -1,6 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  afwijsKey,
+  existingAfwijsIndex,
   existingSaunaSlugs,
   existingTitelDatumIndex,
   facebookPaginanaam,
@@ -11,6 +13,9 @@ import {
   titelDatumKey,
   type Bron,
 } from "./content";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
 test("existingSaunaSlugs bevat bekende profielen", () => {
   const slugs = existingSaunaSlugs();
@@ -178,4 +183,25 @@ test("isVertrouwdeAfzender is false zonder lijst of bij deel-match", () => {
   assert.equal(isVertrouwdeAfzender("", "nathaniel@example.com"), false);
   // Een kaal domein als lijst-item mag nooit matchen (borgt tegen substring-refactors).
   assert.equal(isVertrouwdeAfzender("iemand@example.com", "example.com"), false);
+});
+
+test("existingAfwijsIndex kent alleen events met status afgewezen, per sauna en zonder datum", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "afwijs-"));
+  const schrijf = (naam: string, fm: string) => fs.writeFileSync(path.join(dir, `${naam}.mdx`), `---\n${fm}\n---\n`);
+  schrijf("a", 'saunaSlug: asanti\ntitel: "Nationale Saunaweek Asanti"\nstartDatum: 2026-09-14\nstatus: afgewezen');
+  schrijf("b", 'saunaSlug: asanti\ntitel: "Aufguss weekend"\nstartDatum: 2026-10-01\nstatus: concept');
+  schrijf("c", 'saunaSlug: elaisa\ntitel: "Ode to Japan"\nstartDatum: 2026-09-05'); // geen status = gepubliceerd
+  try {
+    const index = existingAfwijsIndex(dir);
+    assert.equal(index.size, 1);
+    // Zelfde titel, andere editie/datum, andere schrijfwijze → hit.
+    assert.equal(index.get(afwijsKey("asanti", "nationale saunaweek asanti!")), "Nationale Saunaweek Asanti");
+    // Zelfde titel bij een andere sauna → geen hit (afwijzing is per sauna).
+    assert.equal(index.get(afwijsKey("elaisa", "Nationale Saunaweek Asanti")), undefined);
+    // Concept en gepubliceerd tellen niet als afwijzing.
+    assert.equal(index.get(afwijsKey("asanti", "Aufguss weekend")), undefined);
+    assert.equal(index.get(afwijsKey("elaisa", "Ode to Japan")), undefined);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });
