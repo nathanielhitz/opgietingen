@@ -56,7 +56,7 @@ Gecommit bestand (`data/` staat alleen voor `clicks.log` in `.gitignore`). Eén 
 - **Per bron dezelfde zeven tellers**: `kandidaten`, `dedup`, `verleden`, `afgekeurd`, `concept`, `gepubliceerd`, plus `fout` (`string | null`: robots-blokkade, fetch-fout, extractie-fout) en `methode` (`"statisch" | "firecrawl" | "claude" | "geen"`). `methode` is de basis voor het volgen van Firecrawl-verbruik en voor de latere bronnentabel. Facebook-bronnen hebben extra `posts` (aantal opgehaalde posts).
 - **`events[]`**: de in deze run weggeschreven events — `slug`, `kanaal`, `bron` (= saunaSlug), `status` (`concept | gepubliceerd`), optioneel `reden` (= `keurNotitie`). Dit is de "te beoordelen"-lijst; geen inhoud (die staat in de MDX). Bewuste duplicatie met de git-historie: in de build is die historie niet betrouwbaar bereikbaar.
 - **`bronnen`**: wat `verify-bronnen` deze run wijzigde — alleen wijzigingen, niet alle statussen (die staan in `bronnen.json`).
-- **Run-niveau `fout`**: `null`, of `"geen metrics"` wanneer geen enkele scraper iets meldde.
+- **Run-niveau `fout`**: `null`, `"geen metrics"` wanneer geen enkele scraper iets meldde, of `"metrics onleesbaar"` wanneer het tijdelijke bestand wel bestond maar geen geldige JSON was.
 - **`backfill: true`** markeert records die uit de git-historie zijn gereconstrueerd (alleen `events[]`; tellers `null`); de UI toont die gedempt.
 - **Totalen worden niet opgeslagen** — de loader leidt ze af. Geen twee waarheden.
 - **Bewaartermijn**: geen; 52 records/jaar blijft ruim onder 1 MB.
@@ -124,7 +124,7 @@ Geen run-selector/historie (YAGNI; komt met `/beheer/bronnen`).
 ## 6. Visueel
 
 - Site-tokens (`bg-cream`, `text-ink`, `ember`, Fraunces/Inter). Light-only, zoals de site.
-- Nieuwe tokens in `globals.css`: kanaalkleuren `--color-kanaal-website: #c1592a`, `--color-kanaal-facebook: #2a78d6`, `--color-kanaal-mail: #1baf7a` (CVD-gevalideerd met de dataviz-validator; aqua krijgt altijd een tekstlabel als contrast-relief). Statuskleuren apart van de kanaalkleuren: `--color-ok: #2f7d46`, `--color-warn: #a4690c`, `--color-bad: #b3402b`, elk met een tint voor pills. Status altijd met tekstlabel, nooit alleen kleur.
+- Nieuwe tokens in `globals.css`: kanaalkleuren `--color-kanaal-website: #c1592a`, `--color-kanaal-facebook: #2a78d6`, `--color-kanaal-mail: #1baf7a` (CVD-gevalideerd met de dataviz-validator; aqua krijgt altijd een tekstlabel als contrast-relief). Statuskleuren apart van de kanaalkleuren: `--color-ok: #2f7d46`, `--color-warn: #8a5709`, `--color-bad: #a63a26` (tijdens implementatie bijgesteld voor AA-contrast op de tint-achtergronden), elk met een tint voor pills. Status altijd met tekstlabel, nooit alleen kleur.
 - Componenten in `src/components/beheer/`: `BeheerNav`, `RunKop`, `Tegels`, `KanaalKaart`, `ConceptTabel`, `FoutenLijst`, `Trend`. Props uit de loader; geen data-toegang in components.
 - Mockup (varianten A en B naast elkaar): https://claude.ai/code/artifact/13994baa-08bb-4cbf-ad81-b0b1ccaad955
 

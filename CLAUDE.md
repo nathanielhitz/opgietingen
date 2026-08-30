@@ -186,7 +186,7 @@ npm run vind-roosters   # zoek roosters voor profielen zónder rooster → voors
 npm run indexnow        # meld gewijzigde URL's aan bij IndexNow (Bing c.s.)
 npm run fetch-logos     # haal logo's op voor sauna-profielen zonder beeld (geen keys nodig)
 npm run scrape-report   # bouw scrape-issue.md + print problemen/schoon
-npm run run-record   # vouw scrape-metrics.json tot een run-record (workflow-stap; -- --dry-run toont het record)
+npm run run-record  # vouw scrape-metrics.json tot een run-record (workflow-stap; -- --dry-run toont het record)
 
 ```
 
