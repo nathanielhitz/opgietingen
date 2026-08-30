@@ -42,16 +42,20 @@ src/
     content.ts      # content-loader: leest & parseert MDX, joint events↔saunas
     clicks.ts       # affiliate klik-logging (fase 1: append naar data/clicks.log)
     scraper.ts      # scraper-laag: Firecrawl (markdown + extractie) + Claude-fallback
+    scrape-runs.ts  # loader + helpers voor run-metrics (enige plek die data/scrape-runs.json kent)
 keystatic.config.ts  # schema's van het beheerpaneel (1-op-1 op de frontmatter)
 scripts/
   verify-bronnen.ts # verifieert agendaUrl's in bronnen.json (robots, discovery)
   scrape-events.ts  # scrapet actieve bronnen → events via kwaliteitspoort (gepubliceerd/concept)
   scrape-report.ts  # bouwt het probleem-issue-rapport (concepts + bronnen + ontbrekende profielen)
-  lib/              # net.ts (fetch/robots), content.ts (bronnen/dedup/MDX-write), quality-gate.ts (poort)
+  run-record.ts     # vouwt scrape-metrics.json tot een run-record in data/scrape-runs.json
+  backfill-runs.ts  # eenmalig: run-records uit de scraper-commits reconstrueren
+  lib/              # net.ts (fetch/robots), content.ts (bronnen/dedup/MDX-write), quality-gate.ts (poort), metrics.ts (run-metrics melden)
 .github/workflows/
   scrape.yml        # wekelijkse scrape (cron ma 06:00) → commit op main + scraper-issue
 data/
   clicks.log        # klik-log (gitignored)
+  scrape-runs.json  # run-metrics van de wekelijkse scrape (gecommit door de workflow; bron voor /beheer)
 ```
 
 ## Datamodel (repo-based content)
@@ -82,6 +86,7 @@ Optioneel veld `bron: scraper` markeert automatisch gescrapete events. Optioneel
 | `/uit/[slug]` | Affiliate-redirect (event/sauna) met klik-logging |
 | `/uit/product/[id]` | Affiliate-redirect (bol.com-product) met klik-logging + subid |
 | `/keystatic` | Beheerpaneel (Keystatic); noindex + robots-disallow, niet in sitemap |
+| `/beheer` | Beheer-dashboard: laatste scrape-run, te beoordelen concepts (→ Keystatic), aandacht, trend; noindex |
 | `/over`, `/contact`, `/voor-saunas` | Statische pagina's (B2B-pitch) |
 
 Nieuwsbrief-opt-in is **uitgesteld** naar een latere sessie.
@@ -141,9 +146,11 @@ Flags: `-- --limit N` (eerste N bronnen), `-- --dry-run` (mock-extractie incl. a
 
 > Model: de fallback-extractie gebruikt bewust `claude-haiku-4-5` (snel/goedkoop). Wijzig via `FALLBACK_MODEL` in `src/lib/scraper.ts`.
 
+**Run-metrics (`npm run run-record`)** — `verify-bronnen` en de drie scrapers melden via `scripts/lib/metrics.ts` per bron zeven tellers (kandidaten, dedup, verleden, afgekeurd, concept, gepubliceerd + `fout`/`methode`; invariant: kandidaten = dedup + verleden + concept + gepubliceerd), elk weggeschreven event en de bronnen-statuswijzigingen aan een tijdelijk `scrape-metrics.json`. Alles in try/catch: een metrics-fout mag nooit een scrape laten falen; `--dry-run` schrijft niets. Na de run vouwt `run-record` dat tot één record in `data/scrape-runs.json` (idempotent op de starttijd `RUN_GESTART`; stopt bij een corrupte of gedeeltelijk onleesbare historie in plaats van te overschrijven), en de workflow commit het mee met een samenvattend bericht — dus elke week een commit, ook bij 0 events. `/beheer` leest het bestand via `src/lib/scrape-runs.ts`. Oude runs zijn met `scripts/backfill-runs.ts` uit de git-historie gereconstrueerd (`backfill: true`, alleen events; alle kanalen tellen daar als website; runs zonder events hebben geen record). `methode` `firecrawl` én `claude` betekenen beide een Firecrawl-fetch (alleen `statisch` is gratis). Spec: [docs/superpowers/specs/2026-08-30-beheer-dashboard-scrape-metrics-design.md](docs/superpowers/specs/2026-08-30-beheer-dashboard-scrape-metrics-design.md).
+
 ## Beheer (Keystatic)
 
-`/keystatic` is het beheerpaneel: concepts beoordelen, sauna-profielen, gidsen en `content/bronnen.json` bewerken in de browser. Git blijft de bron van waarheid: in GitHub-mode is elke save een commit op `main` onder het GitHub-account van de ingelogde gebruiker, waarna Vercel deployt. Schema's staan in `keystatic.config.ts` en zijn 1-op-1 op de frontmatter/JSON; `scripts/lib/keystatic-schema.test.ts` bewaakt twee richtingen — elk contentveld staat in het schema (een onbekend veld zou bij een save verdwijnen) én elke entry haalt de schema-validatie via het Keystatic-reader-pad (wat daar faalt, kan in het paneel niet worden opgeslagen). Toegang = schrijfrecht op de repo. Zonder de `KEYSTATIC_*`-env-vars (zie `.env.example`) draait het paneel in local-mode en bewerkt het bestanden op schijf. Local-mode is onbeveiligd en bestaat daarom alleen in development: in productie zonder `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` geven `/keystatic` en `/api/keystatic` 404 (`src/lib/beheer.ts`, test `scripts/lib/beheer.test.ts`). Zet op Vercel altijd alle vier de `KEYSTATIC_*`-variabelen tegelijk en deploy daarna opnieuw (de `NEXT_PUBLIC_`-waarde wordt bij de build ingebakken).
+`/keystatic` is het beheerpaneel: concepts beoordelen, sauna-profielen, gidsen en `content/bronnen.json` bewerken in de browser. Git blijft de bron van waarheid: in GitHub-mode is elke save een commit op `main` onder het GitHub-account van de ingelogde gebruiker, waarna Vercel deployt. Schema's staan in `keystatic.config.ts` en zijn 1-op-1 op de frontmatter/JSON; `scripts/lib/keystatic-schema.test.ts` bewaakt twee richtingen — elk contentveld staat in het schema (een onbekend veld zou bij een save verdwijnen) én elke entry haalt de schema-validatie via het Keystatic-reader-pad (wat daar faalt, kan in het paneel niet worden opgeslagen). Toegang = schrijfrecht op de repo. Zonder de `KEYSTATIC_*`-env-vars (zie `.env.example`) draait het paneel in local-mode en bewerkt het bestanden op schijf. Local-mode is onbeveiligd en bestaat daarom alleen in development: in productie zonder `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` geven `/keystatic` en `/api/keystatic` 404 (`src/lib/beheer.ts`, test `scripts/lib/beheer.test.ts`). Zet op Vercel altijd alle vier de `KEYSTATIC_*`-variabelen tegelijk en deploy daarna opnieuw (de `NEXT_PUBLIC_`-waarde wordt bij de build ingebakken). `/beheer` is het dashboard van de wekelijkse scrape (zie *Run-metrics*); het volgt dezelfde 404/noindex-regel. Let op: de guard wordt bij de build geëvalueerd, dus de `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` moet in de Vercel-buildomgeving staan.
 
 Gebruiksregels:
 - **Concepts niet verwijderen.** Dedup werkt op `saunaSlug + startDatum`; een verwijderd concept komt de volgende run terug. Afwijzen = op `concept` laten of op `afgelopen` zetten.
@@ -179,6 +186,7 @@ npm run vind-roosters   # zoek roosters voor profielen zónder rooster → voors
 npm run indexnow        # meld gewijzigde URL's aan bij IndexNow (Bing c.s.)
 npm run fetch-logos     # haal logo's op voor sauna-profielen zonder beeld (geen keys nodig)
 npm run scrape-report   # bouw scrape-issue.md + print problemen/schoon
+npm run run-record   # vouw scrape-metrics.json tot een run-record (workflow-stap; -- --dry-run toont het record)
 
 ```
 
