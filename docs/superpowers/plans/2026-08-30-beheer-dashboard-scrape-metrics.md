@@ -40,7 +40,7 @@ Tellers-definitie (geldt overal): `kandidaten` = door de extractie opgeleverde e
 - Create: `src/lib/scrape-runs.ts`
 - Test: `scripts/lib/scrape-runs.test.ts`
 
-- [ ] **Step 1: Schrijf de falende test**
+- [x] **Step 1: Schrijf de falende test**
 
 ```ts
 // scripts/lib/scrape-runs.test.ts
@@ -123,12 +123,12 @@ test("leesScrapeRuns geeft [] zonder bestand en sorteert op id", () => {
 });
 ```
 
-- [ ] **Step 2: Run — moet falen**
+- [x] **Step 2: Run — moet falen**
 
 Run: `node --import tsx --test scripts/lib/scrape-runs.test.ts`
 Expected: FAIL, `Cannot find module '../../src/lib/scrape-runs'`.
 
-- [ ] **Step 3: Implementeer de loader**
+- [x] **Step 3: Implementeer de loader**
 
 ```ts
 // src/lib/scrape-runs.ts
@@ -308,12 +308,12 @@ export function getLaatsteRun(): ScrapeRun | undefined {
 }
 ```
 
-- [ ] **Step 4: Run — moet slagen**
+- [x] **Step 4: Run — moet slagen**
 
 Run: `node --import tsx --test scripts/lib/scrape-runs.test.ts`
 Expected: 4 tests `ok`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/scrape-runs.ts scripts/lib/scrape-runs.test.ts
@@ -329,7 +329,7 @@ git commit -m "feat(beheer): typen en loader voor scrape-run-metrics"
 - Test: `scripts/lib/metrics.test.ts`
 - Modify: `.gitignore`
 
-- [ ] **Step 1: Schrijf de falende test**
+- [x] **Step 1: Schrijf de falende test**
 
 ```ts
 // scripts/lib/metrics.test.ts
@@ -418,12 +418,12 @@ test("een schrijffout wordt geslikt", () => {
 });
 ```
 
-- [ ] **Step 2: Run — moet falen**
+- [x] **Step 2: Run — moet falen**
 
 Run: `node --import tsx --test scripts/lib/metrics.test.ts`
 Expected: FAIL, module `./metrics` niet gevonden.
 
-- [ ] **Step 3: Implementeer**
+- [x] **Step 3: Implementeer**
 
 ```ts
 // scripts/lib/metrics.ts
@@ -521,12 +521,12 @@ export function maakMetrics(opts: { actief: boolean }): Metrics {
 }
 ```
 
-- [ ] **Step 4: Run — moet slagen**
+- [x] **Step 4: Run — moet slagen**
 
 Run: `node --import tsx --test scripts/lib/metrics.test.ts`
 Expected: 6 tests `ok`.
 
-- [ ] **Step 5: gitignore**
+- [x] **Step 5: gitignore**
 
 Voeg aan `.gitignore` toe, direct onder de regel `/scrape-warnings.json`:
 ```
@@ -534,7 +534,7 @@ Voeg aan `.gitignore` toe, direct onder de regel `/scrape-warnings.json`:
 /scrape-metrics.json
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add scripts/lib/metrics.ts scripts/lib/metrics.test.ts .gitignore
@@ -548,7 +548,7 @@ git commit -m "feat(scraper): metrics-melder voor run-records (append, nooit goo
 **Files:**
 - Modify: `scripts/scrape-events.ts` (import bovenin; lus in `main()` rond regels 120–305)
 
-- [ ] **Step 1: Import en metrics-instantie**
+- [x] **Step 1: Import en metrics-instantie**
 
 Onder `import { appendScrapeWarnings } from "./lib/warnings";`:
 ```ts
@@ -563,7 +563,7 @@ Direct onder `const AUTO_PUBLISH = …`:
 const metrics = maakMetrics({ actief: !DRY_RUN });
 ```
 
-- [ ] **Step 2: Teller per bron**
+- [x] **Step 2: Teller per bron**
 
 In de `for (const bron of targets)`-lus, direct na `console.log(\`— ${bron.naam} …\`)`:
 ```ts
@@ -622,12 +622,12 @@ Aan het einde van de bron-iteratie, vóór `console.log("");`:
     metrics.bron("website", teller);
 ```
 
-- [ ] **Step 3: Verifieer met dry-run en typecheck**
+- [x] **Step 3: Verifieer met dry-run en typecheck**
 
 Run: `npx tsc --noEmit -p tsconfig.json && npm run scrape -- --dry-run --limit 2 && ls scrape-metrics.json`
 Expected: typecheck schoon; dry-run-output ongewijzigd; `ls` geeft "No such file" (dry-run schrijft niets).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add scripts/scrape-events.ts
@@ -641,7 +641,7 @@ git commit -m "feat(scraper): website-scraper meldt run-metrics per bron en per 
 **Files:**
 - Modify: `scripts/scrape-facebook.ts`
 
-- [ ] **Step 1: Import en instantie**
+- [x] **Step 1: Import en instantie**
 
 Onder `import { appendScrapeWarnings } from "./lib/warnings";`:
 ```ts
@@ -653,7 +653,7 @@ Onder de `AUTO_PUBLISH`/`DRY_RUN`-constanten:
 const metrics = maakMetrics({ actief: !DRY_RUN });
 ```
 
-- [ ] **Step 2: Teller per bron**
+- [x] **Step 2: Teller per bron**
 
 Na `console.log(\`— ${bron.naam} (${bron.facebook})\`)`:
 ```ts
@@ -698,12 +698,12 @@ Vóór `console.log("");` aan het einde van de bron-iteratie:
     metrics.bron("facebook", teller);
 ```
 
-- [ ] **Step 3: Verifieer**
+- [x] **Step 3: Verifieer**
 
 Run: `npx tsc --noEmit -p tsconfig.json && npm run scrape-facebook -- --dry-run && ls scrape-metrics.json`
 Expected: schoon; dry-run ongewijzigd; geen metrics-bestand.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add scripts/scrape-facebook.ts
@@ -717,7 +717,7 @@ git commit -m "feat(scraper): facebook-scraper meldt run-metrics"
 **Files:**
 - Modify: `scripts/scrape-mail.ts`, `scripts/verify-bronnen.ts`
 
-- [ ] **Step 1: Mail-scraper**
+- [x] **Step 1: Mail-scraper**
 
 Imports (onder de bestaande `./lib/…`-imports):
 ```ts
@@ -769,7 +769,7 @@ Na de `for (const mail of mails)`-lus (vóór het markeren als gelezen):
 ```
 Let op: de twee vroege `return`s (geen IMAP / inbox onbereikbaar) melden niets — run-record laat `mail` dan leeg (`mails: 0`).
 
-- [ ] **Step 2: verify-bronnen**
+- [x] **Step 2: verify-bronnen**
 
 Import: `import { maakMetrics } from "./lib/metrics";` en onder de bestaande constanten `const metrics = maakMetrics({ actief: true });` (verify heeft geen dry-run).
 
@@ -784,12 +784,12 @@ Na de lus, vóór `writeBronnen(data);`:
   metrics.verify({ gecontroleerd: todo.length });
 ```
 
-- [ ] **Step 3: Verifieer**
+- [x] **Step 3: Verifieer**
 
 Run: `npx tsc --noEmit -p tsconfig.json && npm run scrape-mail -- --dry-run && ls scrape-metrics.json; npm test`
 Expected: schoon; dry-run-output ongewijzigd; geen metrics-bestand; alle tests groen (154 + 10 nieuwe = 164).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add scripts/scrape-mail.ts scripts/verify-bronnen.ts
@@ -805,7 +805,7 @@ git commit -m "feat(scraper): mail-scraper en verify-bronnen melden run-metrics"
 - Test: `scripts/lib/run-record.test.ts`
 - Modify: `package.json`
 
-- [ ] **Step 1: Falende test**
+- [x] **Step 1: Falende test**
 
 ```ts
 // scripts/lib/run-record.test.ts
@@ -869,11 +869,11 @@ test("samenvatting is de commit-regel", () => {
 });
 ```
 
-- [ ] **Step 2: Run — moet falen**
+- [x] **Step 2: Run — moet falen**
 
 Run: `node --import tsx --test scripts/lib/run-record.test.ts` → FAIL, module niet gevonden.
 
-- [ ] **Step 3: Implementeer de pure laag**
+- [x] **Step 3: Implementeer de pure laag**
 
 ```ts
 // scripts/lib/run-record.ts
@@ -933,11 +933,11 @@ export function samenvatting(run: ScrapeRun): string {
 }
 ```
 
-- [ ] **Step 4: Run — moet slagen**
+- [x] **Step 4: Run — moet slagen**
 
 Run: `node --import tsx --test scripts/lib/run-record.test.ts` → 4 `ok`.
 
-- [ ] **Step 5: CLI-script**
+- [x] **Step 5: CLI-script**
 
 ```ts
 // scripts/run-record.ts
@@ -989,12 +989,12 @@ if (DRY_RUN) {
     "run-record": "tsx scripts/run-record.ts",
 ```
 
-- [ ] **Step 6: Handmatige proef**
+- [x] **Step 6: Handmatige proef**
 
 Run: `npm run run-record -- --dry-run`
 Expected: JSON van een record met `"fout": "geen metrics"` (er is geen metrics-bestand) en `Samenvatting: geen metrics`. Geen `data/scrape-runs.json` aangemaakt (`ls data/`).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add scripts/lib/run-record.ts scripts/lib/run-record.test.ts scripts/run-record.ts package.json
@@ -1008,7 +1008,7 @@ git commit -m "feat(scraper): run-record vouwt metrics tot data/scrape-runs.json
 **Files:**
 - Modify: `.github/workflows/scrape.yml`
 
-- [ ] **Step 1: Starttijd vastleggen**
+- [x] **Step 1: Starttijd vastleggen**
 
 Direct na de stap `Install dependencies`:
 ```yaml
@@ -1017,7 +1017,7 @@ Direct na de stap `Install dependencies`:
         run: echo "RUN_GESTART=$(date -u +%FT%TZ)" >> "$GITHUB_ENV"
 ```
 
-- [ ] **Step 2: Run-record-stap**
+- [x] **Step 2: Run-record-stap**
 
 Direct vóór `- name: Commit resultaten op main`:
 ```yaml
@@ -1032,7 +1032,7 @@ Direct vóór `- name: Commit resultaten op main`:
         run: npm run run-record
 ```
 
-- [ ] **Step 3: Commit-stap**
+- [x] **Step 3: Commit-stap**
 
 Vervang in de commit-stap:
 ```yaml
@@ -1044,12 +1044,12 @@ en
 ```
 De rest (gecommit-output, push) blijft. Pas de comment boven de stap aan met: `Het run-record verandert elke week, dus er is nu elke run een commit — bewust.`
 
-- [ ] **Step 4: Valideer de YAML**
+- [x] **Step 4: Valideer de YAML**
 
 Run: `node -e 'require("js-yaml")' 2>/dev/null || true; npx -y yaml-lint .github/workflows/scrape.yml 2>&1 | tail -2 || python3 -c "import yaml,sys; yaml.safe_load(open('.github/workflows/scrape.yml')); print('YAML ok')"`
 Expected: `YAML ok` (of geen fouten van yaml-lint).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add .github/workflows/scrape.yml
@@ -1064,7 +1064,7 @@ git commit -m "ci(scraper): run-record na elke run, commit met samenvatting"
 - Create: `scripts/backfill-runs.ts`
 - Create (gegenereerd): `data/scrape-runs.json`
 
-- [ ] **Step 1: Script**
+- [x] **Step 1: Script**
 
 ```ts
 // scripts/backfill-runs.ts
@@ -1146,19 +1146,19 @@ if (!DRY_RUN) {
 }
 ```
 
-- [ ] **Step 2: Dry-run en echte run**
+- [x] **Step 2: Dry-run en echte run**
 
 Run: `npx tsx scripts/backfill-runs.ts --dry-run`
 Expected: een lijst van scraper-runs (er zijn er minstens 5: de `chore(scraper): wekelijkse run`-commits en de Facebook-postscrape van 27 aug) met event-aantallen; geen bestand geschreven.
 Run: `npx tsx scripts/backfill-runs.ts && node -e 'const d=require("./data/scrape-runs.json");console.log(d.runs.length, d.runs.every(r=>r.backfill))'`
 Expected: `<n> true`.
 
-- [ ] **Step 3: Loader-test tegen het echte bestand**
+- [x] **Step 3: Loader-test tegen het echte bestand**
 
 Run: `npx tsx -e 'import { getScrapeRuns, weekTrend } from "./src/lib/scrape-runs"; const r = getScrapeRuns(); console.log(r.length, weekTrend(r).map(p => p.gepubliceerd))'`
 Expected: aantal runs en een array met aantallen (geen NaN, geen crash).
 
-- [ ] **Step 4: Commit (script + data)**
+- [x] **Step 4: Commit (script + data)**
 
 ```bash
 git add scripts/backfill-runs.ts data/scrape-runs.json
@@ -1173,7 +1173,7 @@ git commit -m "feat(beheer): backfill van run-records uit de scraper-commits"
 - Modify: `src/app/globals.css` (in het `@theme`-blok)
 - Create: `src/components/beheer/BeheerNav.tsx`, `RunKop.tsx`, `Tegels.tsx`, `KanaalKaart.tsx`, `ConceptTabel.tsx`, `FoutenLijst.tsx`, `Trend.tsx`
 
-- [ ] **Step 1: Tokens**
+- [x] **Step 1: Tokens**
 
 In `@theme`, na het *Stoom*-blok:
 ```css
@@ -1189,7 +1189,7 @@ In `@theme`, na het *Stoom*-blok:
   --color-bad-tint: #f7ddd6;
 ```
 
-- [ ] **Step 2: BeheerNav**
+- [x] **Step 2: BeheerNav**
 
 ```tsx
 // src/components/beheer/BeheerNav.tsx
@@ -1221,7 +1221,7 @@ export function BeheerNav({ actief }: { actief: "dashboard" }) {
 }
 ```
 
-- [ ] **Step 3: RunKop en Tegels**
+- [x] **Step 3: RunKop en Tegels**
 
 ```tsx
 // src/components/beheer/RunKop.tsx
@@ -1286,7 +1286,7 @@ export function Tegels({ t }: { t: RunTotalen }) {
 }
 ```
 
-- [ ] **Step 4: KanaalKaart**
+- [x] **Step 4: KanaalKaart**
 
 ```tsx
 // src/components/beheer/KanaalKaart.tsx
@@ -1325,7 +1325,7 @@ export function KanaalKaart({ kanaal, t, extra }: { kanaal: Kanaal; t: Totalen; 
 }
 ```
 
-- [ ] **Step 5: ConceptTabel en FoutenLijst**
+- [x] **Step 5: ConceptTabel en FoutenLijst**
 
 ```tsx
 // src/components/beheer/ConceptTabel.tsx
@@ -1430,7 +1430,7 @@ export function FoutenLijst({ rijen }: { rijen: FoutRij[] }) {
 }
 ```
 
-- [ ] **Step 6: Trend**
+- [x] **Step 6: Trend**
 
 ```tsx
 // src/components/beheer/Trend.tsx
@@ -1469,7 +1469,7 @@ export function Trend({ punten }: { punten: TrendPunt[] }) {
 }
 ```
 
-- [ ] **Step 7: Typecheck en commit**
+- [x] **Step 7: Typecheck en commit**
 
 Run: `npx tsc --noEmit -p tsconfig.json`
 Expected: schoon.
@@ -1486,7 +1486,7 @@ git commit -m "feat(beheer): tokens en componenten voor het dashboard"
 - Create: `src/app/beheer/layout.tsx`, `src/app/beheer/page.tsx`
 - Modify: `src/app/robots.ts`, `scripts/lib/beheer-routes.test.ts`
 
-- [ ] **Step 1: Test uitbreiden (falend)**
+- [x] **Step 1: Test uitbreiden (falend)**
 
 In `scripts/lib/beheer-routes.test.ts`, in de robots-test na de `/api/keystatic`-assert:
 ```ts
@@ -1496,13 +1496,13 @@ En in de sitemap-test de filter uitbreiden: `u.includes("/keystatic") || u.inclu
 
 Run: `node --import tsx --test scripts/lib/beheer-routes.test.ts` → robots-test FAIL met "/beheer ontbreekt in disallow".
 
-- [ ] **Step 2: robots.ts**
+- [x] **Step 2: robots.ts**
 
 `disallow: ["/uit/", "/keystatic", "/api/keystatic", "/beheer"],` en de comment: `// Affiliate-redirects, het beheerpaneel en het beheer-dashboard niet crawlen/indexeren.`
 
 Run de test opnieuw → 2 `ok`.
 
-- [ ] **Step 3: Layout**
+- [x] **Step 3: Layout**
 
 ```tsx
 // src/app/beheer/layout.tsx
@@ -1525,7 +1525,7 @@ export default function BeheerLayout({ children }: Readonly<{ children: React.Re
 }
 ```
 
-- [ ] **Step 4: Pagina**
+- [x] **Step 4: Pagina**
 
 ```tsx
 // src/app/beheer/page.tsx
@@ -1591,18 +1591,18 @@ export default function BeheerPagina() {
 }
 ```
 
-- [ ] **Step 5: Build en bekijken**
+- [x] **Step 5: Build en bekijken**
 
 Run: `npm run build`
 Expected: slaagt; route `/beheer` staat in de lijst als statisch (○). Daarna `npm run dev`, open `http://127.0.0.1:3000/beheer`.
 Expected: nav, kop met de laatste (backfill-)run "gereconstrueerd", tegels met `?` voor kandidaten (backfill), concept-tabel met *Open*-links, trend met gedempte kolommen. Klik één *Open*-link: Keystatic opent het event. Controleer ook: `curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:3000/beheer` → 200 en de HTML bevat `noindex`. Stop de dev-server.
 
-- [ ] **Step 6: Lege toestand**
+- [x] **Step 6: Lege toestand**
 
 Run: `mv data/scrape-runs.json /tmp/sr.json && npm run build 2>&1 | grep -E "beheer|error" ; mv /tmp/sr.json data/scrape-runs.json`
 Expected: build slaagt zonder het bestand (pagina toont "Nog geen runs").
 
-- [ ] **Step 7: Lint, tests, commit**
+- [x] **Step 7: Lint, tests, commit**
 
 Run: `npm run lint && npm test` → schoon; alle tests groen.
 ```bash
@@ -1617,7 +1617,7 @@ git commit -m "feat(beheer): dashboard /beheer met laatste run, concepts, fouten
 **Files:**
 - Modify: `CLAUDE.md`
 
-- [ ] **Step 1: Integratieproef van het schrijfpad (lokaal, zonder API-keys)**
+- [x] **Step 1: Integratieproef van het schrijfpad (lokaal, zonder API-keys)**
 
 Simuleer een run met metrics-bestand en verwerk het:
 ```bash
@@ -1630,7 +1630,7 @@ RUN_GESTART=2026-08-30T12:00:00Z npm run run-record
 ```
 Expected: `Run-record 2026-08-30T12:00:00Z weggeschreven (<n> runs). 1 kandidaten, 0 gepubliceerd, 1 concept`; `scrape-metrics.json` is verwijderd. Open `/beheer` in de dev-server: de proef-run is de laatste, met Asanti in "Te beoordelen" en een werkende *Open*-link. Verwijder de proef daarna: `git checkout data/scrape-runs.json`.
 
-- [ ] **Step 2: CLAUDE.md**
+- [x] **Step 2: CLAUDE.md**
 
 In *Projectstructuur* onder `data/`: regel toevoegen `  scrape-runs.json  # run-metrics van de wekelijkse scrape (gecommit door de workflow; bron voor /beheer)`. Onder `scripts/`: `  run-record.ts     # vouwt scrape-metrics.json tot een run-record in data/scrape-runs.json` en `  backfill-runs.ts  # eenmalig: run-records uit de scraper-commits reconstrueren`. Onder `src/lib/`: `    scrape-runs.ts  # loader + helpers voor run-metrics (enige plek die data/scrape-runs.json kent)`.
 
@@ -1645,7 +1645,7 @@ In *Commando's*: `npm run run-record   # vouw scrape-metrics.json tot een run-re
 
 In de sectie *Beheer (Keystatic)* de eerste zin aanvullen: "… en `/beheer` is het dashboard van de wekelijkse scrape (zie *Run-metrics*)."
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add CLAUDE.md
