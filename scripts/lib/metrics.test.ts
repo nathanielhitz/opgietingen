@@ -81,7 +81,7 @@ test("een schrijffout wordt geslikt", () => {
     try {
       assert.doesNotThrow(() => maakMetrics({ actief: true }).bron("website", legeTeller("a")));
     } finally { console.warn = orig; }
-    assert.ok(warns.length >= 1, "spec eist een console.warn");
+    assert.ok(warns.some((w) => w.includes("niet weggeschreven")), "spec eist een console.warn bij schrijffout");
   });
 });
 

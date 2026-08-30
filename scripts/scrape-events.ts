@@ -174,6 +174,7 @@ async function main() {
         melding: `extractie faalde (${outcome.warnings.join(" | ") || "geen details"})`,
       });
     } else if (!DRY_RUN && outcome.method === "claude-fallback" && outcome.events.length === 0) {
+      // Bewust geen teller.fout: dit is een vermoeden (lege agenda kán echt), geen harde fout; het weekissue meldt het wel.
       // Deze route wordt alleen bereikt nadat de kale fetch niets bruikbaars
       // gaf én Firecrawl ook 0 events vond. Dat is geen extractiefout — een
       // lege agenda kan echt — maar het is wel het profiel van een bron
@@ -297,6 +298,7 @@ async function main() {
         written++;
         if (status === "gepubliceerd") teller.gepubliceerd++;
         else teller.concept++;
+        // verleden is hierboven al afgevangen (continue), dus !passed betekent hier altijd: weggeschreven als concept.
         if (!verdict.passed) teller.afgekeurd++;
         metrics.event({
           slug: path.basename(mdxPad, ".mdx"),
