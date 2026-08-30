@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { maakMetrics, leesMetrics, legeTeller, naarMethode, METRICS_BESTAND } from "./metrics";
+import { maakMetrics, leesMetrics, legeTeller, naarMethode, metricsBestandStatus, METRICS_BESTAND } from "./metrics";
 
 // maakMetrics schrijft naar process.cwd()/scrape-metrics.json; de tests draaien
 // in een lege tijdelijke map zodat ze het echte bestand niet raken.
@@ -94,5 +94,15 @@ test("een bestand met geldige JSON maar verkeerde vorm blokkeert de run niet", (
       assert.doesNotThrow(() => maakMetrics({ actief: true }).bron("website", legeTeller("a")));
     } finally { console.warn = orig; }
     assert.equal(leesMetrics()?.bronResultaten.length, 1); // vorm hersteld, melding bewaard
+  });
+});
+
+test("metricsBestandStatus onderscheidt geen bestand, onleesbaar en ok", () => {
+  withTmpCwd(() => {
+    assert.equal(metricsBestandStatus(), "geen");
+    fs.writeFileSync(METRICS_BESTAND(), "geen json");
+    assert.equal(metricsBestandStatus(), "onleesbaar");
+    fs.writeFileSync(METRICS_BESTAND(), JSON.stringify({ bronResultaten: [], events: [] }));
+    assert.equal(metricsBestandStatus(), "ok");
   });
 });

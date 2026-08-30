@@ -11,8 +11,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { leesScrapeRuns, SCRAPE_RUNS_PATH } from "../src/lib/scrape-runs";
-import { leesMetrics, METRICS_BESTAND } from "./lib/metrics";
-import { bouwRunRecord, voegRunToe, samenvatting } from "./lib/run-record";
+import { leesMetrics, metricsBestandStatus, METRICS_BESTAND } from "./lib/metrics";
+import { bouwRunRecord, historieVerdacht, voegRunToe, samenvatting } from "./lib/run-record";
 
 const DRY_RUN = process.argv.includes("--dry-run");
 
@@ -28,13 +28,24 @@ const ctx = {
 
 const metrics = leesMetrics();
 const record = bouwRunRecord(metrics, ctx);
+if (!metrics && metricsBestandStatus() === "onleesbaar") record.fout = "metrics onleesbaar";
 const regel = samenvatting(record);
 
 if (DRY_RUN) {
   console.log(JSON.stringify(record, null, 2));
   console.log(`\nSamenvatting: ${regel}`);
 } else {
-  const runs = voegRunToe(leesScrapeRuns(), record);
+  const bestaand = leesScrapeRuns();
+  const rauw = fs.existsSync(SCRAPE_RUNS_PATH) ? fs.readFileSync(SCRAPE_RUNS_PATH, "utf8") : null;
+  if (historieVerdacht(rauw, bestaand)) {
+    console.error(
+      `${SCRAPE_RUNS_PATH} is onleesbaar of bevat geen bruikbaar record — run-record stopt zodat de historie ` +
+        `niet wordt overschreven. Herstel met \`git checkout data/scrape-runs.json\` en draai opnieuw ` +
+        `(scrape-metrics.json blijft staan).`,
+    );
+    process.exit(1);
+  }
+  const runs = voegRunToe(bestaand, record);
   fs.mkdirSync(path.dirname(SCRAPE_RUNS_PATH), { recursive: true });
   fs.writeFileSync(SCRAPE_RUNS_PATH, JSON.stringify({ runs }, null, 2) + "\n");
   if (fs.existsSync(METRICS_BESTAND())) fs.rmSync(METRICS_BESTAND());

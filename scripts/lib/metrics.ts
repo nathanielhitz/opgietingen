@@ -62,6 +62,18 @@ export function leesMetrics(): MetricsBestand | null {
   }
 }
 
+/** Onderscheidt "geen bestand" van "onleesbaar" — `leesMetrics` geeft voor beide `null` terug. */
+export function metricsBestandStatus(): "geen" | "onleesbaar" | "ok" {
+  const p = METRICS_BESTAND();
+  if (!fs.existsSync(p)) return "geen";
+  try {
+    JSON.parse(fs.readFileSync(p, "utf8"));
+    return "ok";
+  } catch {
+    return "onleesbaar";
+  }
+}
+
 function muteer(wijzig: (d: MetricsBestand) => void): void {
   try {
     const p = METRICS_BESTAND();

@@ -1,5 +1,5 @@
 // scripts/lib/run-record.ts
-import { KANALEN, runTotalen, type BronResultaat, type ScrapeRun } from "../../src/lib/scrape-runs";
+import { KANALEN, runTotalen, type BronResultaat, type Kanaal, type ScrapeRun } from "../../src/lib/scrape-runs";
 import type { MetricsBestand } from "./metrics";
 
 export interface RunContext {
@@ -11,7 +11,7 @@ export interface RunContext {
 
 /** Vouwt de tijdelijke metrics tot één run-record. `null` metrics = niets gemeld → fout "geen metrics". */
 export function bouwRunRecord(metrics: MetricsBestand | null, ctx: RunContext): ScrapeRun {
-  const perKanaal = (kanaal: string): BronResultaat[] =>
+  const perKanaal = (kanaal: Kanaal): BronResultaat[] =>
     (metrics?.bronResultaten ?? [])
       .filter((b) => b.kanaal === kanaal)
       // eslint-disable-next-line @typescript-eslint/no-unused-vars -- alleen het kanaal-veld eruit slopen
@@ -38,6 +38,22 @@ export function bouwRunRecord(metrics: MetricsBestand | null, ctx: RunContext): 
     },
     events: metrics?.events ?? [],
   };
+}
+
+/**
+ * `leesScrapeRuns` slikt een corrupt bestand en geeft []. Zonder deze check zou
+ * run-record de historie stil overschrijven met alleen de nieuwe run. Alleen een
+ * écht leeg `{ "runs": [] }` (of geen bestand) mag leeg blijken.
+ */
+export function historieVerdacht(rauw: string | null, gelezen: ScrapeRun[]): boolean {
+  if (rauw === null) return false; // geen bestand → eerste run
+  if (gelezen.length > 0) return false; // records gelezen → niets te verliezen
+  try {
+    const data = JSON.parse(rauw) as { runs?: unknown };
+    return !(Array.isArray(data.runs) && data.runs.length === 0);
+  } catch {
+    return true;
+  }
 }
 
 /** Vervangt een bestaand record met dezelfde id (idempotent) en sorteert oud → nieuw. */

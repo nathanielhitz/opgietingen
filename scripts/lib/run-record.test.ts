@@ -1,7 +1,7 @@
 // scripts/lib/run-record.test.ts
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { bouwRunRecord, voegRunToe, samenvatting } from "./run-record";
+import { bouwRunRecord, historieVerdacht, voegRunToe, samenvatting } from "./run-record";
 import { legeTeller, type MetricsBestand } from "./metrics";
 
 const ctx = { id: "2026-08-31T06:04:12Z", workflowRun: "123", duurSeconden: 221, autopublish: true };
@@ -68,4 +68,12 @@ test("samenvatting is de commit-regel", () => {
     samenvatting(bouwRunRecord(metricsMetBronfout, ctx)),
     "6 kandidaten, 1 gepubliceerd, 3 concept, 1 bronfout",
   );
+});
+
+test("historieVerdacht stopt bij een corrupt bestand, niet bij een echt lege historie", () => {
+  assert.equal(historieVerdacht(null, []), false); // geen bestand → eerste run
+  assert.equal(historieVerdacht('{"runs":[]}', []), false); // geldig leeg
+  assert.equal(historieVerdacht('{"runs":[{"id":"x"', []), true); // afgekapte JSON
+  assert.equal(historieVerdacht('{"runs":[{"id":"x"}]}', []), true); // half record, geweerd door de loader
+  assert.equal(historieVerdacht('{"runs":[]}', [bouwRunRecord(null, ctx)]), false);
 });
