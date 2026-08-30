@@ -17,7 +17,8 @@
     "indexnow": "tsx scripts/indexnow.ts",
     "fetch-logos": "tsx scripts/fetch-logos.ts",
     "test": "node --import tsx --test \"scripts/**/*.test.ts\"",
-    "scrape-report": "tsx scripts/scrape-report.ts"
+    "scrape-report": "tsx scripts/scrape-report.ts",
+    "run-record": "tsx scripts/run-record.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.70.0",
