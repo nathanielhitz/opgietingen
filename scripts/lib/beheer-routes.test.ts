@@ -12,10 +12,14 @@ test("robots.txt sluit /keystatic en /api/keystatic uit", () => {
   assert.ok(disallow.includes("/uit/"), "bestaande /uit/-regel moet blijven");
   assert.ok(disallow.includes("/keystatic"), "/keystatic ontbreekt in disallow");
   assert.ok(disallow.includes("/api/keystatic"), "/api/keystatic ontbreekt in disallow");
+  assert.ok(disallow.includes("/beheer"), "/beheer ontbreekt in disallow");
 });
 
 test("sitemap bevat geen beheer-URL's", () => {
   const urls = sitemap().map((e) => e.url);
   assert.ok(urls.length > 10, "sitemap lijkt leeg");
-  assert.deepEqual(urls.filter((u) => u.includes("/keystatic") || u.includes("/api/")), []);
+  assert.deepEqual(
+    urls.filter((u) => u.includes("/keystatic") || u.includes("/api/") || u.includes("/beheer")),
+    [],
+  );
 });

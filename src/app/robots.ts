@@ -6,8 +6,8 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      // Affiliate-redirects en het beheerpaneel niet crawlen/indexeren.
-      disallow: ["/uit/", "/keystatic", "/api/keystatic"],
+      // Affiliate-redirects, het beheerpaneel en het beheer-dashboard niet crawlen/indexeren.
+      disallow: ["/uit/", "/keystatic", "/api/keystatic", "/beheer"],
     },
     sitemap: `${site.url}/sitemap.xml`,
     host: site.url,
