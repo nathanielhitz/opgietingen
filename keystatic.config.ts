@@ -2,6 +2,7 @@
 // Schema's voor het beheerpaneel. Elke ingang is 1-op-1 op de bestaande
 // frontmatter/JSON, zodat loader (src/lib/content.ts) en scripts niets merken.
 // Spec: docs/superpowers/specs/2026-08-29-keystatic-beheerpaneel-design.md
+import { createElement } from "react";
 import { config, fields, collection, singleton } from "@keystatic/core";
 import { block } from "@keystatic/core/content-components";
 import { EVENT_TYPES, PROVINCES } from "./src/lib/site";
@@ -91,7 +92,24 @@ export default config({
     : { kind: "local" },
 
   ui: {
-    brand: { name: "Opgietingen.nl · beheer" },
+    brand: {
+      // Kort, want het merkteken (links ervan) is de enige plek voor een link
+      // terug naar het dashboard (/beheer): Keystatic's UI is niet uitbreidbaar
+      // met eigen pagina's. Samen leest het als "← Dashboard  Beheer". Gewone
+      // <a>, geen JSX: dit bestand is .ts en wordt ook door tsx-tests geladen.
+      name: "Beheer",
+      mark: () =>
+        createElement(
+          "a",
+          {
+            href: "/beheer",
+            // "Runs", niet "Dashboard": Keystatic's eigen startpagina heet al zo.
+            title: "Naar het scrape-dashboard (/beheer)",
+            style: { fontSize: 12, fontWeight: 600, textDecoration: "none", color: "currentColor", opacity: 0.75, whiteSpace: "nowrap" },
+          },
+          "← Runs",
+        ),
+    },
     navigation: {
       Content: ["events", "saunas", "gidsen"],
       Scraper: ["bronnen"],
