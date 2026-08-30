@@ -39,6 +39,7 @@ import {
 } from "./lib/content";
 import { evaluateEvent, OPGIET_RE } from "./lib/quality-gate";
 import { appendScrapeWarnings } from "./lib/warnings";
+import { maakMetrics, legeTeller, naarMethode } from "./lib/metrics";
 import { sleep, REQUEST_DELAY_MS } from "./lib/net";
 import { todayISOInTimeZone } from "../src/lib/dates";
 import { extractEventsFromText, type ScrapeOutcome, type ScrapedEvent } from "../src/lib/scraper";
@@ -56,6 +57,9 @@ const LIMIT = argValue("--limit") ? Number(argValue("--limit")) : Infinity;
 const DOEL_DIR = DRY_RUN ? fs.mkdtempSync(path.join(os.tmpdir(), "opgietingen-fb-dry-run-")) : undefined;
 const TODAY = todayISOInTimeZone();
 const AUTO_PUBLISH = process.env.SCRAPE_AUTOPUBLISH === "true";
+
+// Run-metrics voor /beheer (scripts/lib/metrics.ts); in dry-run niets schrijven.
+const metrics = maakMetrics({ actief: !DRY_RUN });
 
 const CAPTION_SCHEIDING = "\n\n---\n\n";
 
@@ -121,6 +125,7 @@ async function main() {
 
   for (const bron of targets) {
     console.log(`— ${bron.naam} (${bron.facebook})`);
+    const teller = legeTeller(bron.id);
 
     let outcome: ScrapeOutcome | null = null;
 
@@ -128,6 +133,7 @@ async function main() {
       outcome = mockOutcome();
     } else {
       const fetched = await fetchFacebookPosts(bron.facebook, { vandaag: TODAY });
+      teller.posts = fetched.posts.length;
       for (const w of fetched.warnings) console.log(`  · ${w}`);
       if (fetched.warnings.length) {
         rapportWarnings.push({ bron: bron.naam, melding: fetched.warnings.join(" | ") });
@@ -143,6 +149,7 @@ async function main() {
           const msg = err instanceof Error ? err.message : String(err);
           console.log(`  ✗ Fout: ${msg}`);
           rapportWarnings.push({ bron: bron.naam, melding: `extractie-fout: ${msg}` });
+          teller.fout = `extractie-fout: ${msg}`;
         }
       } else {
         console.log("  Geen (recente) posts gevonden.");
@@ -152,6 +159,9 @@ async function main() {
     if (outcome) {
       for (const w of outcome.warnings) console.log(`  · ${w}`);
       console.log(`  Extractie: ${outcome.method}, ${outcome.events.length} kandidaat-event(s).`);
+      teller.methode = naarMethode(outcome.method);
+      teller.kandidaten = outcome.events.length;
+      if (outcome.method === "none") teller.fout = `extractie faalde (${outcome.warnings.join(" | ") || "geen details"})`;
       if (!DRY_RUN && outcome.method === "none") {
         rapportWarnings.push({
           bron: bron.naam,
@@ -174,6 +184,7 @@ async function main() {
             });
           }
           skipped++;
+          teller.dedup++;
           continue;
         }
 
@@ -191,6 +202,7 @@ async function main() {
         if (verdict.verleden) {
           console.log(`  · voorbij: ${ev.titel} (${ev.startDatum}) — niet weggeschreven.`);
           skipped++;
+          teller.verleden++;
           continue;
         }
 
@@ -242,16 +254,28 @@ async function main() {
           seen.add(key);
           if (!perTitelDatum.has(tdKey)) perTitelDatum.set(tdKey, bron.id);
           written++;
+          if (status === "gepubliceerd") teller.gepubliceerd++;
+          else teller.concept++;
+          if (!verdict.passed) teller.afgekeurd++;
+          metrics.event({
+            slug: path.basename(filePath, ".mdx"),
+            kanaal: "facebook",
+            bron: bron.id,
+            status,
+            ...(keurNotitie ? { reden: keurNotitie } : {}),
+          });
           console.log(
             `  + ${status}${keurNotitie ? " (concept: " + keurNotitie + ")" : ""} — ${ev.titel}`,
           );
         } else {
           skipped++;
+          teller.dedup++;
           console.log(`  = bestand bestaat al voor: ${ev.titel}`);
         }
       }
     }
 
+    metrics.bron("facebook", teller);
     console.log("");
     if (!DRY_RUN) await sleep(REQUEST_DELAY_MS);
   }
