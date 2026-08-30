@@ -26,7 +26,7 @@ export interface BronResultaat {
   gepubliceerd: number;
   fout: string | null;
   methode: Methode;
-  /** Alleen facebook: aantal opgehaalde posts. */
+  /** Alleen door de facebook-scraper gevuld: aantal opgehaalde posts. */
   posts?: number;
 }
 
@@ -112,13 +112,13 @@ function telEvents(events: RunEvent[], kanaal?: Kanaal): Totalen {
 export function runTotalen(run: ScrapeRun): RunTotalen {
   const perKanaal = {} as Record<Kanaal, Totalen>;
   for (const k of KANALEN) {
-    perKanaal[k] = run.backfill ? telEvents(run.events, k) : telKanaal(run.kanalen[k].bronnen);
+    perKanaal[k] = run.backfill ? telEvents(run.events, k) : telKanaal(run.kanalen[k]?.bronnen ?? []);
   }
   const som = (veld: keyof Totalen): number | null =>
     run.backfill && veld !== "concept" && veld !== "gepubliceerd"
       ? null
       : KANALEN.reduce((acc, k) => acc + (perKanaal[k][veld] ?? 0), 0);
-  const bronfouten = KANALEN.reduce((acc, k) => acc + run.kanalen[k].bronnen.filter((b) => b.fout).length, 0);
+  const bronfouten = KANALEN.reduce((acc, k) => acc + (run.kanalen[k]?.bronnen ?? []).filter((b) => b.fout).length, 0);
   return {
     kandidaten: som("kandidaten"),
     dedup: som("dedup"),
@@ -126,8 +126,8 @@ export function runTotalen(run: ScrapeRun): RunTotalen {
     afgekeurd: som("afgekeurd"),
     concept: som("concept") ?? 0,
     gepubliceerd: som("gepubliceerd") ?? 0,
-    fouten: bronfouten + run.bronnen.statusWijzigingen.length,
-    bronnen: KANALEN.reduce((acc, k) => acc + run.kanalen[k].bronnen.length, 0),
+    fouten: bronfouten + (run.bronnen?.statusWijzigingen?.length ?? 0),
+    bronnen: KANALEN.reduce((acc, k) => acc + (run.kanalen[k]?.bronnen ?? []).length, 0),
     perKanaal,
   };
 }
@@ -158,7 +158,16 @@ export function leesScrapeRuns(bestand: string = SCRAPE_RUNS_PATH): ScrapeRun[] 
     const data = JSON.parse(fs.readFileSync(bestand, "utf8")) as { runs?: unknown };
     if (!Array.isArray(data.runs)) return [];
     return (data.runs as ScrapeRun[])
-      .filter((r) => r && typeof r.id === "string" && r.kanalen && Array.isArray(r.events))
+      .filter(
+        (r) =>
+          r &&
+          typeof r.id === "string" &&
+          Array.isArray(r.events) &&
+          r.bronnen &&
+          Array.isArray(r.bronnen.statusWijzigingen) &&
+          r.kanalen &&
+          KANALEN.every((k) => Array.isArray(r.kanalen[k]?.bronnen)),
+      )
       .sort((a, b) => a.id.localeCompare(b.id));
   } catch {
     return [];
@@ -169,7 +178,6 @@ export function getScrapeRuns(): ScrapeRun[] {
   return leesScrapeRuns();
 }
 
-export function getLaatsteRun(): ScrapeRun | undefined {
-  const runs = getScrapeRuns();
+export function getLaatsteRun(runs: ScrapeRun[] = getScrapeRuns()): ScrapeRun | undefined {
   return runs[runs.length - 1];
 }

@@ -71,8 +71,40 @@ test("leesScrapeRuns geeft [] zonder bestand en sorteert op id", () => {
   assert.deepEqual(leesScrapeRuns(path.join(tmp, "geen.json")), []);
   const p = path.join(tmp, "runs.json");
   fs.writeFileSync(p, JSON.stringify({ runs: [{ ...run, id: "2026-08-10T00:00:00Z" }, run] }));
-  assert.deepEqual(leesScrapeRuns(p).map((r) => r.id), ["2026-08-10T00:00:00Z", "2026-08-31T06:04:12Z"].sort());
+  assert.deepEqual(leesScrapeRuns(p).map((r) => r.id), ["2026-08-10T00:00:00Z", "2026-08-31T06:04:12Z"]);
   fs.writeFileSync(p, "kapot");
   assert.deepEqual(leesScrapeRuns(p), []);
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+test("weekTrend dempt backfill-records: kandidaten null, backfill true", () => {
+  const bf: ScrapeRun = {
+    ...run,
+    id: "2026-08-01T06:00:00Z",
+    backfill: true,
+    kanalen: { website: { bronnen: [] }, facebook: { bronnen: [] }, mail: { mails: 0, onbekendeAfzenders: 0, bronnen: [] } },
+  };
+  const trend = weekTrend([bf, { ...run, id: "2026-08-02T06:00:00Z" }], 12);
+  assert.equal(trend[0].backfill, true);
+  assert.equal(trend[0].kandidaten, null);
+  assert.equal(trend[0].gepubliceerd, 1); // uit events[]
+  assert.equal(trend[1].kandidaten, 7);   // tellers van een echte run
+});
+
+test("leesScrapeRuns weert half geschreven records en runTotalen overleeft een lege run", () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "runs-half-"));
+  const p = path.join(tmp, "runs.json");
+  const half = { ...run, id: "2026-08-05T00:00:00Z", kanalen: { website: { bronnen: [] }, facebook: { bronnen: [] } } };
+  const leeg: ScrapeRun = {
+    ...run, id: "2026-08-06T00:00:00Z", fout: "geen metrics", events: [],
+    bronnen: { gecontroleerd: null, statusWijzigingen: [] },
+    kanalen: { website: { bronnen: [] }, facebook: { bronnen: [] }, mail: { mails: 0, onbekendeAfzenders: 0, bronnen: [] } },
+  };
+  fs.writeFileSync(p, JSON.stringify({ runs: [half, leeg] }));
+  const runs = leesScrapeRuns(p);
+  assert.deepEqual(runs.map((r) => r.id), ["2026-08-06T00:00:00Z"]);
+  const t = runTotalen(runs[0]);
+  assert.equal(t.kandidaten, 0); // lege niet-backfill-run telt 0, niet null
+  assert.equal(t.fouten, 0);
   fs.rmSync(tmp, { recursive: true, force: true });
 });
