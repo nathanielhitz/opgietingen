@@ -105,10 +105,10 @@ Buiten `(site)` (geen site-chrome), naast `/keystatic`. Server component, statis
 
 Inhoud (indeling A):
 1. Eyebrow: run-datum/tijd, duur, autopublish aan/uit. Kop: "18 kandidaten, 4 gepubliceerd, 9 te beoordelen".
-2. Vier tegels: kandidaten (met aantal bronnen), gepubliceerd, concept, fouten (bijschrift: dedup/verleden).
+2. Vier tegels: kandidaten (met aantal bronnen), gepubliceerd, concept, aandacht (bijschrift: dedup/verleden).
 3. Drie kanaalkaarten (website / Facebook / mail): gestapeld staafje gepubliceerd–concept–dedup met cijfers als tekst ernaast.
 4. **Te beoordelen**: `events[]` met `status: concept` uit de laatste run — event, sauna (via `getSaunaBySlug`), reden, knop *Open* → `/keystatic/collection/events/item/<slug>`.
-5. **Fouten**: bron-regels met `fout != null` uit de drie kanalen + `bronnen.statusWijzigingen`; knop *Bron* → `/keystatic/singleton/bronnen`.
+5. **Aandacht** (bronfouten én statuswijzigingen; `kapot → actief` is geen fout): bron-regels met `fout != null` uit de drie kanalen + `bronnen.statusWijzigingen`; knop *Bron* → `/keystatic/singleton/bronnen`.
 6. **Trend**: 12 kolommen "gepubliceerd per run" als HTML/CSS-staafjes met `title`-tooltip; backfill-kolommen gedempt. Klein: context, geen hoofdvraag.
 
 Geen run-selector/historie (YAGNI; komt met `/beheer/bronnen`).
@@ -116,6 +116,7 @@ Geen run-selector/historie (YAGNI; komt met `/beheer/bronnen`).
 ### Lege en afwijkende toestanden
 - Geen `scrape-runs.json` → "Nog geen runs; de eerste komt maandag."
 - Laatste run met `fout: "geen metrics"` → rode banner "Run zonder resultaten" met link naar `https://github.com/nathanielhitz/opgietingen/actions/runs/<workflowRun>`.
+- Backfill-run als laatste run → tellers als `?`, geen aandacht-lijst, toelichting "gereconstrueerd".
 
 ### Robots/sitemap
 `/beheer` toevoegen aan `robots.ts`-disallow; `beheer-routes.test.ts` uitbreiden.

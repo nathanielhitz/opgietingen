@@ -38,10 +38,19 @@ if (DRY_RUN) {
   const bestaand = leesScrapeRuns();
   const rauw = fs.existsSync(SCRAPE_RUNS_PATH) ? fs.readFileSync(SCRAPE_RUNS_PATH, "utf8") : null;
   if (historieVerdacht(rauw, bestaand)) {
+    const inBestand = (() => {
+      try {
+        const d = JSON.parse(rauw ?? "null");
+        return Array.isArray(d?.runs) ? d.runs.length : null;
+      } catch {
+        return null;
+      }
+    })();
     console.error(
-      `${SCRAPE_RUNS_PATH} is onleesbaar of bevat geen bruikbaar record — run-record stopt zodat de historie ` +
-        `niet wordt overschreven. Herstel met \`git checkout data/scrape-runs.json\` en draai opnieuw ` +
-        `(scrape-metrics.json blijft staan).`,
+      `${SCRAPE_RUNS_PATH} is onleesbaar of bevat geen bruikbaar record (${inBestand ?? "?"} records in het bestand, ` +
+        `${bestaand.length} herkend) — run-record stopt zodat de historie niet wordt overschreven. Herstel met ` +
+        `\`git checkout data/scrape-runs.json\` en draai opnieuw (scrape-metrics.json blijft staan), of corrigeer ` +
+        `het afwijkende record.`,
     );
     process.exit(1);
   }

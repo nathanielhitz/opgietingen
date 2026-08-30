@@ -73,6 +73,7 @@ test("samenvatting is de commit-regel", () => {
 
 test("historieVerdacht stopt bij een corrupt bestand, niet bij een echt lege historie", () => {
   assert.equal(historieVerdacht(null, []), false); // geen bestand → eerste run
+  assert.equal(historieVerdacht("{}", []), true); // bestand zonder runs-sleutel
   assert.equal(historieVerdacht('{"runs":[]}', []), false); // geldig leeg
   assert.equal(historieVerdacht('{"runs":[{"id":"x"', []), true); // afgekapte JSON
   assert.equal(historieVerdacht('{"runs":[{"id":"x"}]}', []), true); // half record, geweerd door de loader

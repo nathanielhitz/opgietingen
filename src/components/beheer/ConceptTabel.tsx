@@ -28,6 +28,7 @@ export function ConceptTabel({ rijen }: { rijen: ConceptRij[] }) {
                   <td className="py-2 pr-3 text-ink-soft">{r.saunaNaam}</td>
                   <td className="py-2 pr-3 text-ink-soft">{r.reden ?? "—"}</td>
                   <td className="py-2 text-right">
+                    {/* Gewone <a>: /keystatic is een client-SPA achter een catch-all; een volledige paginalaad is daar het veiligst. */}
                     <a className="font-medium text-ember underline underline-offset-2" href={`/keystatic/collection/events/item/${r.slug}`}>
                       Open
                     </a>

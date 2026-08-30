@@ -64,6 +64,7 @@ export function voegRunToe(runs: ScrapeRun[], record: ScrapeRun): ScrapeRun[] {
 
 /** Eén regel voor het commit-bericht. */
 export function samenvatting(run: ScrapeRun): string {
+  // fout wordt alleen gezet als er geen metrics zijn (record is dan leeg), dus hier gaan geen tellers verloren.
   if (run.fout) return run.fout;
   const t = runTotalen(run);
   const delen = [`${t.kandidaten ?? 0} kandidaten`, `${t.gepubliceerd} gepubliceerd`, `${t.concept} concept`];

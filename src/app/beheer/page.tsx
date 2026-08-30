@@ -41,18 +41,23 @@ export default function BeheerPagina() {
       <BeheerNav actief="dashboard" />
       <div className="mt-8 flex flex-col gap-8">
         <RunKop run={run} totalen={totalen} />
-        <Tegels t={totalen} />
+        {run.backfill && (
+          <p className="text-sm text-ink-soft">
+            Gereconstrueerd uit de git-historie: alleen de events zijn bekend, tellers en fouten niet.
+          </p>
+        )}
+        <Tegels t={totalen} backfill={run.backfill} />
         <div className="grid gap-3 sm:grid-cols-3">
           <KanaalKaart kanaal="website" t={totalen.perKanaal.website} />
           <KanaalKaart kanaal="facebook" t={totalen.perKanaal.facebook} />
           <KanaalKaart
             kanaal="mail"
             t={totalen.perKanaal.mail}
-            extra={`${run.kanalen.mail.mails} mails · ${run.kanalen.mail.onbekendeAfzenders} onbekend`}
+            extra={run.backfill ? undefined : `${run.kanalen.mail.mails} mails · ${run.kanalen.mail.onbekendeAfzenders} onbekend`}
           />
         </div>
         <ConceptTabel rijen={concepts} />
-        <FoutenLijst rijen={fouten} />
+        {!run.backfill && <FoutenLijst rijen={fouten} />}
         <Trend punten={weekTrend(runs, 12)} />
       </div>
     </>

@@ -3,13 +3,17 @@ import type { TrendPunt } from "@/lib/scrape-runs";
 /** Events per run als CSS-staafjes (gepubliceerd donker, concept licht); backfill gedempt. Context, geen hoofdvraag — daarom klein. */
 export function Trend({ punten }: { punten: TrendPunt[] }) {
   const max = Math.max(1, ...punten.map((p) => p.gepubliceerd + p.concept));
-  const datum = (iso: string) => new Intl.DateTimeFormat("nl-NL", { day: "numeric", month: "short", timeZone: "UTC" }).format(new Date(iso));
+  const datum = (iso: string) => new Intl.DateTimeFormat("nl-NL", { day: "numeric", month: "short", timeZone: "Europe/Amsterdam" }).format(new Date(iso));
   return (
     <section>
       <h2 className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
         Per run · laatste {punten.length} (gepubliceerd donker, concept licht)
       </h2>
-      <div className="mt-2 flex h-14 items-end gap-1" role="img" aria-label="Aantal events per run">
+      <div
+        className="mt-2 flex h-14 items-end gap-1"
+        role="img"
+        aria-label={`Events per run, laatste ${punten.length} runs: ${punten.map((p) => `${datum(p.id)} ${p.gepubliceerd} gepubliceerd en ${p.concept} concept`).join("; ")}`}
+      >
         {punten.map((p) => (
           <div
             key={p.id}

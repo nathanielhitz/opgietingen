@@ -33,10 +33,9 @@
   --color-kanaal-facebook: #2a78d6;
   --color-kanaal-mail: #1baf7a;
   --color-ok: #2f7d46;
-  --color-ok-tint: #e2f0e5;
-  --color-warn: #a4690c;
+  --color-warn: #8a5709;
   --color-warn-tint: #f6ead2;
-  --color-bad: #b3402b;
+  --color-bad: #a63a26;
   --color-bad-tint: #f7ddd6;
 
   /* Lettertypen (via next/font variabelen) */

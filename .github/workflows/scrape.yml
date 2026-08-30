@@ -133,21 +133,30 @@ jobs:
         continue-on-error: true
         run: npm run indexnow
 
-      # Ook na een gefaalde stap: het weekissue is juist dan de melding.
+      # Ook na een gefaalde stap: het weekissue is juist dan de melding. Een
+      # gefaald rapport telt als "niet schoon" zodat het issue nooit onterecht sluit.
       - name: Bouw probleemrapport
         id: report
-        if: always()
-        run: echo "status=$(npm run --silent scrape-report)" >> "$GITHUB_OUTPUT"
+        if: ${{ !cancelled() }}
+        run: |
+          if STATUS=$(npm run --silent scrape-report); then
+            echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=rapport-mislukt" >> "$GITHUB_OUTPUT"
+          fi
 
-      # Ook na een gefaalde stap: het weekissue is juist dan de melding.
       - name: Beheer scraper-issue
-        if: always()
+        if: ${{ !cancelled() }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STATUS: ${{ steps.report.outputs.status }}
         run: |
           gh label create scraper-probleem --color B60205 --description "Scraper heeft aandacht nodig" || true
           EXISTING=$(gh issue list --label scraper-probleem --state open --json number --jq '.[0].number')
-          if [ "${{ steps.report.outputs.status }}" = "problemen" ]; then
+          if [ "$STATUS" != "schoon" ]; then
+            if [ ! -f scrape-issue.md ]; then
+              printf '## Rapport kon niet worden gebouwd\n\nZie de workflow-logs van run %s.\n' "$GITHUB_RUN_ID" > scrape-issue.md
+            fi
             if [ -n "$EXISTING" ]; then
               gh issue edit "$EXISTING" --body-file scrape-issue.md
               gh issue comment "$EXISTING" --body "Rapport bijgewerkt door de wekelijkse run."

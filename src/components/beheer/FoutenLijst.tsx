@@ -32,12 +32,15 @@ export function FoutenLijst({ rijen }: { rijen: FoutRij[] }) {
         <ul className="mt-2 divide-y divide-sand text-sm">
           {rijen.map((r, i) => (
             <li key={`${r.bronId}-${i}`} className="flex flex-wrap items-center gap-3 py-2">
-              <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${r.ernst === "bad" ? "bg-bad-tint text-bad" : "bg-warn-tint text-warn"}`}>
+              <span
+                className={`rounded-full px-2 py-0.5 text-xs font-semibold ${r.ernst === "bad" ? "bg-bad-tint text-bad" : "bg-warn-tint text-warn"}`}
+                title={r.ernst === "bad" ? "fout" : "let op"}
+              >
                 {r.kanaal === "verify" ? "bron" : KANAAL_LABEL[r.kanaal]}
               </span>
               <span className="font-medium text-ink">{r.bronNaam}</span>
               <span className="text-ink-soft">{r.melding}</span>
-              {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- Keystatic is een client-side SPA achter één catch-all route; dit pad bestaat niet als Next.js-pagina. */}
+              {/* Gewone <a>: /keystatic is een client-SPA achter een catch-all; een volledige paginalaad is daar het veiligst. */}
               <a className="ml-auto font-medium text-ember underline underline-offset-2" href="/keystatic/singleton/bronnen">
                 Bron
               </a>
