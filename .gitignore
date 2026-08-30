@@ -47,6 +47,9 @@ yarn-error.log*
 # gegenereerde scrape-waarschuwingen (input voor scrape-report)
 /scrape-warnings.json
 
+# gegenereerde run-metrics (input voor run-record; wordt daarna verwijderd)
+/scrape-metrics.json
+
 # Onderzoeks-input (ChatGPT sauna-events pack) — lokaal houden, niet in repo
 opgietingen_research_pack_2026/
 
