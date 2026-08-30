@@ -32,6 +32,7 @@ import {
 } from "./lib/content";
 import { evaluateEvent, OPGIET_RE } from "./lib/quality-gate";
 import { appendScrapeWarnings } from "./lib/warnings";
+import { maakMetrics, legeTeller, naarMethode } from "./lib/metrics";
 import { isAllowed, sleep, REQUEST_DELAY_MS } from "./lib/net";
 import { todayISOInTimeZone } from "../src/lib/dates";
 import { scrapeAgenda, type ScrapeOutcome, type ScrapedEvent } from "../src/lib/scraper";
@@ -50,6 +51,9 @@ const DOEL_DIR = process.argv.includes("--dry-run")
   : undefined;
 const TODAY = todayISOInTimeZone();
 const AUTO_PUBLISH = process.env.SCRAPE_AUTOPUBLISH === "true";
+
+// Run-metrics voor /beheer (scripts/lib/metrics.ts); in dry-run niets schrijven.
+const metrics = maakMetrics({ actief: !DRY_RUN });
 
 /** Mock-extractie voor --dry-run: twee toekomstige events per bron. */
 function mockOutcome(): ScrapeOutcome {
@@ -124,11 +128,13 @@ async function main() {
 
   for (const bron of targets) {
     console.log(`— ${bron.naam} (${bron.agendaUrl})`);
+    const teller = legeTeller(bron.id);
 
     // robots.txt naleven (Firecrawl doet dit ook, maar we checken beleefd vooraf).
     if (!DRY_RUN && !(await isAllowed(bron.agendaUrl))) {
       console.log("  ⚠ robots.txt blokkeert deze URL — overgeslagen.\n");
       rapportWarnings.push({ bron: bron.naam, melding: "robots.txt blokkeert de agenda-URL" });
+      metrics.bron("website", { ...teller, fout: "robots.txt blokkeert de agenda-URL" });
       continue;
     }
 
@@ -151,11 +157,15 @@ async function main() {
       const msg = err instanceof Error ? err.message : String(err);
       console.log(`  ✗ Fout: ${msg}\n`);
       rapportWarnings.push({ bron: bron.naam, melding: `scrape-fout: ${msg}` });
+      metrics.bron("website", { ...teller, fout: `scrape-fout: ${msg}` });
       continue;
     }
 
     for (const w of outcome.warnings) console.log(`  · ${w}`);
     console.log(`  Extractie: ${outcome.method}, ${outcome.events.length} kandidaat-event(s).`);
+    teller.methode = naarMethode(outcome.method);
+    teller.kandidaten = outcome.events.length;
+    if (outcome.method === "none") teller.fout = `extractie faalde (${outcome.warnings.join(" | ") || "geen details"})`;
     // "none" = de extractie faalde echt (0 events via een geslaagde route is
     // gewoon een lege agenda) → dat hoort in het weekissue, niet alleen stdout.
     if (!DRY_RUN && outcome.method === "none") {
@@ -190,6 +200,7 @@ async function main() {
           });
         }
         skipped++;
+        teller.dedup++;
         continue;
       }
 
@@ -210,6 +221,7 @@ async function main() {
       if (verdict.verleden) {
         console.log(`  · voorbij: ${ev.titel} (${ev.startDatum}) — niet weggeschreven.`);
         skipped++;
+        teller.verleden++;
         continue;
       }
 
@@ -278,20 +290,32 @@ async function main() {
         ...(keurNotitie ? { keurNotitie } : {}),
       };
 
-      const path = writeEventMdx(newEvent, DOEL_DIR);
-      if (path) {
+      const mdxPad = writeEventMdx(newEvent, DOEL_DIR);
+      if (mdxPad) {
         seen.add(key);
         if (!perTitelDatum.has(tdKey)) perTitelDatum.set(tdKey, bron.id);
         written++;
+        if (status === "gepubliceerd") teller.gepubliceerd++;
+        else teller.concept++;
+        if (!verdict.passed) teller.afgekeurd++;
+        metrics.event({
+          slug: path.basename(mdxPad, ".mdx"),
+          kanaal: "website",
+          bron: bron.id,
+          status,
+          ...(keurNotitie ? { reden: keurNotitie } : {}),
+        });
         console.log(
           `  + ${status}${keurNotitie ? " (concept: " + keurNotitie + ")" : ""} — ${ev.titel}`,
         );
       } else {
         skipped++;
+        teller.dedup++;
         console.log(`  = bestand bestaat al voor: ${ev.titel}`);
       }
     }
 
+    metrics.bron("website", teller);
     console.log("");
     if (!DRY_RUN) await sleep(REQUEST_DELAY_MS);
   }
