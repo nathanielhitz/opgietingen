@@ -48,9 +48,10 @@ jobs:
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           SCRAPE_AUTOPUBLISH: "true"
+          LIMIT: ${{ github.event.inputs.limit }}
         run: |
-          if [ -n "${{ github.event.inputs.limit }}" ]; then
-            npm run scrape -- --limit "${{ github.event.inputs.limit }}"
+          if [ -n "$LIMIT" ]; then
+            npm run scrape -- --limit "$LIMIT"
           else
             npm run scrape
           fi
@@ -106,15 +107,18 @@ jobs:
         # Ook committen wanneer een eerdere stap faalde: geschreven events en
         # bijgewerkte bronnen/roosters mogen niet verloren gaan met de runner.
         if: always()
+        env:
+          SAMENVATTING: ${{ steps.runrecord.outputs.samenvatting || 'geen samenvatting' }}
         run: |
           git config user.name "opgietingen-bot"
           git config user.email "bot@opgietingen.nl"
-          git add content/events content/bronnen.json content/saunas data/scrape-runs.json
+          git add content/events content/bronnen.json content/saunas
+          if [ -f data/scrape-runs.json ]; then git add data/scrape-runs.json; fi
           if git diff --cached --quiet; then
             echo "Geen wijzigingen om te committen."
             echo "gecommit=false" >> "$GITHUB_OUTPUT"
           else
-            git commit -m "chore(scraper): run $(date -u +%d-%m) — ${{ steps.runrecord.outputs.samenvatting || 'geen samenvatting' }}"
+            git commit -m "chore(scraper): run $(date -u +%d-%m) — $SAMENVATTING"
             git push origin HEAD:main
             echo "gecommit=true" >> "$GITHUB_OUTPUT"
           fi
@@ -129,11 +133,15 @@ jobs:
         continue-on-error: true
         run: npm run indexnow
 
+      # Ook na een gefaalde stap: het weekissue is juist dan de melding.
       - name: Bouw probleemrapport
         id: report
+        if: always()
         run: echo "status=$(npm run --silent scrape-report)" >> "$GITHUB_OUTPUT"
 
+      # Ook na een gefaalde stap: het weekissue is juist dan de melding.
       - name: Beheer scraper-issue
+        if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
