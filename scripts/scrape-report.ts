@@ -1,5 +1,5 @@
 // Bouwt het scraper-probleemrapport na een run (spec §3).
-// - Afgekeurde concepts (status: concept + keurNotitie) uit content/events/
+// - Afgekeurde concepts (status: concept + keurNotitie) uit content/events/ (status afgewezen = al beoordeeld, telt niet)
 // - Niet-actieve bronnen (via bronnenReport()); alleen kapot/geen-agenda tellen
 //   als "probleem" dat het issue openhoudt
 // - Actieve bronnen zonder sauna-profiel ("profiel aanmaken" blijft handwerk)

@@ -149,9 +149,10 @@ export default config({
         afbeelding: padVeld("Afbeelding", "/images/events/naam.jpg"),
         status: fields.select({
           label: "Status",
-          description: "Alleen 'gepubliceerd' is zichtbaar op de site. Afwijzen = op concept laten of op afgelopen zetten; niet verwijderen (de scraper maakt het anders opnieuw aan).",
+          description: "Alleen 'gepubliceerd' is zichtbaar op de site. Geen opgieting? Zet op 'afgewezen' (onzichtbaar, valt uit het weekrapport). Niet verwijderen: de scraper maakt het anders opnieuw aan.",
           options: [
             { label: "Concept (onzichtbaar)", value: "concept" },
+            { label: "Afgewezen (onzichtbaar, geen opgieting)", value: "afgewezen" },
             { label: "Gepubliceerd", value: "gepubliceerd" },
             { label: "Afgelopen", value: "afgelopen" },
           ],

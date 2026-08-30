@@ -17,7 +17,14 @@ const EVENTS_DIR = path.join(CONTENT_DIR, "events");
 const PROVINCIES_DIR = path.join(CONTENT_DIR, "provincies");
 const GIDSEN_DIR = path.join(CONTENT_DIR, "gidsen");
 
-export type EventStatus = "concept" | "gepubliceerd" | "afgelopen";
+/**
+ * `concept` = wacht op review; `afgewezen` = beoordeeld en bewust niet op de site
+ * (geen opgieting). Beide zijn onzichtbaar; `afgewezen` blijft als bestand staan
+ * als dedup-anker voor de scraper en valt buiten het weekrapport.
+ */
+export type EventStatus = "concept" | "gepubliceerd" | "afgelopen" | "afgewezen";
+
+const ONZICHTBARE_STATUSSEN: ReadonlySet<string> = new Set(["concept", "afgewezen"]);
 
 /** Eén regel uit het vaste opgietrooster van een sauna (bv. "za & zo" / "elk uur"). */
 export interface OpgietRoosterRegel {
@@ -203,7 +210,7 @@ export const getSaunaBySlug = cache((slug: string): Sauna | undefined => {
 
 /* ---------- Events ---------- */
 
-/** Alle zichtbare events (niet-concept), gejoind met sauna, gesorteerd op startdatum. */
+/** Alle zichtbare events (niet concept/afgewezen), gejoind met sauna, gesorteerd op startdatum. */
 export const getAllEvents = cache((): OpgietEvent[] => {
   const saunas = new Map(getAllSaunas().map((s) => [s.slug, s]));
 
@@ -234,7 +241,7 @@ export const getAllEvents = cache((): OpgietEvent[] => {
       };
       return event;
     })
-    .filter((e): e is OpgietEvent => e !== null && e.status !== "concept")
+    .filter((e): e is OpgietEvent => e !== null && !ONZICHTBARE_STATUSSEN.has(e.status))
     .sort((a, b) => a.startDatum.localeCompare(b.startDatum));
 });
 

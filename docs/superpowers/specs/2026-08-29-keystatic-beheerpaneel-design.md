@@ -62,7 +62,7 @@ Alle schema's zijn 1-op-1 op de bestaande frontmatter, zodat site en scripts nie
 | `tijden`, `prijsIndicatie` | tekst | |
 | `ticketUrl` | url | klikbaar in het formulier |
 | `afbeelding` | tekst (pad) | geen upload; beelden via `public/images/` + `docs/image-prompts.md` |
-| `status` | select | concept / gepubliceerd / afgelopen |
+| `status` | select | concept / afgewezen / gepubliceerd / afgelopen |
 | `bron` | select, alleen-lezen weergave | scraper / handmatig |
 | `keurNotitie` | meerregelig, **alleen-lezen** | reden van de kwaliteitspoort blijft als historie staan; de site negeert het veld bij `gepubliceerd` |
 | body | `fields.mdx` | beschrijving/programma |
@@ -93,7 +93,7 @@ Drie schrijvers op dezelfde bestanden: scraper-bot (CI), Keystatic (paneel), lok
 
 **Gelijktijdige commits.** Maandag 06:00 UTC pusht de bot. Een save op datzelfde moment faalt met non-fast-forward; Keystatic toont een fout en de gebruiker saved opnieuw. Faalt de bot-push, dan is de run rood en zichtbaar. Geen extra mechaniek.
 
-**Verwijderen van concepts — gebruiksregel.** Dedup werkt op `saunaSlug + startDatum`. Een verwijderd concept wordt de volgende run opnieuw aangemaakt. Daarom: *afwijzen = status op `concept` laten of op `afgelopen` zetten; niet verwijderen.* Een expliciete `status: afgewezen` zou loader, poort en rapport raken en is een mogelijke follow-up.
+**Verwijderen van concepts — gebruiksregel.** Dedup werkt op `saunaSlug + startDatum`. Een verwijderd concept wordt de volgende run opnieuw aangemaakt. Daarom: *afwijzen = status op `afgewezen`; niet verwijderen.* (`afgewezen` is op 2026-08-30 toegevoegd: loader filtert het weg, rapport slaat het over, dedup-anker blijft.)
 
 **Uitkomst round-trip (2026-08-29):** in local-mode via de UI getest — **go voor alle vier de ingangen, gidsen inbegrepen**: alle tien gidsen openen, saven en houden elke `<Product id="…" />` en `<ProductGrid />` op dezelfde plek met dezelfde id, met identieke kopjes, links, vet en lijstitems; ook het event (`slug`, `keurNotitie`, `bron: scraper` behouden), de sauna en `content/bronnen.json` (44 bronnen, `$comment` en `laatstBijgewerkt` intact) komen inhoudelijk ongeschonden terug, en een tweede save wijzigt alleen de bewerkte regel. De verschillen zijn cosmetisch: frontmatter wordt herordend (slugveld eerst) en opnieuw gequote/gevouwen, de witregel na de frontmatter verdwijnt, body-lijsten worden `*` in plaats van `-`, lege optionele velden verschijnen als default (`producten: []`, `agendaUrlVast: false`) of verdwijnen als ze leeg waren (`agendaUrl: ""`), en een kale URL in de body wordt geautolinkt (`www.svb.be` → `[www.svb.be](http://www.svb.be)`).
 
