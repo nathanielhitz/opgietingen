@@ -1,0 +1,999 @@
+{
+  "runs": [
+    {
+      "id": "2026-07-11T16:57:31Z",
+      "workflowRun": null,
+      "duurSeconden": null,
+      "autopublish": true,
+      "backfill": true,
+      "fout": null,
+      "bronnen": {
+        "gecontroleerd": null,
+        "statusWijzigingen": []
+      },
+      "kanalen": {
+        "website": {
+          "bronnen": []
+        },
+        "facebook": {
+          "bronnen": []
+        },
+        "mail": {
+          "mails": 0,
+          "onbekendeAfzenders": 0,
+          "bronnen": []
+        }
+      },
+      "events": [
+        {
+          "slug": "aufguss-challenge-finale-2026-10-02",
+          "kanaal": "website",
+          "bron": "sauna-elysium",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "aufguss-wm-playoffs-2026-08-01",
+          "kanaal": "website",
+          "bron": "thermen-bussloo",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "babor-event-2026-06-06",
+          "kanaal": "website",
+          "bron": "thermae-2000",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-06-06 < 2026-07-11; onbekende saunaSlug: \"thermae-2000\" heeft geen profiel in content/saunas/; niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "dag-van-de-ayurveda-2026-08-08",
+          "kanaal": "website",
+          "bron": "thermen-berendonck",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "finale-aufguss-challenge-2026-10-02",
+          "kanaal": "website",
+          "bron": "veluwse-bron",
+          "status": "concept",
+          "reden": "onbekende saunaSlug: \"veluwse-bron\" heeft geen profiel in content/saunas/"
+        },
+        {
+          "slug": "herbal-cup-2026-10-09",
+          "kanaal": "website",
+          "bron": "thermen-soesterberg",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "meditatieweekend-2026-07-11",
+          "kanaal": "website",
+          "bron": "sauna-elysium",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "opening-panorama-opgietsauna-2026-06-16",
+          "kanaal": "website",
+          "bron": "thermae-2000",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-06-16 < 2026-07-11; onbekende saunaSlug: \"thermae-2000\" heeft geen profiel in content/saunas/"
+        },
+        {
+          "slug": "opgietsessie-sauna-2026-06-10",
+          "kanaal": "website",
+          "bron": "lago",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-06-10 < 2026-07-11"
+        },
+        {
+          "slug": "opgietsessie-sauna-2026-06-24",
+          "kanaal": "website",
+          "bron": "lago",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-06-24 < 2026-07-11"
+        },
+        {
+          "slug": "opgietweekend-2026-09-05",
+          "kanaal": "website",
+          "bron": "sauna-zwaluwhoeve",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "opgietweekend-2026-09-12",
+          "kanaal": "website",
+          "bron": "veluwse-bron",
+          "status": "concept",
+          "reden": "onbekende saunaSlug: \"veluwse-bron\" heeft geen profiel in content/saunas/"
+        },
+        {
+          "slug": "opgietweekend-2026-11-28",
+          "kanaal": "website",
+          "bron": "spawell",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "relaxtival-2026-07-20",
+          "kanaal": "website",
+          "bron": "thermen-bussloo",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "unwind-wellness-festival-2026-08-29",
+          "kanaal": "website",
+          "bron": "sauna-zwaluwhoeve",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "zomer-dagspecial-2026-07-01",
+          "kanaal": "website",
+          "bron": "thermae-2000",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-07-01 < 2026-07-11; onbekende saunaSlug: \"thermae-2000\" heeft geen profiel in content/saunas/; niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        }
+      ]
+    },
+    {
+      "id": "2026-07-12T10:32:57Z",
+      "workflowRun": null,
+      "duurSeconden": null,
+      "autopublish": true,
+      "backfill": true,
+      "fout": null,
+      "bronnen": {
+        "gecontroleerd": null,
+        "statusWijzigingen": []
+      },
+      "kanalen": {
+        "website": {
+          "bronnen": []
+        },
+        "facebook": {
+          "bronnen": []
+        },
+        "mail": {
+          "mails": 0,
+          "onbekendeAfzenders": 0,
+          "bronnen": []
+        }
+      },
+      "events": [
+        {
+          "slug": "aufguss-wm-playoffs-2026-08-26",
+          "kanaal": "website",
+          "bron": "thermen-bussloo",
+          "status": "gepubliceerd"
+        }
+      ]
+    },
+    {
+      "id": "2026-07-13T09:05:02Z",
+      "workflowRun": null,
+      "duurSeconden": null,
+      "autopublish": true,
+      "backfill": true,
+      "fout": null,
+      "bronnen": {
+        "gecontroleerd": null,
+        "statusWijzigingen": []
+      },
+      "kanalen": {
+        "website": {
+          "bronnen": []
+        },
+        "facebook": {
+          "bronnen": []
+        },
+        "mail": {
+          "mails": 0,
+          "onbekendeAfzenders": 0,
+          "bronnen": []
+        }
+      },
+      "events": [
+        {
+          "slug": "bewellness-aufguss-challenge-2026-finale-2026-10-02",
+          "kanaal": "website",
+          "bron": "spasense",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "bewellness-aufguss-challenge-finale-2026-10-02",
+          "kanaal": "website",
+          "bron": "spaweesp",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "bewellness-aufguss-challenge-voorronde-bali-therme-2026-07-26",
+          "kanaal": "website",
+          "bron": "spasense",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "bewellness-aufguss-challenge-voorronde-gut-sternholz-2026-07-25",
+          "kanaal": "website",
+          "bron": "spasense",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "bewellness-aufguss-challenge-voorronde-spaweesp-2026-07-18",
+          "kanaal": "website",
+          "bron": "spasense",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "bewellness-aufguss-challenge-voorronde-spawell-2026-07-04",
+          "kanaal": "website",
+          "bron": "spasense",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-07-04 < 2026-07-13"
+        },
+        {
+          "slug": "damesdag-bij-thermen-binnenmaas-2026-07-06",
+          "kanaal": "website",
+          "bron": "thermen-binnenmaas",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-07-06 < 2026-07-13; niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "damesdag-bij-thermen-binnenmaas-2026-08-03",
+          "kanaal": "website",
+          "bron": "thermen-binnenmaas",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "damesdag-bij-thermen-binnenmaas-2026-09-07",
+          "kanaal": "website",
+          "bron": "thermen-binnenmaas",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "damesdag-bij-thermen-binnenmaas-2026-10-05",
+          "kanaal": "website",
+          "bron": "thermen-binnenmaas",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "damesdag-bij-thermen-binnenmaas-2026-11-02",
+          "kanaal": "website",
+          "bron": "thermen-binnenmaas",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "damesdag-bij-thermen-binnenmaas-2026-12-07",
+          "kanaal": "website",
+          "bron": "thermen-binnenmaas",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "gastopgietingen-2026-07-03",
+          "kanaal": "website",
+          "bron": "centre-du-lac",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-07-03 < 2026-07-13"
+        },
+        {
+          "slug": "kwf-dag-2026-10-06",
+          "kanaal": "website",
+          "bron": "vitae-roosendaal",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "opgietdag-2026-02-14",
+          "kanaal": "website",
+          "bron": "vitae-goes",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-02-14 < 2026-07-13"
+        },
+        {
+          "slug": "opgietdag-2026-03-28",
+          "kanaal": "website",
+          "bron": "vitae-goes",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-03-28 < 2026-07-13"
+        },
+        {
+          "slug": "opgietdag-2026-05-09",
+          "kanaal": "website",
+          "bron": "vitae-goes",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-05-09 < 2026-07-13"
+        },
+        {
+          "slug": "opgietdag-2026-06-20",
+          "kanaal": "website",
+          "bron": "vitae-goes",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-06-20 < 2026-07-13"
+        },
+        {
+          "slug": "opgietdag-nieuwjaarsduik-2026-01-03",
+          "kanaal": "website",
+          "bron": "vitae-goes",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-01-03 < 2026-07-13"
+        },
+        {
+          "slug": "opgietritueel-2026-01-24",
+          "kanaal": "website",
+          "bron": "vitae-roosendaal",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-01-24 < 2026-07-13"
+        },
+        {
+          "slug": "opgietritueel-2026-03-07",
+          "kanaal": "website",
+          "bron": "vitae-roosendaal",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-03-07 < 2026-07-13"
+        },
+        {
+          "slug": "opgietritueel-2026-04-18",
+          "kanaal": "website",
+          "bron": "vitae-roosendaal",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-04-18 < 2026-07-13"
+        },
+        {
+          "slug": "opgietritueel-2026-05-30",
+          "kanaal": "website",
+          "bron": "vitae-roosendaal",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-05-30 < 2026-07-13"
+        },
+        {
+          "slug": "opgietritueel-2026-07-11",
+          "kanaal": "website",
+          "bron": "vitae-roosendaal",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-07-11 < 2026-07-13"
+        }
+      ]
+    },
+    {
+      "id": "2026-07-20T20:02:23Z",
+      "workflowRun": null,
+      "duurSeconden": null,
+      "autopublish": true,
+      "backfill": true,
+      "fout": null,
+      "bronnen": {
+        "gecontroleerd": null,
+        "statusWijzigingen": []
+      },
+      "kanalen": {
+        "website": {
+          "bronnen": []
+        },
+        "facebook": {
+          "bronnen": []
+        },
+        "mail": {
+          "mails": 0,
+          "onbekendeAfzenders": 0,
+          "bronnen": []
+        }
+      },
+      "events": [
+        {
+          "slug": "bewellness-aufguss-challenge-voorronde-spaweesp-2026-07-01",
+          "kanaal": "website",
+          "bron": "spaweesp",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-07-01 < 2026-07-20"
+        },
+        {
+          "slug": "bewellness-aufguss-challenge-voorrondes-spasense-2026-06-01",
+          "kanaal": "website",
+          "bron": "spasense",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-06-01 < 2026-07-20"
+        },
+        {
+          "slug": "gastopgietingen-2026-07-03",
+          "kanaal": "website",
+          "bron": "centre-du-lac",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-07-03 < 2026-07-20"
+        },
+        {
+          "slug": "opgietingen-2026-01-03",
+          "kanaal": "website",
+          "bron": "vitae-goes",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-01-03 < 2026-07-20"
+        },
+        {
+          "slug": "opgietingen-2026-01-24",
+          "kanaal": "website",
+          "bron": "vitae-roosendaal",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-01-24 < 2026-07-20"
+        },
+        {
+          "slug": "opgietingen-2026-02-14",
+          "kanaal": "website",
+          "bron": "vitae-goes",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-02-14 < 2026-07-20"
+        },
+        {
+          "slug": "opgietingen-2026-03-07",
+          "kanaal": "website",
+          "bron": "vitae-roosendaal",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-03-07 < 2026-07-20"
+        },
+        {
+          "slug": "opgietingen-2026-03-28",
+          "kanaal": "website",
+          "bron": "vitae-goes",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-03-28 < 2026-07-20"
+        },
+        {
+          "slug": "opgietingen-2026-04-18",
+          "kanaal": "website",
+          "bron": "vitae-roosendaal",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-04-18 < 2026-07-20"
+        },
+        {
+          "slug": "opgietingen-2026-05-09",
+          "kanaal": "website",
+          "bron": "vitae-goes",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-05-09 < 2026-07-20"
+        },
+        {
+          "slug": "opgietingen-2026-05-30",
+          "kanaal": "website",
+          "bron": "vitae-roosendaal",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-05-30 < 2026-07-20"
+        },
+        {
+          "slug": "opgietingen-2026-06-20",
+          "kanaal": "website",
+          "bron": "vitae-goes",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-06-20 < 2026-07-20"
+        },
+        {
+          "slug": "opgietingen-2026-07-11",
+          "kanaal": "website",
+          "bron": "vitae-roosendaal",
+          "status": "concept",
+          "reden": "datum in het verleden: 2026-07-11 < 2026-07-20"
+        }
+      ]
+    },
+    {
+      "id": "2026-07-27T09:50:44Z",
+      "workflowRun": null,
+      "duurSeconden": null,
+      "autopublish": true,
+      "backfill": true,
+      "fout": null,
+      "bronnen": {
+        "gecontroleerd": null,
+        "statusWijzigingen": []
+      },
+      "kanalen": {
+        "website": {
+          "bronnen": []
+        },
+        "facebook": {
+          "bronnen": []
+        },
+        "mail": {
+          "mails": 0,
+          "onbekendeAfzenders": 0,
+          "bronnen": []
+        }
+      },
+      "events": [
+        {
+          "slug": "sane-thermen-herfst-opgietdagen-2026-09-25",
+          "kanaal": "website",
+          "bron": "sane-thermen",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "sane-thermen-vier-seizoenen-opgietdagen-2026-12-04",
+          "kanaal": "website",
+          "bron": "sane-thermen",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "sane-thermen-winter-barbecue-2026-12-24",
+          "kanaal": "website",
+          "bron": "sane-thermen",
+          "status": "concept",
+          "reden": "poort ok, maar opgiet-trefwoord staat alleen in de beschrijving, niet in de titel — handmatig beoordelen en publiceren"
+        },
+        {
+          "slug": "sauna-zwaluwhoeve-aufguss-challenge-finale-2026-10-02",
+          "kanaal": "website",
+          "bron": "sauna-zwaluwhoeve",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "spa-wellness-venlo-opgiet-weekend-the-changing-of-the-seasons-opgietmarathon-2026-11-29",
+          "kanaal": "website",
+          "bron": "spa-wellness-venlo",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "spawell-aufguss-challenge-finale-2026-10-02",
+          "kanaal": "website",
+          "bron": "spawell",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "thermae-grimbergen-beauty-massage-deal-2026-07-30",
+          "kanaal": "website",
+          "bron": "thermae-grimbergen",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "thermen-barendrecht-aufguss-challenge-finale-2026-10-02",
+          "kanaal": "website",
+          "bron": "thermen-barendrecht",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "thermen-barendrecht-meditatieweekend-2026-10-10",
+          "kanaal": "website",
+          "bron": "thermen-barendrecht",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "thermen-holiday-aufguss-challenge-finale-2026-10-02",
+          "kanaal": "website",
+          "bron": "thermen-holiday",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "vitae-goes-opgietdag-2027-02-14",
+          "kanaal": "website",
+          "bron": "vitae-goes",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "vitae-goes-opgietdag-2027-03-28",
+          "kanaal": "website",
+          "bron": "vitae-goes",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "vitae-goes-opgietdag-2027-05-09",
+          "kanaal": "website",
+          "bron": "vitae-goes",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "vitae-goes-opgietdag-2027-06-20",
+          "kanaal": "website",
+          "bron": "vitae-goes",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "vitae-goes-opgietdag-met-nieuwjaarsduik-2027-01-03",
+          "kanaal": "website",
+          "bron": "vitae-goes",
+          "status": "gepubliceerd"
+        }
+      ]
+    },
+    {
+      "id": "2026-08-03T09:43:43Z",
+      "workflowRun": null,
+      "duurSeconden": null,
+      "autopublish": true,
+      "backfill": true,
+      "fout": null,
+      "bronnen": {
+        "gecontroleerd": null,
+        "statusWijzigingen": []
+      },
+      "kanalen": {
+        "website": {
+          "bronnen": []
+        },
+        "facebook": {
+          "bronnen": []
+        },
+        "mail": {
+          "mails": 0,
+          "onbekendeAfzenders": 0,
+          "bronnen": []
+        }
+      },
+      "events": [
+        {
+          "slug": "sane-thermen-finse-weken-2026-10-23",
+          "kanaal": "website",
+          "bron": "sane-thermen",
+          "status": "concept",
+          "reden": "poort ok, maar opgiet-trefwoord staat alleen in de beschrijving, niet in de titel — handmatig beoordelen en publiceren"
+        },
+        {
+          "slug": "sauna-swoll-klankschaal-opgiet-2026-08-21",
+          "kanaal": "website",
+          "bron": "sauna-swoll",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "sauna-swoll-rockgiet-2026-08-07",
+          "kanaal": "website",
+          "bron": "sauna-swoll",
+          "status": "concept",
+          "reden": "poort ok, maar opgiet-trefwoord staat alleen in de beschrijving, niet in de titel — handmatig beoordelen en publiceren"
+        },
+        {
+          "slug": "thermae-grimbergen-beauty-massage-deal-2026-08-07",
+          "kanaal": "website",
+          "bron": "thermae-grimbergen",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        }
+      ]
+    },
+    {
+      "id": "2026-08-10T07:29:32Z",
+      "workflowRun": null,
+      "duurSeconden": null,
+      "autopublish": true,
+      "backfill": true,
+      "fout": null,
+      "bronnen": {
+        "gecontroleerd": null,
+        "statusWijzigingen": []
+      },
+      "kanalen": {
+        "website": {
+          "bronnen": []
+        },
+        "facebook": {
+          "bronnen": []
+        },
+        "mail": {
+          "mails": 0,
+          "onbekendeAfzenders": 0,
+          "bronnen": []
+        }
+      },
+      "events": [
+        {
+          "slug": "centre-du-lac-extra-opgieting-vrijdagochtend-met-miek-2026-08-14",
+          "kanaal": "website",
+          "bron": "centre-du-lac",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "centre-du-lac-gastopgieting-2026-08-21",
+          "kanaal": "website",
+          "bron": "centre-du-lac",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "centre-du-lac-gastopgieting-2026-08-28",
+          "kanaal": "website",
+          "bron": "centre-du-lac",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "spaweesp-meditatieweekend-2026-09-26",
+          "kanaal": "website",
+          "bron": "spaweesp",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "thermen-la-mer-opgietweekend-2026-09-03",
+          "kanaal": "website",
+          "bron": "thermen-la-mer",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "thermen-la-mer-thema-opgieting-2026-08-11",
+          "kanaal": "website",
+          "bron": "thermen-la-mer",
+          "status": "gepubliceerd"
+        }
+      ]
+    },
+    {
+      "id": "2026-08-17T06:51:50Z",
+      "workflowRun": null,
+      "duurSeconden": null,
+      "autopublish": true,
+      "backfill": true,
+      "fout": null,
+      "bronnen": {
+        "gecontroleerd": null,
+        "statusWijzigingen": []
+      },
+      "kanalen": {
+        "website": {
+          "bronnen": []
+        },
+        "facebook": {
+          "bronnen": []
+        },
+        "mail": {
+          "mails": 0,
+          "onbekendeAfzenders": 0,
+          "bronnen": []
+        }
+      },
+      "events": [
+        {
+          "slug": "centre-du-lac-gastopgieting-black-friday-2026-11-27",
+          "kanaal": "website",
+          "bron": "centre-du-lac",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "centre-du-lac-gastopgieting-carnaval-2026-11-11",
+          "kanaal": "website",
+          "bron": "centre-du-lac",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "centre-du-lac-gastopgieting-donkere-dagen-2026-11-19",
+          "kanaal": "website",
+          "bron": "centre-du-lac",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "centre-du-lac-gastopgieting-herfstvakantie-2026-10-20",
+          "kanaal": "website",
+          "bron": "centre-du-lac",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "centre-du-lac-gastopgieting-hygge-2026-12-09",
+          "kanaal": "website",
+          "bron": "centre-du-lac",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "centre-du-lac-gastopgieting-kerstfilms-2026-12-21",
+          "kanaal": "website",
+          "bron": "centre-du-lac",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "centre-du-lac-gastopgieting-kerstvakantie-2026-12-17",
+          "kanaal": "website",
+          "bron": "centre-du-lac",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "centre-du-lac-gastopgieting-oktoberfest-2026-10-04",
+          "kanaal": "website",
+          "bron": "centre-du-lac",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "centre-du-lac-gastopgieting-terug-in-de-tijd-2026-10-30",
+          "kanaal": "website",
+          "bron": "centre-du-lac",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "centre-du-lac-thema-opgietdag-griekenland-2026-09-04",
+          "kanaal": "website",
+          "bron": "centre-du-lac",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "lago-opgietsessie-2026-08-26",
+          "kanaal": "website",
+          "bron": "lago",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "sauna-elysium-opgietweekend-movies-and-musicals-2026-09-12",
+          "kanaal": "website",
+          "bron": "sauna-elysium",
+          "status": "gepubliceerd"
+        }
+      ]
+    },
+    {
+      "id": "2026-08-24T06:53:47Z",
+      "workflowRun": null,
+      "duurSeconden": null,
+      "autopublish": true,
+      "backfill": true,
+      "fout": null,
+      "bronnen": {
+        "gecontroleerd": null,
+        "statusWijzigingen": []
+      },
+      "kanalen": {
+        "website": {
+          "bronnen": []
+        },
+        "facebook": {
+          "bronnen": []
+        },
+        "mail": {
+          "mails": 0,
+          "onbekendeAfzenders": 0,
+          "bronnen": []
+        }
+      },
+      "events": [
+        {
+          "slug": "thermen-bad-nieuweschans-opgietweekend-2026-10-23",
+          "kanaal": "website",
+          "bron": "thermen-bad-nieuweschans",
+          "status": "gepubliceerd"
+        }
+      ]
+    },
+    {
+      "id": "2026-08-27T19:33:12Z",
+      "workflowRun": null,
+      "duurSeconden": null,
+      "autopublish": true,
+      "backfill": true,
+      "fout": null,
+      "bronnen": {
+        "gecontroleerd": null,
+        "statusWijzigingen": []
+      },
+      "kanalen": {
+        "website": {
+          "bronnen": []
+        },
+        "facebook": {
+          "bronnen": []
+        },
+        "mail": {
+          "mails": 0,
+          "onbekendeAfzenders": 0,
+          "bronnen": []
+        }
+      },
+      "events": [
+        {
+          "slug": "asanti-nationale-saunaweek-asanti-2026-09-14",
+          "kanaal": "facebook",
+          "bron": "asanti",
+          "status": "concept",
+          "reden": "opgiet-trefwoord staat niet in de titel, hooguit in de beschrijving — handmatig beoordelen en publiceren"
+        },
+        {
+          "slug": "elaisa-wellness-ode-to-japan-7-jaar-elaisa-2026-09-05",
+          "kanaal": "facebook",
+          "bron": "elaisa-wellness",
+          "status": "concept",
+          "reden": "opgiet-trefwoord staat niet in de titel, hooguit in de beschrijving — handmatig beoordelen en publiceren"
+        },
+        {
+          "slug": "elaisa-wellness-the-ceremonies-of-elaisa-schorpioenmaan-temazcal-2026-08-28",
+          "kanaal": "facebook",
+          "bron": "elaisa-wellness",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "leeuwerikhoeve-26e-verjaarsdagactie-sauna-voor-26-2026-08-31",
+          "kanaal": "facebook",
+          "bron": "leeuwerikhoeve",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "leeuwerikhoeve-day-retreat-2026-09-15",
+          "kanaal": "facebook",
+          "bron": "leeuwerikhoeve",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "sauna-drome-familiedag-2026-08-27",
+          "kanaal": "facebook",
+          "bron": "sauna-drome",
+          "status": "concept",
+          "reden": "opgiet-trefwoord staat niet in de titel, hooguit in de beschrijving — handmatig beoordelen en publiceren"
+        },
+        {
+          "slug": "sauna-drome-opgiethmarathon-herfst-2026-09-26",
+          "kanaal": "facebook",
+          "bron": "sauna-drome",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "sauna-drome-volle-maan-beleving-2026-08-28",
+          "kanaal": "facebook",
+          "bron": "sauna-drome",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "sauna-flevo-natuur-natupop-2027-2027-07-24",
+          "kanaal": "facebook",
+          "bron": "sauna-flevo-natuur",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "sauna-flevo-natuur-natupop-2027-verblijfsweekend-2027-07-23",
+          "kanaal": "facebook",
+          "bron": "sauna-flevo-natuur",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "sauna-zuidwolde-opgietdag-2026-09-26",
+          "kanaal": "facebook",
+          "bron": "sauna-zuidwolde",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "thermae-boetfort-nationale-saunaweek-2026-09-14",
+          "kanaal": "facebook",
+          "bron": "thermae-boetfort",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "thermen-binnenmaas-opgietweekend-2026-09-26",
+          "kanaal": "facebook",
+          "bron": "thermen-binnenmaas",
+          "status": "gepubliceerd"
+        },
+        {
+          "slug": "thermen-dilbeek-super-saturday-2026-08-29",
+          "kanaal": "facebook",
+          "bron": "thermen-dilbeek",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "thermen-goirle-feestweek-35-jarig-bestaan-2026-08-31",
+          "kanaal": "facebook",
+          "bron": "thermen-goirle",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "thermen-holiday-videoshoot-thermen-holiday-2026-09-02",
+          "kanaal": "facebook",
+          "bron": "thermen-holiday",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        },
+        {
+          "slug": "thermen-londerzeel-super-sunday-2-2026-08-30",
+          "kanaal": "facebook",
+          "bron": "thermen-londerzeel",
+          "status": "concept",
+          "reden": "opgiet-trefwoord staat niet in de titel, hooguit in de beschrijving — handmatig beoordelen en publiceren"
+        },
+        {
+          "slug": "waer-waters-one-day-every-zone-in-swimwear-2026-10-23",
+          "kanaal": "facebook",
+          "bron": "waer-waters",
+          "status": "concept",
+          "reden": "niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)"
+        }
+      ]
+    }
+  ]
+}
