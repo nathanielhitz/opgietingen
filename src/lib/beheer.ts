@@ -9,3 +9,17 @@ export function beheerBeschikbaar(
 ): boolean {
   return env.NODE_ENV !== "production" || Boolean(env.NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG);
 }
+
+/**
+ * URL van een Keystatic-pagina. In GitHub-mode zitten alle routes onder
+ * `/keystatic/branch/<branch>/…`; in local-mode direct onder `/keystatic/…`.
+ * Zonder dit onderscheid geeft een link vanuit /beheer in productie "Not found".
+ */
+export function keystaticUrl(
+  pad: string,
+  env: { NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG?: string } = process.env,
+  branch = "main",
+): string {
+  const basis = env.NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG ? `/keystatic/branch/${branch}` : "/keystatic";
+  return `${basis}/${pad.replace(/^\/+/, "")}`;
+}

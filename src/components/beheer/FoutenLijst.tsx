@@ -1,4 +1,5 @@
 import { KANAAL_LABEL, type BronStatusWijziging, type Kanaal } from "@/lib/scrape-runs";
+import { keystaticUrl } from "@/lib/beheer";
 
 export interface FoutRij {
   bronId: string;
@@ -42,7 +43,7 @@ export function FoutenLijst({ rijen }: { rijen: FoutRij[] }) {
               <span className="font-medium text-ink">{r.bronNaam}</span>
               <span className="text-ink-soft">{r.melding}</span>
               {/* Gewone <a>: /keystatic is een client-SPA achter een catch-all; een volledige paginalaad is daar het veiligst. */}
-              <a className="ml-auto font-medium text-ember underline underline-offset-2" href="/keystatic/singleton/bronnen">
+              <a className="ml-auto font-medium text-ember underline underline-offset-2" href={keystaticUrl("singleton/bronnen")}>
                 Bron
               </a>
             </li>
