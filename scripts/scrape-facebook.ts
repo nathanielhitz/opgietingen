@@ -137,6 +137,7 @@ async function main() {
       for (const w of fetched.warnings) console.log(`  · ${w}`);
       if (fetched.warnings.length) {
         rapportWarnings.push({ bron: bron.naam, melding: fetched.warnings.join(" | ") });
+        teller.fout = fetched.warnings.join(" | ");
       }
       if (fetched.posts.length > 0) {
         try {

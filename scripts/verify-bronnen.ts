@@ -264,8 +264,8 @@ async function main() {
     await sleep(REQUEST_DELAY_MS);
   }
 
-  metrics.verify({ gecontroleerd: todo.length });
   writeBronnen(data);
+  metrics.verify({ gecontroleerd: todo.length });
   const count = (s: string) => data.bronnen.filter((b) => b.status === s).length;
   console.log(
     `\nKlaar. actief: ${count("actief")}, geen-agenda: ${count("geen-agenda")}, ` +

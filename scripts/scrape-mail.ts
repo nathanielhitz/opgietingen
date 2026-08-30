@@ -202,7 +202,7 @@ async function main() {
     console.log(`  Extractie: ${outcome.method}, ${outcome.events.length} kandidaat-event(s).`);
     teller.methode = naarMethode(outcome.method);
     teller.kandidaten = outcome.events.length;
-    if (outcome.method === "none") teller.fout = "extractie faalde";
+    if (outcome.method === "none") teller.fout = `extractie faalde (${outcome.warnings.join(" | ") || "geen details"})`;
 
     for (const ev of outcome.events) {
       const key = dedupKey(saunaSlug, ev.startDatum);
@@ -258,6 +258,7 @@ async function main() {
       if (mdxPad) {
         seen.add(key);
         written++;
+        // Mail kent geen verleden-tak: een verleden kandidaat wordt hier als concept + afgekeurd weggeschreven.
         teller.concept++; // mail publiceert nooit automatisch
         if (!verdict.passed) teller.afgekeurd++;
         metrics.event({
