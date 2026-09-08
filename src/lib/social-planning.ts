@@ -1,5 +1,7 @@
 import type { OpgietEvent } from "@/lib/content";
-import { bouwPosts, KANALEN, type Kanaal, type PlanningEvent, type Rubriek } from "@/lib/social";
+import { isGeldigeIsoDatum } from "@/lib/dates";
+import { site } from "@/lib/site";
+import { bouwPosts, type Kanaal, type PlanningEvent, type Rubriek } from "@/lib/social";
 import { bouwCaption } from "@/lib/social-captions";
 
 /*
@@ -50,7 +52,39 @@ export function bouwPlanning(events: OpgietEvent[], datum: string, basis: string
       feed: `${oorsprong}${s.pad}?formaat=feed`,
       story: `${oorsprong}${s.pad}?formaat=story`,
     })),
-    captions: Object.fromEntries(KANALEN.map((k) => [k, bouwCaption(post, k)])) as Record<Kanaal, string>,
+    captions: {
+      instagram: bouwCaption(post, "instagram"),
+      facebook: bouwCaption(post, "facebook"),
+      tiktok: bouwCaption(post, "tiktok"),
+    },
   }));
   return { datum, basis: oorsprong, posts };
+}
+
+export interface PlanningAntwoord {
+  status: 200 | 400;
+  body: PlanningJson | { fout: string };
+  headers: Record<string, string>;
+}
+
+/**
+ * Routegedrag van /social/planning als pure functie. `basis`: in productie
+ * altijd `site.url` (captions gebruiken die ook; een preview- of interne
+ * host mag nooit in het contract lekken), anders de oorsprong van het request
+ * zodat lokaal en op previews de beelden van diezelfde host komen.
+ */
+export function planningAntwoord(opties: {
+  datumParam: string | null;
+  origin: string;
+  events: OpgietEvent[];
+  vandaag: string;
+  vercelEnv?: string;
+}): PlanningAntwoord {
+  const datum = opties.datumParam ?? opties.vandaag;
+  const headers = { "X-Robots-Tag": "noindex", "Cache-Control": "no-store" };
+  if (!isGeldigeIsoDatum(datum)) {
+    return { status: 400, body: { fout: `Ongeldige datum "${datum}", verwacht YYYY-MM-DD` }, headers };
+  }
+  const basis = opties.vercelEnv === "production" ? site.url : opties.origin;
+  return { status: 200, body: bouwPlanning(opties.events, datum, basis), headers };
 }
