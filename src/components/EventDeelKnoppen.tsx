@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { track } from "@vercel/analytics";
 import { utmUrl } from "@/lib/utm";
 
@@ -13,10 +13,13 @@ import { utmUrl } from "@/lib/utm";
 export function EventDeelKnoppen({ slug, titel, url }: { slug: string; titel: string; url: string }) {
   const [kanNative, setKanNative] = useState(false);
   const [gekopieerd, setGekopieerd] = useState(false);
+  const timer = useRef<number | undefined>(undefined);
 
   useEffect(() => {
-    setKanNative(typeof navigator !== "undefined" && typeof navigator.share === "function");
+    setKanNative(typeof navigator.share === "function");
   }, []);
+
+  useEffect(() => () => window.clearTimeout(timer.current), []);
 
   const deelUrl = (source: string) => utmUrl(url, { source, medium: "deel", campaign: `event-${slug}` });
   const whatsapp = `https://wa.me/?text=${encodeURIComponent(`${titel} ${deelUrl("whatsapp")}`)}`;
@@ -24,9 +27,10 @@ export function EventDeelKnoppen({ slug, titel, url }: { slug: string; titel: st
   async function kopieer() {
     try {
       await navigator.clipboard.writeText(deelUrl("link"));
+      window.clearTimeout(timer.current);
       setGekopieerd(true);
       track("deel", { kanaal: "link", slug });
-      setTimeout(() => setGekopieerd(false), 2000);
+      timer.current = window.setTimeout(() => setGekopieerd(false), 2000);
     } catch {
       // Klembord geweigerd: knop blijft staan, geen foutmelding nodig.
     }
@@ -42,17 +46,20 @@ export function EventDeelKnoppen({ slug, titel, url }: { slug: string; titel: st
   }
 
   const knop =
-    "flex min-h-11 flex-1 items-center justify-center rounded-lg border border-sand bg-surface px-3 text-sm font-medium text-ink-soft transition-colors hover:border-ember hover:text-ember";
+    "flex min-h-11 basis-[calc(50%-0.25rem)] items-center justify-center whitespace-nowrap rounded-lg border border-sand bg-surface px-3 text-sm font-medium text-ink-soft transition-colors hover:border-ember hover:text-ember";
 
   return (
     <div className="mt-4">
       <p className="text-xs font-semibold uppercase tracking-wider text-ink-faint">Deel dit event</p>
-      <div className="mt-2 flex gap-2">
+      <div className="mt-2 flex flex-wrap gap-2">
         <a href={whatsapp} target="_blank" rel="noopener" className={knop} onClick={() => track("deel", { kanaal: "whatsapp", slug })}>
           WhatsApp
         </a>
         <button type="button" onClick={kopieer} className={knop}>
-          {gekopieerd ? "Gekopieerd" : "Link kopiëren"}
+          Link kopiëren
+          <span role="status" aria-live="polite" className="sr-only">
+            {gekopieerd ? "Link gekopieerd" : ""}
+          </span>
         </button>
         {kanNative && (
           <button type="button" onClick={deel} className={knop}>
@@ -60,6 +67,11 @@ export function EventDeelKnoppen({ slug, titel, url }: { slug: string; titel: st
           </button>
         )}
       </div>
+      {gekopieerd && (
+        <p className="mt-2 text-xs text-ink-faint" aria-hidden="true">
+          Link gekopieerd.
+        </p>
+      )}
     </div>
   );
 }
