@@ -158,6 +158,11 @@ export default config({
           ],
           defaultValue: "concept",
         }),
+        gepubliceerdOp: fields.date({
+          label: "Gepubliceerd op",
+          description:
+            "Wordt door de scraper gezet bij autopublicatie. Vul in bij handmatig publiceren: voedt de rubriek 'Nieuw in de agenda' van de social-kit.",
+        }),
         bron: fields.select({
           label: "Bron",
           options: [
@@ -205,6 +210,14 @@ export default config({
           itemLabel: (props) => props.value,
         }),
         website: fields.url({ label: "Website" }),
+        instagram: fields.text({
+          label: "Instagram-handle",
+          description:
+            "Zonder @. Alleen als het op de eigen website van de sauna staat. Gebruikt om de sauna te taggen in onze social-posts en in de structured data.",
+          validation: {
+            pattern: { regex: /^([A-Za-z0-9._]{1,30})?$/, message: "Alleen letters, cijfers, punt en underscore (max. 30)." },
+          },
+        }),
         affiliateUrl: fields.url({
           label: "Affiliate-URL",
           description: "Doel van /uit/<slug>. Nooit direct vanaf de site linken.",

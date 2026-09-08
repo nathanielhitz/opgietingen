@@ -43,6 +43,8 @@ export interface Sauna {
   lng: number;
   faciliteiten: string[];
   website?: string;
+  /** Instagram-handle zonder @, alleen als die op de eigen website van de sauna staat (tagging in social-posts, sameAs). */
+  instagram?: string;
   affiliateUrl: string;
   sponsored: boolean;
   afbeelding?: string;
@@ -73,6 +75,8 @@ export interface OpgietEvent {
   ticketUrl?: string;
   afbeelding?: string;
   status: EventStatus;
+  /** Datum waarop het event op de site kwam; voedt "Nieuw in de agenda" (social-kit). */
+  gepubliceerdOp?: string;
   /** Rauwe MDX-body (beschrijving/programma). */
   body: string;
   /** Gejoinde sauna. */
@@ -192,6 +196,7 @@ export const getAllSaunas = cache((): Sauna[] => {
       lng: Number(data.lng),
       faciliteiten: (data.faciliteiten as string[]) ?? [],
       website: data.website as string | undefined,
+      instagram: data.instagram as string | undefined,
       affiliateUrl: data.affiliateUrl as string,
       sponsored: Boolean(data.sponsored),
       afbeelding: data.afbeelding as string | undefined,
@@ -236,6 +241,7 @@ export const getAllEvents = cache((): OpgietEvent[] => {
         // op de foto van de sauna, zodat kaarten nooit zonder beeld staan.
         afbeelding: (data.afbeelding as string | undefined) ?? sauna.afbeelding,
         status: (data.status as EventStatus) ?? "gepubliceerd",
+        gepubliceerdOp: toISODate(data.gepubliceerdOp),
         body,
         sauna,
       };

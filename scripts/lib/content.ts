@@ -3,6 +3,7 @@ import path from "node:path";
 import matter from "gray-matter";
 import { OPGIET_RE } from "./quality-gate";
 import { normalizeProseDashes, normalizeRangeDashes } from "../../src/lib/text";
+import { todayISOInTimeZone } from "../../src/lib/dates";
 
 /*
   Content-helpers voor de scraper: bronnen lezen/schrijven, bestaande events
@@ -479,7 +480,11 @@ export function escapeMdxText(text: string): string {
  * de doelmap (dry-runs schrijven naar een tijdelijke map zodat mock-events
  * nooit per ongeluk in content/events/ belanden en gecommit worden).
  */
-export function writeEventMdx(ev: NewEvent, dir: string = EVENTS_DIR): string | null {
+export function writeEventMdx(
+  ev: NewEvent,
+  dir: string = EVENTS_DIR,
+  vandaag: string = todayISOInTimeZone(),
+): string | null {
   fs.mkdirSync(dir, { recursive: true });
   const slug = eventSlug(ev);
   const filePath = path.join(dir, `${slug}.mdx`);
@@ -500,6 +505,10 @@ export function writeEventMdx(ev: NewEvent, dir: string = EVENTS_DIR): string | 
     ...(ev.prijsIndicatie ? { prijsIndicatie: normalizeRangeDashes(ev.prijsIndicatie) } : {}),
     ...(ev.ticketUrl ? { ticketUrl: ev.ticketUrl } : {}),
     status: ev.status,
+    // Voedt de rubriek "Nieuw in de agenda" van de social-kit. Alleen bij
+    // autopublicatie; een concept krijgt de datum pas als iemand het in
+    // Keystatic publiceert en het veld invult.
+    ...(ev.status === "gepubliceerd" ? { gepubliceerdOp: vandaag } : {}),
     bron: "scraper",
     ...(ev.keurNotitie ? { keurNotitie: ev.keurNotitie } : {}),
   };
