@@ -19,6 +19,8 @@ test("isoWeek: jaargrens volgt ISO 8601 (2026 heeft 53 weken)", () => {
   assert.equal(isoWeek("2026-01-01"), "2026-W01");
   assert.equal(isoWeek("2027-01-01"), "2026-W53");
   assert.equal(isoWeek("2027-01-04"), "2027-W01");
+  assert.equal(isoWeek("2024-12-30"), "2025-W01");
+  assert.equal(isoWeek("2023-01-01"), "2022-W52");
 });
 
 test("weekendVanIsoWeek: vrijdag t/m zondag van de week", () => {
@@ -54,4 +56,6 @@ test("isGeldigeIsoDatum: vorm én kalender", () => {
   assert.equal(isGeldigeIsoDatum("2026-13-01"), false);
   assert.equal(isGeldigeIsoDatum("2026-02-30"), false);
   assert.equal(isGeldigeIsoDatum("11-09-2026"), false);
+  assert.equal(isGeldigeIsoDatum("2028-02-29"), true);
+  assert.equal(isGeldigeIsoDatum("2027-02-29"), false);
 });

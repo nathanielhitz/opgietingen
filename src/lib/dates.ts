@@ -184,13 +184,12 @@ export function eersteVanMaandIn(iso: string, dagen: number): string | undefined
 
 /** Korte dagweergave zonder jaar, voor captions: "vr 11 sep". */
 export function formatDagKort(iso: string): string {
-  return new Intl.DateTimeFormat("nl-NL", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" })
-    .format(parseISO(iso))
+  return formatDate(iso, { weekday: "short", day: "numeric", month: "short" })
     .replace(/\./g, "")
-    .replace(/[\s  ]+/g, " ");
+    .replace(/\s+/g, " ");
 }
 
 /** Geldige kalenderdatum in de vorm YYYY-MM-DD (geen 2026-02-30). */
-export function isGeldigeIsoDatum(s: string): boolean {
-  return /^\d{4}-\d{2}-\d{2}$/.test(s) && addDaysISO(s, 0) === s;
+export function isGeldigeIsoDatum(iso: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(iso) && addDaysISO(iso, 0) === iso;
 }
