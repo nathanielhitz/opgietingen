@@ -136,3 +136,61 @@ export function weekendRange(ref: string): { van: string; tot: string } {
 export function currentMonthSlug(ref: string = todayISO()): string {
   return monthYearSlug(ref);
 }
+
+/* ---------- Weken en weekdagen (social-kit) ---------- */
+
+/** ISO 8601-weeknummer: "2026-09-11" -> "2026-W37" (maandag als weekstart, jaargrens conform ISO). */
+export function isoWeek(iso: string): string {
+  const d = parseISO(iso);
+  const dag = d.getUTCDay() || 7; // ma = 1 … zo = 7
+  d.setUTCDate(d.getUTCDate() + 4 - dag); // de donderdag van deze week bepaalt het ISO-jaar
+  const jaarStart = Date.UTC(d.getUTCFullYear(), 0, 1);
+  const week = Math.ceil(((d.getTime() - jaarStart) / 86_400_000 + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
+}
+
+/** Vrijdag t/m zondag van een ISO-week ("2026-W37" -> 2026-09-11 … 2026-09-13); null bij een ongeldige week. */
+export function weekendVanIsoWeek(week: string): { van: string; tot: string } | null {
+  const m = week.match(/^(\d{4})-W(\d{2})$/);
+  if (!m) return null;
+  const jaar = Number(m[1]);
+  const nr = Number(m[2]);
+  if (nr < 1 || nr > 53) return null;
+  // 4 januari ligt altijd in ISO-week 1.
+  const vierJan = new Date(Date.UTC(jaar, 0, 4));
+  const maandagW1 = new Date(vierJan);
+  maandagW1.setUTCDate(vierJan.getUTCDate() - ((vierJan.getUTCDay() || 7) - 1));
+  const vrijdag = new Date(maandagW1);
+  vrijdag.setUTCDate(maandagW1.getUTCDate() + (nr - 1) * 7 + 4);
+  const van = vrijdag.toISOString().slice(0, 10);
+  if (isoWeek(van) !== week) return null; // week 53 bestaat niet elk jaar
+  return { van, tot: addDaysISO(van, 2) };
+}
+
+/** Eerstvolgende datum met weekdag `dag` (0 = zo … 6 = za); `iso` zelf als die al die weekdag heeft. */
+export function volgendeWeekdag(iso: string, dag: number): string {
+  const huidige = parseISO(iso).getUTCDay();
+  return addDaysISO(iso, (dag - huidige + 7) % 7);
+}
+
+/** De eerste dag van een maand binnen [iso, iso + dagen], of undefined. */
+export function eersteVanMaandIn(iso: string, dagen: number): string | undefined {
+  for (let i = 0; i <= dagen; i++) {
+    const d = addDaysISO(iso, i);
+    if (d.endsWith("-01")) return d;
+  }
+  return undefined;
+}
+
+/** Korte dagweergave zonder jaar, voor captions: "vr 11 sep". */
+export function formatDagKort(iso: string): string {
+  return new Intl.DateTimeFormat("nl-NL", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" })
+    .format(parseISO(iso))
+    .replace(/\./g, "")
+    .replace(/[\s  ]+/g, " ");
+}
+
+/** Geldige kalenderdatum in de vorm YYYY-MM-DD (geen 2026-02-30). */
+export function isGeldigeIsoDatum(s: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(s) && addDaysISO(s, 0) === s;
+}
