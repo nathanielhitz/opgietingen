@@ -12,6 +12,7 @@ import { CoverImage } from "@/components/CoverImage";
 import { Mdx } from "@/components/Mdx";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { AffiliateButton } from "@/components/AffiliateButton";
+import { EventDeelKnoppen } from "@/components/EventDeelKnoppen";
 import { InfoRow } from "@/components/InfoRow";
 import { RelatedEvents } from "@/components/RelatedEvents";
 
@@ -198,6 +199,7 @@ export default async function EventPage({
                   <p className="mt-2 text-center text-xs text-ink-faint">
                     Programma en tijden kunnen wijzigen. Controleer de actuele informatie op de website van de sauna.
                   </p>
+                  <EventDeelKnoppen slug={event.slug} titel={event.titel} url={absoluteUrl(`/event/${event.slug}`)} />
                 </>
               )}
             </div>
