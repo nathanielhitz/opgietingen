@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { bouwPosts } from "../../src/lib/social";
-import { bouwCaption, hashtags, LIMIET } from "../../src/lib/social-captions";
+import { bouwCaption, doelPad, hashtags, LIMIET } from "../../src/lib/social-captions";
 import { maakEvent, sauna } from "./social-fixtures";
 
 const DATUM = "2026-09-11";
@@ -20,7 +20,7 @@ const weekend = bouwPosts(events, DATUM).find((p) => p.rubriek === "weekend")!;
 
 test("instagram: opening, eventregels met @handle waar bekend, link-in-bio, hashtags", () => {
   const c = bouwCaption(weekend, "instagram");
-  assert.match(c, /^Dit weekend staan er 2 opgietingen|^Zin in een opgieting dit weekend|^Weekendplanning: 2 opgietingen/);
+  assert.match(c, /^Dit weekend op de agenda: 2 opgietingen|^Zin in een opgieting dit weekend|^Weekendplanning: 2 opgietingen/);
   assert.match(c, /📅 vr 11 sep · Vuur & Kruiden · Thermen Bussloo, Voorst @thermenbussloo/);
   assert.match(c, /📅 za 12 sep t\/m zo 13 sep · Opgietweekend Herfstgloed · Zwaluwhoeve, Hierden\n/);
   assert.ok(!c.includes("Zwaluwhoeve, Hierden @"), "geen @ zonder handle");
@@ -49,7 +49,7 @@ test("uitgelicht: detailregels met tijden en prijs, facebook linkt naar het even
   const ig = bouwCaption(post, "instagram");
   assert.match(ig, /Tijden: 10:00–22:00/);
   assert.match(ig, /Prijs: Vanaf € 49,50/);
-  assert.ok(!/Over 1 weken/.test(ig), "enkelvoud: 1 week");
+  assert.match(ig, /^Over 1 week: /);
   const fb = bouwCaption(post, "facebook");
   assert.match(fb, /https:\/\/opgietingen\.nl\/event\/u\?utm_source=facebook&utm_medium=social&utm_campaign=uitgelicht-u/);
 });
@@ -61,7 +61,7 @@ test("limiet: te lange caption laat eventregels weg met een teller, hashtags bli
   const post = bouwPosts(veel, DATUM).find((p) => p.rubriek === "weekend")!;
   const c = bouwCaption(post, "instagram");
   assert.ok(c.length <= LIMIET.instagram, `${c.length}`);
-  assert.match(c, /…en \d+ meer op opgietingen\.nl/);
+  assert.match(c, /Nog \d+ meer op opgietingen\.nl/);
   assert.match(c, /#opgieting/);
 });
 
@@ -73,4 +73,45 @@ test("hashtags: maximaal 12 op Instagram, plaatsnamen zonder streepjes", () => {
   const tags = hashtags(post, "instagram");
   assert.ok(tags.length <= 12);
   assert.ok(tags.includes("sintmichielsgestel"));
+});
+
+test("rotatie: captionopening varieert per plaatsingsweek", () => {
+  const eersteRegels = ["2026-09-11", "2026-09-18", "2026-09-25"].map(
+    (plaatsingsdag) => bouwCaption({ ...weekend, plaatsingsdag }, "instagram").split("\n")[0],
+  );
+  assert.equal(new Set(eersteRegels).size, 3, "drie verschillende openingen");
+  for (const regel of eersteRegels) {
+    assert.match(
+      regel,
+      /^Dit weekend op de agenda: 2 opgietingen\.$|^Zin in een opgieting dit weekend\?|^Weekendplanning: 2 opgietingen/,
+    );
+  }
+});
+
+test("spreiding: provincies altijd noord->zuid, ongeacht event-volgorde", () => {
+  const post = {
+    ...weekend,
+    plaatsingsdag: "2026-09-18", // week 38: variant 2 ("Weekendplanning")
+    events: [
+      { slug: "l", titel: "Event l", type: "thema" as const, startDatum: "2026-09-12", sauna: "Sauna Zuid", plaats: "Maastricht", provincie: "Limburg" },
+      { slug: "g", titel: "Event g", type: "thema" as const, startDatum: "2026-09-12", sauna: "Sauna Noord", plaats: "Groningen", provincie: "Groningen" },
+    ],
+  };
+  const c = bouwCaption(post, "instagram");
+  assert.match(c, /^Weekendplanning: 2 opgietingen, van Groningen tot Limburg\.\n/);
+});
+
+test("doelPad: maand wijst naar de maandpagina, nieuw naar de agenda", () => {
+  const datum = "2026-09-25";
+  const posts = bouwPosts(
+    [
+      maakEvent({ slug: "okt", startDatum: "2026-10-05" }),
+      maakEvent({ slug: "nw", startDatum: "2026-09-30", gepubliceerdOp: datum }),
+    ],
+    datum,
+  );
+  const maandPost = posts.find((p) => p.rubriek === "maand")!;
+  assert.equal(doelPad(maandPost), "/agenda/oktober-2026");
+  const nieuwPost = posts.find((p) => p.rubriek === "nieuw")!;
+  assert.equal(doelPad(nieuwPost), "/agenda");
 });
