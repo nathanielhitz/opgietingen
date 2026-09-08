@@ -9,8 +9,29 @@ export const site = {
   description:
     "Ontdek waar en wanneer er opgietingen (Aufguss), opgietweekenden en thema-events zijn in sauna's in Nederland en België. Filter op provincie, datum en type.",
   locale: "nl_NL",
-  twitter: "@opgietingen",
 } as const;
+
+/** Eén sociaal kanaal van Opgietingen.nl. */
+export interface Social {
+  id: "instagram" | "facebook" | "tiktok";
+  label: string;
+  /** Gebruikersnaam zonder @; ontbreekt zolang Facebook geen gebruikersnaam heeft. */
+  handle?: string;
+  url: string;
+}
+
+/**
+ * Sociale kanalen (aangemaakt 2026-09-08). Enige bron voor footer, over-pagina,
+ * Organization.sameAs en /links. Facebook linkt op paginanummer tot er een
+ * gebruikersnaam geclaimd is; dan alleen hier de URL aanpassen.
+ */
+export const socials: readonly Social[] = [
+  { id: "instagram", label: "Instagram", handle: "opgietingen.nl", url: "https://www.instagram.com/opgietingen.nl/" },
+  { id: "facebook", label: "Facebook", url: "https://www.facebook.com/profile.php?id=61594226581273" },
+  { id: "tiktok", label: "TikTok", handle: "opgietingen.nl", url: "https://www.tiktok.com/@opgietingen.nl" },
+];
+
+export type SocialId = Social["id"];
 
 export type Country = "NL" | "BE";
 
