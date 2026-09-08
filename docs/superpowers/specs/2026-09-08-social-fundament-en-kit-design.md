@@ -53,7 +53,7 @@ export type SocialId = (typeof socials)[number]["id"];
 
 ### 3.2 Zichtbaar op de site
 
-- **Footer** (`SiteFooter.tsx`): kolom "Volg ons" met drie icoonlinks. Component
+- **Footer** (`SiteFooter.tsx`): blok "Volg ons" met drie icoonlinks in de merk-cel (het grid blijft vijf kolommen). Component
   `SocialLinks.tsx` met inline SVG-iconen (geen icon-bibliotheek), `target="_blank"`,
   `rel="me noopener"`, `aria-label="Opgietingen.nl op Instagram"` enz. Kleuren via
   themetokens (`text-ink-soft`, hover `text-ember`).
@@ -110,16 +110,18 @@ De bestaande OG-beelden zorgen voor de preview in WhatsApp.
 ## 4. Beeldroutes — `src/app/social/…`
 
 Route-handlers (`route.tsx`) buiten `(site)`: geen SiteChrome, geen analytics.
-Rendering met `ImageResponse` uit `next/og`, `runtime = "nodejs"` zodat fonts, logo's
-en beelden uit `public/` met `fs` gelezen kunnen worden (als data-URL in `<img>`;
-geen netwerk-fetch naar zichzelf).
+Rendering met `ImageResponse` uit `next/og`. Logo.s, event- en sfeerbeelden gaan via de
+eigen oorsprong (`request.nextUrl.origin`, lokaal én op Vercel) met een HEAD-check
+vooraf: `public/` zit niet in de functiebundel, en een 404-beeld laat satori hard falen;
+ontbreekt een beeld, dan valt de slide terug op de houtgradient.
 
 ### 4.1 Fonts
 
-`src/assets/fonts/Fraunces-SemiBold.ttf`, `Inter-Regular.ttf`, `Inter-Medium.ttf`
-(OFL-licentie, meegeleverd in de repo). Eén keer geladen in modulescope, meegegeven
-via de `fonts`-optie van `ImageResponse`. `next/font` werkt niet in satori, daarom
-losse bestanden.
+Fraunces 600 en Inter 400/500 via de Google Fonts CSS-API (met een oude User-Agent
+levert die statische TTF-instanties per gewicht), één keer per proces geladen en
+meegegeven via de `fonts`-optie van `ImageResponse`. Geen fontbestanden in de repo;
+faalt het laden, dan rendert de slide met de standaardfont in plaats van een 500.
+`next/font` werkt niet in satori.
 
 ### 4.2 Formaten
 
@@ -275,7 +277,7 @@ Opbouw: opening, eventregels, oproep, tags, hashtags. Regels:
   praktijk. Past het niet, dan worden eventregels van achteren weggelaten en vervangen
   door "…en N meer op opgietingen.nl", nooit de hashtags of oproep.
 - **Streepjes**: `normalizeProseDashes` en `normalizeRangeDashes` verhuizen van
-  `scripts/lib/content.ts` naar nieuw `src/lib/tekst.ts` (met re-export in
+  `scripts/lib/content.ts` naar het bestaande `src/lib/text.ts` (met re-export in
   `scripts/lib/content.ts` zodat de scrapers ongewijzigd blijven) en worden op elke
   caption toegepast. Geen em-streepjes in captions.
 
