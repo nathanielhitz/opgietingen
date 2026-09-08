@@ -280,7 +280,7 @@ async function main() {
         ...(redenen.length ? { keurNotitie: redenen.join("; ") } : {}),
       };
 
-      const mdxPad = writeEventMdx(newEvent, DOEL_DIR);
+      const mdxPad = writeEventMdx(newEvent, DOEL_DIR, TODAY);
       if (mdxPad) {
         seen.add(key);
         written++;

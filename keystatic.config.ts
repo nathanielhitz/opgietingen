@@ -215,6 +215,7 @@ export default config({
           description:
             "Zonder @. Alleen als het op de eigen website van de sauna staat. Gebruikt om de sauna te taggen in onze social-posts en in de structured data.",
           validation: {
+            // Optionele groep: Keystatic valideert ook de lege waarde van een leeg tekstveld.
             pattern: { regex: /^([A-Za-z0-9._]{1,30})?$/, message: "Alleen letters, cijfers, punt en underscore (max. 30)." },
           },
         }),

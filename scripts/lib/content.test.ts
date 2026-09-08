@@ -19,6 +19,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import matter from "gray-matter";
+import { todayISOInTimeZone } from "../../src/lib/dates";
 
 test("existingSaunaSlugs bevat bekende profielen", () => {
   const slugs = existingSaunaSlugs();
@@ -211,18 +212,27 @@ test("existingAfwijsIndex kent alleen events met status afgewezen, per sauna en 
 
 test("writeEventMdx zet gepubliceerdOp bij status gepubliceerd, niet bij concept", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "events-"));
-  const basis = {
-    saunaSlug: "thermen-bussloo",
-    titel: "Opgietweekend Test",
-    type: "opgietweekend" as const,
-    startDatum: "2026-11-14",
-    beschrijving: "Test.",
-  };
-  const pub = writeEventMdx({ ...basis, status: "gepubliceerd" }, dir, "2026-09-11");
-  const con = writeEventMdx({ ...basis, startDatum: "2026-11-21", status: "concept" }, dir, "2026-09-11");
-  assert.ok(pub && con);
-  assert.equal(matter(fs.readFileSync(pub, "utf8")).data.gepubliceerdOp, "2026-09-11");
-  assert.equal(matter(fs.readFileSync(con, "utf8")).data.gepubliceerdOp, undefined);
+  try {
+    const basis = {
+      saunaSlug: "thermen-bussloo",
+      titel: "Opgietweekend Test",
+      type: "opgietweekend" as const,
+      startDatum: "2026-11-14",
+      beschrijving: "Test.",
+    };
+    const pub = writeEventMdx({ ...basis, status: "gepubliceerd" }, dir, "2026-09-11");
+    const con = writeEventMdx({ ...basis, startDatum: "2026-11-21", status: "concept" }, dir, "2026-09-11");
+    assert.ok(pub && con);
+    assert.equal(matter(fs.readFileSync(pub, "utf8")).data.gepubliceerdOp, "2026-09-11");
+    assert.equal(matter(fs.readFileSync(con, "utf8")).data.gepubliceerdOp, undefined);
+
+    // Zonder derde argument valt writeEventMdx terug op de echte datum van vandaag.
+    const pubDefault = writeEventMdx({ ...basis, startDatum: "2026-11-28", status: "gepubliceerd" }, dir);
+    assert.ok(pubDefault);
+    assert.equal(matter(fs.readFileSync(pubDefault, "utf8")).data.gepubliceerdOp, todayISOInTimeZone());
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test("existingGoedkeurIndex kent alleen gepubliceerde events zónder opgiet-trefwoord in de titel", () => {

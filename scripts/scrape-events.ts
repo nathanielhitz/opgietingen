@@ -317,7 +317,7 @@ async function main() {
         ...(keurNotitie ? { keurNotitie } : {}),
       };
 
-      const mdxPad = writeEventMdx(newEvent, DOEL_DIR);
+      const mdxPad = writeEventMdx(newEvent, DOEL_DIR, TODAY);
       if (mdxPad) {
         seen.add(key);
         if (!perTitelDatum.has(tdKey)) perTitelDatum.set(tdKey, bron.id);

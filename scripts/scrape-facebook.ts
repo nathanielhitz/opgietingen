@@ -276,7 +276,7 @@ async function main() {
           ...(keurNotitie ? { keurNotitie } : {}),
         };
 
-        const filePath = writeEventMdx(newEvent, DOEL_DIR);
+        const filePath = writeEventMdx(newEvent, DOEL_DIR, TODAY);
         if (filePath) {
           seen.add(key);
           if (!perTitelDatum.has(tdKey)) perTitelDatum.set(tdKey, bron.id);
