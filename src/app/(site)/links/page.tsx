@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: "Links",
   description: `Snel naar de agenda, dit weekend, de saunagids en meer van ${site.name}.`,
   robots: { index: false, follow: true },
-  alternates: { canonical: "/links" },
+  alternates: { canonical: null },
 };
 
 export default async function LinksPage({ searchParams }: { searchParams: Promise<{ k?: string }> }) {
@@ -36,7 +36,7 @@ export default async function LinksPage({ searchParams }: { searchParams: Promis
 
       <ul className="mt-8 space-y-3">
         {knoppen.map((knop) => (
-          <li key={knop.href}>
+          <li key={knop.label}>
             <Link
               href={knop.href}
               className="flex min-h-12 w-full items-center justify-center rounded-full border border-sand bg-surface px-5 text-sm font-semibold text-ink shadow-sm transition-colors hover:border-ember hover:text-ember"
