@@ -74,3 +74,8 @@ test("saunaSchema: zonder website en handle geen sameAs", () => {
   const s = saunaSchema({ ...sauna, website: undefined, instagram: undefined }) as { sameAs?: string[] };
   assert.equal(s.sameAs, undefined);
 });
+
+test("saunaSchema: alleen website geeft alleen de website in sameAs", () => {
+  const s = saunaSchema({ ...sauna, instagram: undefined }) as { sameAs?: string[] };
+  assert.deepEqual(s.sameAs, ["https://www.thermenbussloo.nl"]);
+});

@@ -232,6 +232,9 @@ export function instagramUrl(handle: string): string {
 /** schema.org LocalBusiness JSON-LD voor een saunapagina. */
 export function saunaSchema(sauna: Sauna, opts: { komende?: OpgietEvent[] } = {}) {
   const komende = opts.komende ?? [];
+  const sameAs = [sauna.website, sauna.instagram ? instagramUrl(sauna.instagram) : undefined].filter(
+    (u): u is string => Boolean(u),
+  );
   return {
     "@context": "https://schema.org",
     "@type": ["LocalBusiness", "HealthAndBeautyBusiness"],
@@ -239,12 +242,7 @@ export function saunaSchema(sauna: Sauna, opts: { komende?: OpgietEvent[] } = {}
     description: plainSummary(sauna.body, 300),
     ...(sauna.afbeelding ? { image: [absoluteUrl(sauna.afbeelding)] } : {}),
     url: absoluteUrl(`/sauna/${sauna.slug}`),
-    ...(() => {
-      const sameAs = [sauna.website, sauna.instagram ? instagramUrl(sauna.instagram) : undefined].filter(
-        (u): u is string => Boolean(u),
-      );
-      return sameAs.length > 0 ? { sameAs } : {};
-    })(),
+    ...(sameAs.length > 0 ? { sameAs } : {}),
     address: {
       "@type": "PostalAddress",
       streetAddress: sauna.adres,
