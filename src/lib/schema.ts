@@ -1,4 +1,4 @@
-import { site, COUNTRY_LABELS } from "@/lib/site";
+import { site, socials, COUNTRY_LABELS } from "@/lib/site";
 import { plainSummary } from "@/lib/text";
 import { isUpcoming } from "@/lib/dates";
 import type { Gids, OpgietEvent, Sauna } from "@/lib/content";
@@ -34,6 +34,7 @@ export function siteSchema() {
         logo: `${site.url}/logo.svg`,
         description: site.tagline,
         areaServed: ["Nederland", "België"],
+        sameAs: socials.map((s) => s.url),
       },
     ],
   };
@@ -223,6 +224,11 @@ export function gidsItemListSchema(gidsen: Gids[], name: string) {
   };
 }
 
+/** Publieke URL van een Instagram-handle (zonder @). */
+export function instagramUrl(handle: string): string {
+  return `https://www.instagram.com/${handle}/`;
+}
+
 /** schema.org LocalBusiness JSON-LD voor een saunapagina. */
 export function saunaSchema(sauna: Sauna, opts: { komende?: OpgietEvent[] } = {}) {
   const komende = opts.komende ?? [];
@@ -233,7 +239,12 @@ export function saunaSchema(sauna: Sauna, opts: { komende?: OpgietEvent[] } = {}
     description: plainSummary(sauna.body, 300),
     ...(sauna.afbeelding ? { image: [absoluteUrl(sauna.afbeelding)] } : {}),
     url: absoluteUrl(`/sauna/${sauna.slug}`),
-    ...(sauna.website ? { sameAs: [sauna.website] } : {}),
+    ...(() => {
+      const sameAs = [sauna.website, sauna.instagram ? instagramUrl(sauna.instagram) : undefined].filter(
+        (u): u is string => Boolean(u),
+      );
+      return sameAs.length > 0 ? { sameAs } : {};
+    })(),
     address: {
       "@type": "PostalAddress",
       streetAddress: sauna.adres,

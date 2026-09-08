@@ -3,6 +3,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { socials } from "../../src/lib/site";
 import { utmUrl, kanaalUitParam } from "../../src/lib/utm";
+import { siteSchema, saunaSchema } from "../../src/lib/schema";
+import type { Sauna } from "../../src/lib/content";
 
 test("socials: drie unieke kanalen met https-URL's", () => {
   assert.deepEqual(socials.map((s) => s.id), ["instagram", "facebook", "tiktok"]);
@@ -38,4 +40,37 @@ test("utmUrl: hash-fragment blijft staan en hertaggen overschrijft bestaande utm
     utmUrl("/agenda?utm_source=oud&utm_medium=oud&utm_campaign=oud", { source: "tiktok", medium: "bio", campaign: "links" }),
     "/agenda?utm_source=tiktok&utm_medium=bio&utm_campaign=links",
   );
+});
+
+test("siteSchema: Organization.sameAs bevat precies de drie kanalen", () => {
+  const graph = siteSchema()["@graph"] as { "@type": string; sameAs?: string[] }[];
+  const org = graph.find((n) => n["@type"] === "Organization")!;
+  assert.deepEqual(org.sameAs, socials.map((s) => s.url));
+});
+
+const sauna: Sauna = {
+  slug: "thermen-bussloo",
+  naam: "Thermen Bussloo",
+  land: "NL",
+  provincie: "Gelderland",
+  plaats: "Voorst",
+  adres: "Bloemenksweg 38",
+  lat: 52.19,
+  lng: 6.11,
+  faciliteiten: [],
+  website: "https://www.thermenbussloo.nl",
+  instagram: "thermenbussloo",
+  affiliateUrl: "https://www.thermenbussloo.nl/reserveren",
+  sponsored: false,
+  body: "",
+};
+
+test("saunaSchema: sameAs bevat website én Instagram-URL", () => {
+  const s = saunaSchema(sauna) as { sameAs?: string[] };
+  assert.deepEqual(s.sameAs, ["https://www.thermenbussloo.nl", "https://www.instagram.com/thermenbussloo/"]);
+});
+
+test("saunaSchema: zonder website en handle geen sameAs", () => {
+  const s = saunaSchema({ ...sauna, website: undefined, instagram: undefined }) as { sameAs?: string[] };
+  assert.equal(s.sameAs, undefined);
 });
