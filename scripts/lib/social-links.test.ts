@@ -28,3 +28,14 @@ test("kanaalUitParam: bekend kanaal of 'social'", () => {
   assert.equal(kanaalUitParam("x"), "social");
   assert.equal(kanaalUitParam(undefined), "social");
 });
+
+test("utmUrl: hash-fragment blijft staan en hertaggen overschrijft bestaande utm-parameters", () => {
+  assert.equal(
+    utmUrl("/event/x#programma", { source: "whatsapp", medium: "deel", campaign: "event-x" }),
+    "/event/x?utm_source=whatsapp&utm_medium=deel&utm_campaign=event-x#programma",
+  );
+  assert.equal(
+    utmUrl("/agenda?utm_source=oud&utm_medium=oud&utm_campaign=oud", { source: "tiktok", medium: "bio", campaign: "links" }),
+    "/agenda?utm_source=tiktok&utm_medium=bio&utm_campaign=links",
+  );
+});

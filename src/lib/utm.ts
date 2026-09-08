@@ -28,7 +28,7 @@ export function utmUrl(padOfUrl: string, utm: UtmParams): string {
   url.searchParams.set("utm_source", schoon(utm.source));
   url.searchParams.set("utm_medium", schoon(utm.medium));
   url.searchParams.set("utm_campaign", schoon(utm.campaign));
-  return absoluut ? url.toString() : `${url.pathname}${url.search}`;
+  return absoluut ? url.toString() : `${url.pathname}${url.search}${url.hash}`;
 }
 
 /** `?k=` van /links naar een bekend kanaal; onbekend of leeg wordt "social". */
