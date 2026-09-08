@@ -11,7 +11,8 @@ export const metadata: Metadata = {
 const voordelen = [
   {
     titel: "Bereik gerichte bezoekers",
-    tekst: "Saunaliefhebbers die actief op zoek zijn naar opgietingen vinden jouw events via de agenda en regiopagina's.",
+    tekst:
+      "Saunaliefhebbers die actief op zoek zijn naar opgietingen vinden jouw events via de agenda en regiopagina's. Opgenomen events delen we ook op onze sociale kanalen.",
   },
   {
     titel: "SEO-first vindbaarheid",

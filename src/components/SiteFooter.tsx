@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { site } from "@/lib/site";
 import { getProvincesWithEvents, slugify } from "@/lib/content";
+import { SocialLinks } from "@/components/SocialLinks";
 
 export function SiteFooter() {
   const year = 2026; // statisch: geen Date() in build om SSG-determinisme te bewaren
@@ -18,6 +19,8 @@ export function SiteFooter() {
             Opgietingen<span className="text-ember">.nl</span>
           </p>
           <p className="mt-2 max-w-xs text-sm text-ink-soft">{site.tagline}.</p>
+          <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-ink-faint">Volg ons</p>
+          <SocialLinks className="mt-3" />
         </div>
 
         <FooterCol title="Ontdekken">

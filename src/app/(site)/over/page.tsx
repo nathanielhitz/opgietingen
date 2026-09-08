@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { site } from "@/lib/site";
+import { SocialLinks } from "@/components/SocialLinks";
 
 export const metadata: Metadata = {
   title: "Over ons",
@@ -32,6 +33,10 @@ export default function OverPage() {
             voor sauna’s
           </Link>{" "}
           kunnen betekenen.
+        </p>
+        <p>
+          Volg ons op <SocialLinks variant="tekst" /> voor de opgietingen van het weekend, nieuwe events en
+          uitgelichte opgietweekenden.
         </p>
       </div>
     </div>
