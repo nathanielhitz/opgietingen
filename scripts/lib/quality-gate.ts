@@ -23,6 +23,15 @@ export interface GateInput {
 export interface GateContext {
   saunaSlugs: Set<string>; // bestaande profielen in content/saunas/
   today: string; // ISO YYYY-MM-DD, referentiedatum van de run
+  /**
+   * De titel is bij deze sauna al eens handmatig gepubliceerd (goedkeur-index,
+   * zie `existingGoedkeurIndex`). Dan vervalt alleen het trefwoordcriterium:
+   * een mens heeft al geoordeeld dat dit event op de site hoort, ook al staat
+   * "opgieting" er niet letterlijk in (Damesdag bij Thermen Binnenmaas, waar
+   * de löyly-rituelen gewoon doorgaan). Datum, sauna, titel en type blijven
+   * harde eisen.
+   */
+  eerderGepubliceerd?: boolean;
 }
 
 export interface GateResult {
@@ -67,7 +76,7 @@ export function evaluateEvent(ev: GateInput, ctx: GateContext): GateResult {
   }
 
   const haystack = `${ev.titel} ${ev.beschrijving ?? ""}`;
-  if (!OPGIET_RE.test(haystack)) {
+  if (!ctx.eerderGepubliceerd && !OPGIET_RE.test(haystack)) {
     redenen.push("niet herkenbaar opgiet-gerelateerd (geen trefwoord in titel/beschrijving)");
   }
 

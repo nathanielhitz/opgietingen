@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import { OPGIET_RE } from "./quality-gate";
 
 /*
   Content-helpers voor de scraper: bronnen lezen/schrijven, bestaande events
@@ -321,7 +322,7 @@ function readEventFrontmatter(
 }
 
 /**
- * Sleutel voor de afwijs-index: sauna + genormaliseerde titel, bewust zónder
+ * Sleutel voor de afwijs- én goedkeur-index: sauna + genormaliseerde titel, bewust zónder
  * datum. Een sauna kondigt dezelfde niet-opgieting (Nationale Saunaweek,
  * kerstbrunch, yogaweekend) elke editie opnieuw aan, en omdat de datum dan
  * verschuift ziet de dedup op saunaSlug + startDatum er telkens een nieuw
@@ -344,6 +345,28 @@ export function existingAfwijsIndex(dir: string = EVENTS_DIR): Map<string, strin
   const map = new Map<string, string>();
   for (const ev of readEventFrontmatter(dir)) {
     if (ev.status !== "afgewezen" || !ev.titel) continue;
+    const key = afwijsKey(ev.saunaSlug, ev.titel);
+    if (!map.has(key)) map.set(key, ev.titel);
+  }
+  return map;
+}
+
+/**
+ * afwijsKey → titel van een event dat bij die sauna live staat (`gepubliceerd`)
+ * terwijl de titel géén opgiet-trefwoord bevat. Zo'n event kan de scraper nooit
+ * zelf hebben gepubliceerd (de titelregel blokkeert dat), dus het is altijd een
+ * handmatig oordeel: spiegelbeeld van de afwijs-index. Eén handmatige publicatie
+ * volstaat en elke latere editie met dezelfde titel bij dezelfde sauna gaat
+ * zonder trefwoordeis door de poort en wordt (met SCRAPE_AUTOPUBLISH) meteen
+ * gepubliceerd. Titels mét trefwoord staan er bewust niet in: die komen
+ * sowieso door, en zo blijft de index klein en leesbaar.
+ * Bij een conflict wint de afwijs-index: die wordt door de scrapers eerder
+ * geraadpleegd.
+ */
+export function existingGoedkeurIndex(dir: string = EVENTS_DIR): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const ev of readEventFrontmatter(dir)) {
+    if (ev.status !== "gepubliceerd" || !ev.titel || OPGIET_RE.test(ev.titel)) continue;
     const key = afwijsKey(ev.saunaSlug, ev.titel);
     if (!map.has(key)) map.set(key, ev.titel);
   }

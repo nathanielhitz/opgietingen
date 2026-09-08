@@ -105,3 +105,26 @@ test("isRealIsoDate", () => {
   assert.equal(isRealIsoDate("2026-02-30"), false);
   assert.equal(isRealIsoDate("19-09-2026"), false);
 });
+
+test("eerderGepubliceerd laat alleen het trefwoordcriterium vervallen", () => {
+  const damesdag = ev({
+    titel: "Damesdag bij Thermen Binnenmaas",
+    type: "regulier",
+    beschrijving: "Iedere eerste maandag van de maand is het damesdag.",
+  });
+  // Zonder de vlag: afgekeurd op ontbrekend trefwoord.
+  const zonder = evaluateEvent(damesdag, ctx);
+  assert.equal(zonder.passed, false);
+  assert.ok(zonder.redenen.some((m) => m.includes("trefwoord")));
+  // Met de vlag: door de poort.
+  const met = evaluateEvent(damesdag, { ...ctx, eerderGepubliceerd: true });
+  assert.equal(met.passed, true);
+  assert.deepEqual(met.redenen, []);
+  // De overige criteria blijven hard: een verleden datum of onbekende sauna wint altijd.
+  const verleden = evaluateEvent({ ...damesdag, startDatum: "2026-01-01" }, { ...ctx, eerderGepubliceerd: true });
+  assert.equal(verleden.passed, false);
+  assert.equal(verleden.verleden, true);
+  const onbekend = evaluateEvent({ ...damesdag, saunaSlug: "bestaat-niet" }, { ...ctx, eerderGepubliceerd: true });
+  assert.equal(onbekend.passed, false);
+  assert.ok(onbekend.redenen.some((m) => m.includes("saunaSlug")));
+});

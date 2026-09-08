@@ -25,6 +25,7 @@ import path from "node:path";
 import {
   readBronnen,
   existingAfwijsIndex,
+  existingGoedkeurIndex,
   existingEventKeys,
   existingSaunaSlugs,
   isVertrouwdeAfzender,
@@ -133,6 +134,7 @@ async function main() {
   const existing = existingEventKeys();
   // Titels die in Keystatic op `afgewezen` zijn gezet: die slaan we per sauna over, ongeacht de datum.
   const afgewezen = existingAfwijsIndex();
+  const goedgekeurd = existingGoedkeurIndex();
   const saunaSlugs = existingSaunaSlugs();
   const seen = new Set<string>(); // dedup binnen deze run
   let written = 0;
@@ -229,9 +231,17 @@ async function main() {
         continue;
       }
 
+      // Goedkeur-index (spiegelbeeld van de afwijs-index): dezelfde titel is bij
+      // deze sauna al eens handmatig gepubliceerd zonder opgiet-trefwoord. Dan
+      // vervalt de trefwoordeis; de overige poortcriteria blijven gelden.
+      const eerderGepubliceerd = goedgekeurd.has(afwijsKey(saunaSlug, ev.titel));
+      if (eerderGepubliceerd) {
+        console.log(`  ✓ eerder gepubliceerd: ${ev.titel} — trefwoordeis vervalt.`);
+      }
+
       const verdict = evaluateEvent(
         { saunaSlug, titel: ev.titel, type: ev.type, startDatum: ev.startDatum, beschrijving: ev.beschrijving },
-        { saunaSlugs, today: TODAY },
+        { saunaSlugs, today: TODAY, eerderGepubliceerd },
       );
 
       // Mail-events publiceren NOOIT automatisch: een From-header is spoofbaar

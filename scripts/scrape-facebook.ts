@@ -28,6 +28,7 @@ import {
   readBronnen,
   existingEventTitles,
   existingAfwijsIndex,
+  existingGoedkeurIndex,
   existingTitelDatumIndex,
   existingSaunaSlugs,
   externeTicketHost,
@@ -121,6 +122,7 @@ async function main() {
   const perTitelDatum = existingTitelDatumIndex();
   // Titels die in Keystatic op `afgewezen` zijn gezet: die slaan we per sauna over, ongeacht de datum.
   const afgewezen = existingAfwijsIndex();
+  const goedgekeurd = existingGoedkeurIndex();
   const saunaSlugs = existingSaunaSlugs();
   const seen = new Set<string>(); // dedup binnen deze run
   const rapportWarnings: { bron: string; melding: string }[] = [];
@@ -205,6 +207,14 @@ async function main() {
           continue;
         }
 
+        // Goedkeur-index (spiegelbeeld van de afwijs-index): dezelfde titel is bij
+        // deze sauna al eens handmatig gepubliceerd zonder opgiet-trefwoord. Dan
+        // vervalt de trefwoordeis; de overige poortcriteria blijven gelden.
+        const eerderGepubliceerd = goedgekeurd.has(afwijsKey(bron.id, ev.titel));
+        if (eerderGepubliceerd) {
+          console.log(`  ✓ eerder gepubliceerd: ${ev.titel} — trefwoordeis vervalt.`);
+        }
+
         const verdict = evaluateEvent(
           {
             saunaSlug: bron.id,
@@ -213,7 +223,7 @@ async function main() {
             startDatum: ev.startDatum,
             beschrijving: ev.beschrijving,
           },
-          { saunaSlugs, today: TODAY },
+          { saunaSlugs, today: TODAY, eerderGepubliceerd },
         );
 
         if (verdict.verleden) {
@@ -242,7 +252,7 @@ async function main() {
             `ticket-URL wijst naar extern domein ${externeHost} — controleer of dit een echte ticketpagina voor dit event is`,
           );
         }
-        if (verdict.passed && !OPGIET_RE.test(ev.titel)) {
+        if (verdict.passed && !eerderGepubliceerd && !OPGIET_RE.test(ev.titel)) {
           blokkades.push(
             "opgiet-trefwoord staat niet in de titel, hooguit in de beschrijving — handmatig beoordelen en publiceren",
           );

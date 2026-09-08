@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   afwijsKey,
   existingAfwijsIndex,
+  existingGoedkeurIndex,
   existingSaunaSlugs,
   existingTitelDatumIndex,
   facebookPaginanaam,
@@ -201,6 +202,30 @@ test("existingAfwijsIndex kent alleen events met status afgewezen, per sauna en 
     // Concept en gepubliceerd tellen niet als afwijzing.
     assert.equal(index.get(afwijsKey("asanti", "Aufguss weekend")), undefined);
     assert.equal(index.get(afwijsKey("elaisa", "Ode to Japan")), undefined);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("existingGoedkeurIndex kent alleen gepubliceerde events zónder opgiet-trefwoord in de titel", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "goedkeur-"));
+  const schrijf = (naam: string, fm: string) => fs.writeFileSync(path.join(dir, `${naam}.mdx`), `---\n${fm}\n---\n`);
+  schrijf("a", 'saunaSlug: thermen-binnenmaas\ntitel: "Damesdag bij Thermen Binnenmaas"\nstartDatum: 2026-10-05\nstatus: gepubliceerd');
+  schrijf("b", 'saunaSlug: thermen-binnenmaas\ntitel: "Opgietweekend"\nstartDatum: 2026-09-26\nstatus: gepubliceerd');
+  schrijf("c", 'saunaSlug: asanti\ntitel: "Nationale Saunaweek Asanti"\nstartDatum: 2026-09-14\nstatus: afgewezen');
+  schrijf("d", 'saunaSlug: asanti\ntitel: "Herbal Cup"\nstartDatum: 2026-11-01\nstatus: concept');
+  try {
+    const index = existingGoedkeurIndex(dir);
+    assert.equal(index.size, 1);
+    // Zelfde titel, volgende editie, andere schrijfwijze → hit (per sauna, zonder datum).
+    assert.equal(index.get(afwijsKey("thermen-binnenmaas", "damesdag bij thermen binnenmaas")), "Damesdag bij Thermen Binnenmaas");
+    // Andere sauna → geen hit.
+    assert.equal(index.get(afwijsKey("thermen-soesterberg", "Damesdag bij Thermen Binnenmaas")), undefined);
+    // Titel mét trefwoord komt sowieso door de poort en staat bewust niet in de index.
+    assert.equal(index.get(afwijsKey("thermen-binnenmaas", "Opgietweekend")), undefined);
+    // Afgewezen en concept zijn geen goedkeuring.
+    assert.equal(index.get(afwijsKey("asanti", "Nationale Saunaweek Asanti")), undefined);
+    assert.equal(index.get(afwijsKey("asanti", "Herbal Cup")), undefined);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
