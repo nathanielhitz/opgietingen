@@ -15,11 +15,11 @@ test("robots.txt sluit /keystatic en /api/keystatic uit", () => {
   assert.ok(disallow.includes("/beheer"), "/beheer ontbreekt in disallow");
 });
 
-test("sitemap bevat geen beheer-URL's", () => {
+test("sitemap bevat geen beheer-URL's en geen /links", () => {
   const urls = sitemap().map((e) => e.url);
   assert.ok(urls.length > 10, "sitemap lijkt leeg");
   assert.deepEqual(
-    urls.filter((u) => u.includes("/keystatic") || u.includes("/api/") || u.includes("/beheer")),
+    urls.filter((u) => u.includes("/keystatic") || u.includes("/api/") || u.includes("/beheer") || u.endsWith("/links")),
     [],
   );
 });

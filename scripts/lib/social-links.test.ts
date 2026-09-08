@@ -5,6 +5,7 @@ import { socials } from "../../src/lib/site";
 import { utmUrl, kanaalUitParam } from "../../src/lib/utm";
 import { siteSchema, saunaSchema } from "../../src/lib/schema";
 import type { Sauna } from "../../src/lib/content";
+import { linkKnoppen } from "../../src/lib/links-in-bio";
 
 test("socials: drie unieke kanalen met https-URL's", () => {
   assert.deepEqual(socials.map((s) => s.id), ["instagram", "facebook", "tiktok"]);
@@ -78,4 +79,15 @@ test("saunaSchema: zonder website en handle geen sameAs", () => {
 test("saunaSchema: alleen website geeft alleen de website in sameAs", () => {
   const s = saunaSchema({ ...sauna, instagram: undefined }) as { sameAs?: string[] };
   assert.deepEqual(s.sameAs, ["https://www.thermenbussloo.nl"]);
+});
+
+test("linkKnoppen: zes knoppen, elk met UTM van het kanaal", () => {
+  const knoppen = linkKnoppen("oktober-2026", "instagram");
+  assert.equal(knoppen.length, 6);
+  assert.equal(knoppen[0].label, "Dit weekend");
+  for (const k of knoppen) {
+    assert.match(k.href, /utm_source=instagram&utm_medium=bio&utm_campaign=links$/, k.href);
+  }
+  assert.ok(knoppen.some((k) => k.href.startsWith("/agenda/oktober-2026?")), "maandknop wijst naar de maandpagina");
+  assert.ok(knoppen.some((k) => k.label === "Deze maand: Oktober 2026"));
 });
