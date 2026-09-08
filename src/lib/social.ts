@@ -5,6 +5,7 @@ import {
   eersteVanMaandIn,
   isoWeek,
   monthYearSlug,
+  MONTHS_NL,
   parseISO,
   parseMonthYearSlug,
   volgendeWeekdag,
@@ -16,6 +17,8 @@ import {
   functies zonder I/O; de routes onder /social en het script social-kit zijn
   dunne schillen hieromheen. Referentie is normaal een vrijdag (Nathaniels
   plandag); vanuit maandag (latere Buffer-adapter) komt hetzelfde weekend.
+  Een referentie ná vrijdag (za/zo) houdt bewust het hele vr–zo-bereik,
+  inclusief al gepasseerde dagen: de post heet 'Dit weekend'.
 */
 
 export type Rubriek = "weekend" | "uitgelicht" | "maand" | "nieuw";
@@ -66,7 +69,11 @@ export interface SocialPost {
 const PRIORITEIT: Record<EventType, number> = { opgietweekend: 0, kampioenschap: 1, thema: 2, regulier: 3 };
 
 function opDatumEnSauna(a: OpgietEvent, b: OpgietEvent): number {
-  return a.startDatum.localeCompare(b.startDatum) || a.sauna.naam.localeCompare(b.sauna.naam, "nl");
+  return (
+    a.startDatum.localeCompare(b.startDatum) ||
+    a.sauna.naam.localeCompare(b.sauna.naam, "nl") ||
+    a.slug.localeCompare(b.slug)
+  );
 }
 
 export function aantalTekst(n: number): string {
@@ -91,13 +98,18 @@ export function naarPlanningEvent(e: OpgietEvent): PlanningEvent {
 
 /* ---------- Selectie ---------- */
 
+/** Events die (deels) in een weekendbereik vr–zo vallen; kern van weekendEvents, herbruikt in bouwPosts. */
+function filterWeekend(events: OpgietEvent[], w: { van: string; tot: string }): OpgietEvent[] {
+  return events
+    .filter((e) => e.startDatum <= w.tot && (e.eindDatum ?? e.startDatum) >= w.van)
+    .sort(opDatumEnSauna);
+}
+
 /** Events die (deels) in het weekend vr–zo van de ISO-week vallen. */
 export function weekendEvents(events: OpgietEvent[], week: string): OpgietEvent[] {
   const w = weekendVanIsoWeek(week);
   if (!w) return [];
-  return events
-    .filter((e) => e.startDatum <= w.tot && (e.eindDatum ?? e.startDatum) >= w.van)
-    .sort(opDatumEnSauna);
+  return filterWeekend(events, w);
 }
 
 /** Events met startdatum in de maand van de slug ("oktober-2026"). */
@@ -151,7 +163,7 @@ export function bouwPosts(events: OpgietEvent[], datum: string): SocialPost[] {
 
   const week = isoWeek(datum);
   const weekend = weekendVanIsoWeek(week);
-  const we = weekendEvents(events, week);
+  const we = weekend ? filterWeekend(events, weekend) : [];
   if (weekend && we.length > 0) {
     posts.push({
       id: `weekend-${week}`,
@@ -168,7 +180,7 @@ export function bouwPosts(events: OpgietEvent[], datum: string): SocialPost[] {
   const nieuw = nieuweEvents(events, datum);
   if (nieuw.length > 0) {
     posts.push({
-      id: `nieuw-${datum}`,
+      id: `nieuw-${week}`,
       rubriek: "nieuw",
       rang: 1,
       titel: `Nieuw in de agenda: ${aantalTekst(nieuw.length)}`,
@@ -198,7 +210,7 @@ export function bouwPosts(events: OpgietEvent[], datum: string): SocialPost[] {
     const me = maandEvents(events, slug);
     const bereik = maandBereik(slug);
     if (me.length > 0 && bereik) {
-      const maandNaam = slug.split("-")[0];
+      const maandNaam = MONTHS_NL[parseMonthYearSlug(slug)!.monthIndex];
       posts.push({
         id: `maand-${slug}`,
         rubriek: "maand",

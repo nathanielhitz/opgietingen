@@ -1,12 +1,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { maakEvent, sauna } from "./social-fixtures";
+import { addDaysISO } from "../../src/lib/dates";
 import {
   weekendEvents,
   maandEvents,
   nieuweEvents,
   uitgelichtKandidaten,
   bouwPosts,
+  maandBereik,
   MAX_EVENT_SLIDES,
 } from "../../src/lib/social";
 
@@ -76,7 +78,10 @@ test("bouwPosts: vier rubrieken met stabiele id's en plaatsingsdagen vanuit vrij
   const ids = posts.map((p) => p.id);
   assert.ok(ids.includes("weekend-2026-W39"), ids.join());
   assert.ok(ids.includes("maand-oktober-2026"), ids.join());
-  assert.ok(ids.includes("uitgelicht-okt") || ids.includes("uitgelicht-nieuw"), ids.join());
+  assert.deepEqual(
+    posts.filter((p) => p.rubriek === "uitgelicht").map((p) => [p.id, p.rang]),
+    [["uitgelicht-okt", 1], ["uitgelicht-nieuw", 2]],
+  );
   const maand = posts.find((p) => p.id === "maand-oktober-2026")!;
   assert.equal(maand.plaatsingsdag, "2026-10-01");
   assert.deepEqual(maand.periode, { van: "2026-10-01", tot: "2026-10-31" });
@@ -89,6 +94,7 @@ test("bouwPosts: vier rubrieken met stabiele id's en plaatsingsdagen vanuit vrij
   assert.equal(weekend.slides[0].pad, "/social/weekend/2026-W37");
   assert.equal(weekend.slides[1].pad, "/social/event/we");
   const nieuw = p11.find((p) => p.rubriek === "nieuw")!;
+  assert.equal(nieuw.id, "nieuw-2026-W37");
   assert.equal(nieuw.plaatsingsdag, "2026-09-14"); // maandag
   const uit = p11.find((p) => p.rubriek === "uitgelicht")!;
   assert.equal(uit.id, "uitgelicht-uit");
@@ -96,6 +102,12 @@ test("bouwPosts: vier rubrieken met stabiele id's en plaatsingsdagen vanuit vrij
   assert.equal(uit.plaatsingsdag, "2026-09-16"); // woensdag
   assert.deepEqual(uit.slides.map((s) => s.rol), ["event"]);
   assert.ok(!p11.some((p) => p.rubriek === "maand"), "geen maandstart in het venster");
+});
+
+test("bouwPosts: maximaal drie uitgelicht-kandidaten met rang 1, 2, 3", () => {
+  const events = ["a", "b", "c", "d"].map((s, i) => maakEvent({ slug: s, startDatum: addDaysISO(DATUM, 8 + i), type: "thema" }));
+  const uit = bouwPosts(events, DATUM).filter((p) => p.rubriek === "uitgelicht");
+  assert.deepEqual(uit.map((p) => [p.id, p.rang]), [["uitgelicht-a", 1], ["uitgelicht-b", 2], ["uitgelicht-c", 3]]);
 });
 
 test("bouwPosts: vanuit maandag komt hetzelfde weekend, plaatsingsdag vrijdag", () => {
@@ -115,4 +127,9 @@ test("bouwPosts: meer dan acht events -> acht slides, alle events in de post", (
 
 test("bouwPosts: lege agenda -> geen posts", () => {
   assert.deepEqual(bouwPosts([], DATUM), []);
+});
+
+test("maandBereik: eerste en laatste dag van de maand, null bij ongeldige slug", () => {
+  assert.deepEqual(maandBereik("december-2026"), { van: "2026-12-01", tot: "2026-12-31" });
+  assert.equal(maandBereik("onzin"), null);
 });
