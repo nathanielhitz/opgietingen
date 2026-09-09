@@ -83,9 +83,9 @@ nieuwe tokens, geen nieuwe dependency, geen JavaScript.
   hero-sectie wordt door zijn inhoud gemeten en de foto is `object-cover`, dus de
   exacte positie van de stenen verschuift per viewport. De oven zit in beide
   foto's rechtsonder; een pluim uit die hoek is bij elke uitsnede geloofwaardig.
-- Verankering mobiel (< 768 px): `width: 30%`, `right: 6%`, `bottom: 14%`
+- Verankering mobiel (< 768 px): `width: 40%`, `right: -4%`, `bottom: 50%`
   (de staande foto heeft de stenen groter en iets hoger in beeld), en een
-  kleinere `filter: blur(14px)`: de wolken zijn op mobiel in pixels veel
+  kleinere `filter: blur(16px)`: de wolken zijn op mobiel in pixels veel
   kleiner, dezelfde 22px blur zou ze bijna wegvegen.
 - Animatie: `stoom-pluim var(--duur) ease-out var(--start) infinite`.
 
@@ -105,8 +105,8 @@ verschillende starttijden geven een doorlopend, niet-herhalend beeld.
 **Gloed** (`.stoom-gloed`)
 
 - Ellips over de stenen: `width: 34%`, `aspect-ratio: 1.4`, desktop `right: 4%`,
-  `bottom: -8%`; mobiel `width: 60%`, `right: -6%`, `bottom: 2%`, met een
-  kleinere `filter: blur(20px)` (i.p.v. 30px): dezelfde reden als bij de wolk,
+  `bottom: -8%`; mobiel `width: 70%`, `right: -12%`, `bottom: 40%`, met een
+  kleinere `filter: blur(24px)` (i.p.v. 30px): dezelfde reden als bij de wolk,
   op mobiel is de ellips in pixels veel kleiner.
   `border-radius: 50%`, `mix-blend-mode: screen`,
   `background: radial-gradient(closest-side, color-mix(in srgb, var(--color-ember-soft) 85%, transparent), color-mix(in srgb, var(--color-ember-soft) 35%, transparent) 50%, transparent)`.
@@ -171,7 +171,7 @@ checkout.
   overhead.
 - **Animatienaam `stoom-adem` i.p.v. `stoom-gloed`**: voorkomt botsing met de
   klassenaam `.stoom-gloed`.
-- **Kleinere blur op mobiel** (`blur(14px)` voor de wolk, `blur(20px)` voor de
+- **Kleinere blur op mobiel** (`blur(16px)` voor de wolk, `blur(24px)` voor de
   gloed): de wolken zijn in pixels veel kleiner op mobiel, de desktop-blur zou
   ze bijna wegvegen.
 - **Kleur via `color-mix(in srgb, var(--color-ember-soft) …, transparent)`**
@@ -181,3 +181,4 @@ checkout.
   nodig om te draaien onder `"jsx": "preserve"`; het smalle type i.p.v. een
   brede `as CSSProperties`-cast houdt de drie custom-property sleutels
   typegecheckt.
+- **Mobiele verankering na livegang (2026-09-09):** op de telefoon vult het frosted-glass zoekformulier de onderste helft van de hero, waardoor een pluim uit de onderhoek achter het glas en onder het donkerste deel van de scrim verdween. De wolken beginnen nu op 50 % hoogte langs de rechterrand, zijn 40 % breed en hebben via `--stoom-piek: 0.5` een hogere piekdekking (desktop houdt 0,38); de gloed volgt op 40 % hoogte. Bevestigd met een verschilbeeld op 390 px.
