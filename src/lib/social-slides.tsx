@@ -111,7 +111,7 @@ export function CoverSlide({ formaat, beeld, label, kop, sub }: { formaat: Forma
   return (
     <Canvas formaat={formaat} beeld={beeld}>
       <Badge tekst={label} />
-      {/* "14 opgietingen" is de langste kop (15 tekens); vanaf 14 tekens een maat kleiner. */}
+      {/* kop is `aantalTekst(n)`: t/m 13 tekens ('9 opgietingen') groot, daarboven ('14 opgietingen', '123 opgietingen') iets kleiner. */}
       <div style={{ display: "flex", marginTop: 32, fontFamily: KOP, fontWeight: 600, fontSize: kop.length > 13 ? 92 : 112, lineHeight: 1.05 }}>{kop}</div>
       <div style={{ display: "flex", marginTop: 22, fontSize: 40, color: KLEUR.emberSoft }}>{sub}</div>
     </Canvas>

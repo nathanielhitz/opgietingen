@@ -24,7 +24,11 @@ export function parseFormaat(params: URLSearchParams): Formaat {
 
 export async function slideResponse(element: ReactElement, size: { width: number; height: number }): Promise<Response> {
   try {
-    return new ImageResponse(element, { ...size, fonts: await socialFonts(), headers: SOCIAL_HEADERS });
+    const beeld = new ImageResponse(element, { ...size, fonts: await socialFonts(), headers: SOCIAL_HEADERS });
+    // Satori rendert pas bij het lezen van de stream; bufferen brengt een
+    // renderfout hier naar boven in plaats van halverwege een 200-response.
+    const body = await beeld.arrayBuffer();
+    return new Response(body, { status: 200, headers: beeld.headers });
   } catch (err) {
     console.error("social-render:", err);
     return new Response("Renderfout", { status: 500, headers: { "x-robots-tag": "noindex" } });
