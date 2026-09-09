@@ -135,3 +135,99 @@ h1, h2, h3, h4 {
     linear-gradient(to top, rgba(43, 33, 25, 0.85), rgba(43, 33, 25, 0.35) 55%, rgba(43, 33, 25, 0.15)),
     linear-gradient(to right, rgba(43, 33, 25, 0.55), transparent 60%);
 }
+
+/* Stoomlaag in de homepage-hero (HeroStoom). Ligt tussen foto en scrim, dus
+   dimt mee waar tekst staat. Verankerd rechtsonder met right/bottom: de hero
+   wordt door zijn inhoud gemeten en de foto is object-cover, dus de exacte
+   positie van de stenen verschuift per viewport; de oven zit in beide foto's
+   rechtsonder. Alleen transform en opacity animeren (composited). */
+.stoom-wolk,
+.stoom-gloed {
+  position: absolute;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  will-change: transform, opacity;
+}
+
+.stoom-wolk {
+  right: 13%;
+  bottom: 10%;
+  width: 17%;
+  aspect-ratio: 1;
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 244, 234, 0.95),
+    rgba(255, 244, 234, 0.4) 45%,
+    transparent 100%
+  );
+  filter: blur(22px);
+  opacity: 0;
+  animation: stoom-pluim var(--duur, 11s) ease-out var(--start, 0s) infinite;
+}
+
+@keyframes stoom-pluim {
+  0% {
+    transform: translate(0, 0) scale(0.45);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.38;
+  }
+  60% {
+    opacity: 0.18;
+  }
+  100% {
+    transform: translate(var(--drift, -30%), -175%) scale(1.9);
+    opacity: 0;
+  }
+}
+
+/* Ademende gloed op de stenen: trage puls, geen piek. Kleur = --color-ember-soft. */
+.stoom-gloed {
+  right: 4%;
+  bottom: -8%;
+  width: 34%;
+  aspect-ratio: 1.4;
+  background: radial-gradient(
+    closest-side,
+    rgba(224, 149, 95, 0.85),
+    rgba(224, 149, 95, 0.35) 50%,
+    transparent 100%
+  );
+  filter: blur(30px);
+  opacity: 0.12;
+  animation: stoom-gloed 8s ease-in-out infinite alternate;
+}
+
+@keyframes stoom-gloed {
+  from {
+    opacity: 0.12;
+  }
+  to {
+    opacity: 0.3;
+  }
+}
+
+/* Staande herofoto (<768px, zelfde grens als de <source> in HeroHeader):
+   stenen groter en iets hoger in beeld. */
+@media (max-width: 767px) {
+  .stoom-wolk {
+    right: 6%;
+    bottom: 14%;
+    width: 30%;
+  }
+  .stoom-gloed {
+    right: -6%;
+    bottom: 2%;
+    width: 60%;
+  }
+}
+
+/* De foto bevat al stoom; stilstaande wolken toevoegen heeft geen waarde.
+   display: none in plaats van de globale 0,01ms-regel, die een statische
+   wolk zou achterlaten. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-stoom {
+    display: none;
+  }
+}
