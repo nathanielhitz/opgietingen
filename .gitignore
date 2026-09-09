@@ -55,3 +55,6 @@ opgietingen_research_pack_2026/
 
 # GSC-exports (Search Console coverage/drilldown CSV's) — lokale analyse-input
 /GSC reports/
+
+# social-kit: lokaal gegenereerde slides + captions voor Buffer (spec 2026-09-08)
+/data/social/
