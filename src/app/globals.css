@@ -157,7 +157,7 @@ h1, h2, h3, h4 {
   bottom: 10%;
   width: 17%;
   aspect-ratio: 1;
-  /* Warm licht uit de oven, bewust niet het koele --color-steam-accent. */
+  /* Warm licht uit de oven, bewust niet het koele --color-steam. */
   background: radial-gradient(
     closest-side,
     rgba(255, 244, 234, 0.95),

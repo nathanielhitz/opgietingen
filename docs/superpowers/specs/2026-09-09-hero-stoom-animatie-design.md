@@ -85,7 +85,7 @@ nieuwe tokens, geen nieuwe dependency, geen JavaScript.
   foto's rechtsonder; een pluim uit die hoek is bij elke uitsnede geloofwaardig.
 - Verankering mobiel (< 768 px): `width: 30%`, `right: 6%`, `bottom: 14%`
   (de staande foto heeft de stenen groter en iets hoger in beeld), en een
-  kleinere `filter: blur(14px)` — de wolken zijn op mobiel in pixels veel
+  kleinere `filter: blur(14px)`: de wolken zijn op mobiel in pixels veel
   kleiner, dezelfde 22px blur zou ze bijna wegvegen.
 - Animatie: `stoom-pluim var(--duur) ease-out var(--start) infinite`.
 
@@ -106,11 +106,11 @@ verschillende starttijden geven een doorlopend, niet-herhalend beeld.
 
 - Ellips over de stenen: `width: 34%`, `aspect-ratio: 1.4`, desktop `right: 4%`,
   `bottom: -8%`; mobiel `width: 60%`, `right: -6%`, `bottom: 2%`, met een
-  kleinere `filter: blur(20px)` (i.p.v. 30px) — dezelfde reden als bij de
-  wolk: op mobiel is de ellips in pixels veel kleiner.
+  kleinere `filter: blur(20px)` (i.p.v. 30px): dezelfde reden als bij de wolk,
+  op mobiel is de ellips in pixels veel kleiner.
   `border-radius: 50%`, `mix-blend-mode: screen`,
-  `background: radial-gradient(closest-side, color-mix(in srgb, var(--color-ember-soft) 85%, transparent), color-mix(in srgb, var(--color-ember-soft) 35%, transparent) 50%, transparent)`
-  — via het bestaande token in plaats van hardgecodeerde rgba.
+  `background: radial-gradient(closest-side, color-mix(in srgb, var(--color-ember-soft) 85%, transparent), color-mix(in srgb, var(--color-ember-soft) 35%, transparent) 50%, transparent)`.
+  Dit gebruikt het bestaande token in plaats van hardgecodeerde rgba.
 - Animatie: `stoom-adem 8s ease-in-out infinite alternate`, dekking van .12
   naar .30. Geen piek; alleen ademen. (Eigen naam i.p.v. `stoom-gloed`, om
   botsing met de klassenaam `.stoom-gloed` te vermijden.)
@@ -143,7 +143,7 @@ verschillende starttijden geven een doorlopend, niet-herhalend beeld.
 ## 7. Verificatie
 
 Eén structurele test, `scripts/lib/hero-stoom.test.ts`: zes wolken, één gloed,
-`aria-hidden`, geen tekst, unieke startoffsets. Geen CSS-test — dat blijft
+`aria-hidden`, geen tekst, unieke startoffsets. Geen CSS-test: dat blijft
 decoratieve stijl zonder logica. Verder:
 
 1. `npm run lint` en `npm run build` groen.
