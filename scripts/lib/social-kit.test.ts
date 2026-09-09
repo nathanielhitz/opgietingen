@@ -43,14 +43,35 @@ test("downloadPost: schrijft slides en captions; ruimt de map op bij een mislukt
   const basis = fs.mkdtempSync(path.join(os.tmpdir(), "social-kit-"));
   const map = path.join(basis, post.id);
   const ok = async () => new Response(new Uint8Array([137, 80, 78, 71]), { status: 200 });
-  await downloadPost(post, map, ["feed"], ok);
+  await downloadPost(post, basis, map, ["feed"], ok);
   assert.ok(fs.existsSync(path.join(map, "01-cover-feed.png")));
   assert.ok(fs.existsSync(path.join(map, "03-afsluiter-feed.png")));
   assert.ok(!fs.existsSync(path.join(map, "01-cover-story.png")), "alleen het gevraagde formaat");
   assert.ok(fs.existsSync(path.join(map, "captions.md")));
 
   const kapot = async (url: string) => new Response("", { status: url.includes("herfstgloed") ? 404 : 200 });
-  await assert.rejects(() => downloadPost(post, map, ["feed"], kapot), /404/);
+  await assert.rejects(() => downloadPost(post, basis, map, ["feed"], kapot), /404/);
   assert.ok(!fs.existsSync(map), "halve kit wordt verwijderd");
   fs.rmSync(basis, { recursive: true, force: true });
+});
+
+test("downloadPost: bestaande map zonder captions.md wordt niet gewist", async () => {
+  const basis = fs.mkdtempSync(path.join(os.tmpdir(), "social-kit-"));
+  const map = path.join(basis, post.id);
+  fs.mkdirSync(map, { recursive: true });
+  fs.writeFileSync(path.join(map, "iets-anders.txt"), "blijf staan");
+  const ok = async () => new Response(new Uint8Array([137, 80, 78, 71]), { status: 200 });
+  await assert.rejects(() => downloadPost(post, basis, map, ["feed"], ok), /handmatig/);
+  assert.ok(fs.existsSync(path.join(map, "iets-anders.txt")), "bestaande inhoud blijft staan");
+  fs.rmSync(basis, { recursive: true, force: true });
+});
+
+test("downloadPost: map buiten root wordt geweigerd", async () => {
+  const basis = fs.mkdtempSync(path.join(os.tmpdir(), "social-kit-"));
+  const buiten = fs.mkdtempSync(path.join(os.tmpdir(), "social-kit-buiten-"));
+  const map = path.join(buiten, post.id);
+  const ok = async () => new Response(new Uint8Array([137, 80, 78, 71]), { status: 200 });
+  await assert.rejects(() => downloadPost(post, basis, map, ["feed"], ok), /buiten de doelmap/);
+  fs.rmSync(basis, { recursive: true, force: true });
+  fs.rmSync(buiten, { recursive: true, force: true });
 });

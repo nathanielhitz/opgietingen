@@ -9,6 +9,7 @@
     npm run social-kit -- --map data/social             # doelmap (default)
 
   Uitvoer: data/social/<datum>/<post-id>/NN-<rol>[-<slug>]-<formaat>.png + captions.md
+  Een mislukte post stopt de run niet; exitcode 1 als er iets misging.
 */
 import path from "node:path";
 import { todayISOInTimeZone } from "../src/lib/dates";
@@ -32,7 +33,7 @@ async function main() {
   const formaten: Formaat[] = FORMAAT === "beide" ? ["feed", "story"] : [FORMAAT as Formaat];
 
   const url = `${BASIS}/social/planning?datum=${DATUM}`;
-  const res = await fetch(url);
+  const res = await fetch(url, { signal: AbortSignal.timeout(20_000) });
   if (!res.ok) throw new Error(`Planning ophalen mislukt: ${url} → HTTP ${res.status}`);
   const planning = (await res.json()) as PlanningJson;
 
@@ -42,18 +43,29 @@ async function main() {
   }
 
   console.log(`Social-kit voor ${DATUM} (${planning.posts.length} posts) → ${MAP}/${DATUM}/\n`);
+  const root = path.join(process.cwd(), MAP);
+  let mislukt = 0;
   for (const post of planning.posts) {
-    const map = path.join(process.cwd(), MAP, DATUM, post.id);
-    await downloadPost(post, map, formaten);
-    const kandidaat = post.rang > 1 ? ` (kandidaat ${post.rang})` : "";
-    console.log(
-      `${post.plaatsingsdag}  ${post.rubriek.padEnd(10)} ${String(post.slides.length).padStart(2)} slides  ${String(post.events.length).padStart(2)} events  ${post.titel}${kandidaat}`,
-    );
+    const map = path.join(root, DATUM, post.id);
+    try {
+      await downloadPost(post, root, map, formaten);
+      const kandidaat = post.rang > 1 ? ` (kandidaat ${post.rang})` : "";
+      console.log(
+        `${post.plaatsingsdag}  ${post.rubriek.padEnd(10)} ${String(post.slides.length).padStart(2)} slides  ${String(post.events.length).padStart(2)} events  ${post.titel}${kandidaat}`,
+      );
+    } catch (err) {
+      mislukt += 1;
+      console.error(`  ✗ ${post.id}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+  if (mislukt > 0) {
+    console.error(`${mislukt} post(s) mislukt`);
+    process.exitCode = 1;
   }
   console.log("\nKlaar. Sleep de PNG's in Buffer en plak de caption uit captions.md.");
 }
 
 main().catch((err) => {
-  console.error(`social-kit: ${(err as Error).message}`);
+  console.error(err);
   process.exit(1);
 });
