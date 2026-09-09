@@ -175,7 +175,7 @@ h1, h2, h3, h4 {
     opacity: 0;
   }
   12% {
-    opacity: 0.38;
+    opacity: var(--stoom-piek, 0.38);
   }
   60% {
     opacity: 0.18;
@@ -212,20 +212,25 @@ h1, h2, h3, h4 {
   }
 }
 
-/* Staande herofoto (<768px, zelfde grens als de <source> in HeroHeader):
-   stenen groter en iets hoger in beeld. */
+/* Mobiel (<768px, zelfde grens als de <source> in HeroHeader): de hero is
+   hoog en het zoekformulier vult de onderste helft. Een pluim uit de
+   onderhoek verdwijnt daar achter het frosted-glass en onder het donkerste
+   deel van de scrim. Daarom begint hij hier boven het formulier, langs de
+   rechterrand, iets groter en met een hogere piekdekking omdat de wolken in
+   pixels klein zijn. De gloed volgt als warmtebron net buiten beeld rechts. */
 @media (max-width: 767px) {
   .stoom-wolk {
-    right: 6%;
-    bottom: 14%;
-    width: 30%;
-    filter: blur(14px);
+    --stoom-piek: 0.5;
+    right: -4%;
+    bottom: 50%;
+    width: 40%;
+    filter: blur(16px);
   }
   .stoom-gloed {
-    right: -6%;
-    bottom: 2%;
-    width: 60%;
-    filter: blur(20px);
+    right: -12%;
+    bottom: 40%;
+    width: 70%;
+    filter: blur(24px);
   }
 }
 
