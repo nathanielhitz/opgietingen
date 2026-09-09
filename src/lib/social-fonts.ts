@@ -19,14 +19,18 @@ async function laadGoogleFont(family: string, weight: number): Promise<ArrayBuff
     const laden = (async () => {
       const css = await fetch(`https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@${weight}`, {
         headers: { "User-Agent": OUDE_UA },
+        signal: AbortSignal.timeout(4000),
       }).then((r) => r.text());
-      const bron = css.match(/src:\s*url\(([^)]+)\)\s*format\('(?:truetype|opentype)'\)/);
+      const bron = css.match(/src:\s*url\(['"]?([^)'"]+)['"]?\)\s*format\(['"](?:truetype|opentype)['"]\)/);
       if (!bron) throw new Error(`Geen TTF-bron voor ${sleutel}`);
-      const res = await fetch(bron[1]);
+      const res = await fetch(bron[1], { signal: AbortSignal.timeout(6000) });
       if (!res.ok) throw new Error(`Font ${sleutel}: HTTP ${res.status}`);
       return res.arrayBuffer();
     })();
-    laden.catch(() => cache.delete(sleutel));
+    // Alleen opruimen als de entry nog van deze poging is; een nieuwere mag blijven staan.
+    laden.catch(() => {
+      if (cache.get(sleutel) === laden) cache.delete(sleutel);
+    });
     cache.set(sleutel, laden);
   }
   return cache.get(sleutel)!;

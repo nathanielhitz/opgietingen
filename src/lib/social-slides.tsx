@@ -62,7 +62,7 @@ function Canvas({ formaat, beeld, children }: { formaat: Formaat; beeld?: string
   return (
     <div style={{ width, height, display: "flex", position: "relative", background: HOUT_GRADIENT, fontFamily: TEKST, color: KLEUR.cream }}>
       {beeld ? (
-        <img src={beeld} width={width} height={height} style={{ position: "absolute", top: 0, left: 0, width, height, objectFit: "cover" }} />
+        <img alt="" src={beeld} width={width} height={height} style={{ position: "absolute", top: 0, left: 0, width, height, objectFit: "cover" }} />
       ) : null}
       <div
         style={{
@@ -111,7 +111,8 @@ export function CoverSlide({ formaat, beeld, label, kop, sub }: { formaat: Forma
   return (
     <Canvas formaat={formaat} beeld={beeld}>
       <Badge tekst={label} />
-      <div style={{ display: "flex", marginTop: 32, fontFamily: KOP, fontWeight: 600, fontSize: kop.length > 16 ? 92 : 112, lineHeight: 1.05 }}>{kop}</div>
+      {/* "14 opgietingen" is de langste kop (15 tekens); vanaf 14 tekens een maat kleiner. */}
+      <div style={{ display: "flex", marginTop: 32, fontFamily: KOP, fontWeight: 600, fontSize: kop.length > 13 ? 92 : 112, lineHeight: 1.05 }}>{kop}</div>
       <div style={{ display: "flex", marginTop: 22, fontSize: 40, color: KLEUR.emberSoft }}>{sub}</div>
     </Canvas>
   );
@@ -136,11 +137,23 @@ export function EventSlide({
     <Canvas formaat={formaat} beeld={beeld}>
       {!beeld && logo ? (
         <div style={{ display: "flex", alignSelf: "flex-start", padding: 28, borderRadius: 24, background: logoPlaat, marginBottom: 44 }}>
-          <img src={logo} width={320} height={160} style={{ width: 320, height: 160, objectFit: "contain" }} />
+          <img alt="" src={logo} width={320} height={160} style={{ width: 320, height: 160, objectFit: "contain" }} />
         </div>
       ) : null}
       <Badge tekst={EVENT_TYPES[event.type]} />
-      <div style={{ display: "flex", marginTop: 30, fontFamily: KOP, fontWeight: 600, fontSize: titel.length > 40 ? 64 : 78, lineHeight: 1.1, lineClamp: 3 }}>
+      {/* Als enige div block i.p.v. flex: satori honoreert lineClamp alleen bij display block. */}
+      <div
+        style={{
+          display: "block",
+          marginTop: 30,
+          fontFamily: KOP,
+          fontWeight: 600,
+          fontSize: titel.length > 40 ? 64 : 78,
+          lineHeight: 1.1,
+          lineClamp: 3,
+          wordBreak: "break-word",
+        }}
+      >
         {titel}
       </div>
       <div style={{ display: "flex", marginTop: 26, fontSize: 38, fontWeight: 500 }}>{`${event.sauna.naam} · ${event.sauna.plaats}`}</div>
@@ -175,7 +188,7 @@ export function OmslagSlide({ beeld }: { beeld?: string }) {
   const { width, height } = OMSLAG;
   return (
     <div style={{ width, height, display: "flex", position: "relative", background: HOUT_GRADIENT, fontFamily: TEKST, color: KLEUR.cream }}>
-      {beeld ? <img src={beeld} width={width} height={height} style={{ position: "absolute", top: 0, left: 0, width, height, objectFit: "cover" }} /> : null}
+      {beeld ? <img alt="" src={beeld} width={width} height={height} style={{ position: "absolute", top: 0, left: 0, width, height, objectFit: "cover" }} /> : null}
       <div style={{ position: "absolute", top: 0, left: 0, width, height, display: "flex", background: "linear-gradient(90deg, rgba(43,33,25,0.85) 0%, rgba(43,33,25,0.35) 70%, rgba(43,33,25,0) 100%)" }} />
       <div style={{ position: "absolute", top: 0, left: 0, width, height, display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 96px" }}>
         <div style={{ display: "flex", fontFamily: KOP, fontWeight: 600, fontSize: 96 }}>{`${site.name}`}</div>
