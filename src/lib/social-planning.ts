@@ -38,26 +38,30 @@ export interface PlanningJson {
 
 export function bouwPlanning(events: OpgietEvent[], datum: string, basis: string): PlanningJson {
   const oorsprong = basis.replace(/\/$/, "");
-  const posts = bouwPosts(events, datum).map((post) => ({
-    id: post.id,
-    rubriek: post.rubriek,
-    rang: post.rang,
-    titel: post.titel,
-    plaatsingsdag: post.plaatsingsdag,
-    periode: post.periode,
-    events: post.events,
-    slides: post.slides.map((s) => ({
-      rol: s.rol,
-      ...(s.eventSlug ? { eventSlug: s.eventSlug } : {}),
-      feed: `${oorsprong}${s.pad}?formaat=feed`,
-      story: `${oorsprong}${s.pad}?formaat=story`,
-    })),
-    captions: {
+  const posts = bouwPosts(events, datum).map((post) => {
+    // Record<Kanaal, string> dwingt af dat elk kanaal een caption krijgt (compile-time check).
+    const captions: Record<Kanaal, string> = {
       instagram: bouwCaption(post, "instagram"),
       facebook: bouwCaption(post, "facebook"),
       tiktok: bouwCaption(post, "tiktok"),
-    },
-  }));
+    };
+    return {
+      id: post.id,
+      rubriek: post.rubriek,
+      rang: post.rang,
+      titel: post.titel,
+      plaatsingsdag: post.plaatsingsdag,
+      periode: post.periode,
+      events: post.events,
+      slides: post.slides.map((s) => ({
+        rol: s.rol,
+        ...(s.eventSlug ? { eventSlug: s.eventSlug } : {}),
+        feed: `${oorsprong}${s.pad}?formaat=feed`,
+        story: `${oorsprong}${s.pad}?formaat=story`,
+      })),
+      captions,
+    };
+  });
   return { datum, basis: oorsprong, posts };
 }
 

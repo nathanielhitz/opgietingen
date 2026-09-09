@@ -371,6 +371,9 @@ UTM-conventie:
 | `utm_medium` | `bio` (link-in-bio), `social` (caption-link), `deel` (deelknoppen) |
 | `utm_campaign` | `links`, het post-`id` (`weekend-2026-W37`, …), `event-<slug>` |
 
+`utm_campaign` is de kleingemaakte vorm van het post-id (`weekend-2026-w37`); een adapter
+die id en campagne wil matchen vergelijkt hoofdletterongevoelig.
+
 Maandelijks: Vercel Analytics op `utm_source` (bezoekers per kanaal), Buffer-inzichten
 per post (bereik, saves, shares). Richtwaarden na drie maanden, bewust bescheiden:
 200 volgers op Instagram, minstens drie sauna's die een post hebben gedeeld, en social

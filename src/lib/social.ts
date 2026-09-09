@@ -25,6 +25,7 @@ export type Rubriek = "weekend" | "uitgelicht" | "maand" | "nieuw";
 export type Kanaal = "instagram" | "facebook" | "tiktok";
 export type Formaat = "feed" | "story";
 
+/** Social-kanalen; niet te verwarren met de scraper-kanalen in scrape-runs.ts. */
 export const KANALEN: readonly Kanaal[] = ["instagram", "facebook", "tiktok"];
 /** Instagram-carrousels tellen maximaal 10 slides: cover + 8 events + afsluiter. */
 export const MAX_EVENT_SLIDES = 8;

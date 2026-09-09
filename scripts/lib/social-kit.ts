@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { PlanningPost, PlanningSlide } from "../../src/lib/social-planning";
-import type { Formaat } from "../../src/lib/social";
+import { KANALEN, type Formaat, type Kanaal } from "../../src/lib/social";
 
 /* Pure helpers van het social-kit-script; het script zelf regelt flags en de planning-fetch. */
 
@@ -14,11 +14,11 @@ export function bestandsnaam(index: number, slide: PlanningSlide, formaat: Forma
   return `${nr}-${slide.rol}${slug}-${formaat}.png`;
 }
 
-const KANAAL_LABEL = { instagram: "Instagram", facebook: "Facebook", tiktok: "TikTok" } as const;
+const KANAAL_LABEL: Record<Kanaal, string> = { instagram: "Instagram", facebook: "Facebook", tiktok: "TikTok" };
 
 export function captionsMarkdown(post: PlanningPost): string {
   const slides = post.slides.map((s, i) => `- ${String(i + 1).padStart(2, "0")} ${s.rol}${s.eventSlug ? ` (${s.eventSlug})` : ""}`);
-  const kanalen = (Object.keys(KANAAL_LABEL) as (keyof typeof KANAAL_LABEL)[]).flatMap((k) => [`## ${KANAAL_LABEL[k]}`, "", post.captions[k], ""]);
+  const kanalen = KANALEN.flatMap((k) => [`## ${KANAAL_LABEL[k]}`, "", post.captions[k], ""]);
   return [
     `# ${post.titel}`,
     "",

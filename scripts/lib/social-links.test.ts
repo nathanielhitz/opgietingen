@@ -6,6 +6,7 @@ import { utmUrl, kanaalUitParam } from "../../src/lib/utm";
 import { siteSchema, saunaSchema } from "../../src/lib/schema";
 import type { Sauna } from "../../src/lib/content";
 import { linkKnoppen } from "../../src/lib/links-in-bio";
+import { metadata as linksMetadata } from "../../src/app/(site)/links/page";
 
 test("socials: drie unieke kanalen met https-URL's", () => {
   assert.deepEqual(socials.map((s) => s.id), ["instagram", "facebook", "tiktok"]);
@@ -90,4 +91,9 @@ test("linkKnoppen: zes knoppen, elk met UTM van het kanaal", () => {
   }
   assert.ok(knoppen.some((k) => k.href.startsWith("/agenda/oktober-2026?")), "maandknop wijst naar de maandpagina");
   assert.ok(knoppen.some((k) => k.label === "Deze maand: Oktober 2026"));
+});
+
+test("/links: noindex maar follow, geen canonical", () => {
+  assert.deepEqual(linksMetadata.robots, { index: false, follow: true });
+  assert.equal(linksMetadata.alternates?.canonical, null);
 });

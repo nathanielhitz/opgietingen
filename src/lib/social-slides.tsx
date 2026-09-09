@@ -57,7 +57,7 @@ function Badge({ tekst }: { tekst: string }) {
 
 function Canvas({ formaat, beeld, children }: { formaat: Formaat; beeld?: string; children: ReactNode }) {
   const { width, height } = FORMATEN[formaat];
-  const onder = formaat === "story" ? STORY_VEILIG + 48 : 96;
+  const onder = formaat === "story" ? STORY_VEILIG + 110 : 96;
   const boven = formaat === "story" ? STORY_VEILIG : 72;
   return (
     <div style={{ width, height, display: "flex", position: "relative", background: HOUT_GRADIENT, fontFamily: TEKST, color: KLEUR.cream }}>
