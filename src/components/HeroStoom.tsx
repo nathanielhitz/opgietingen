@@ -1,3 +1,5 @@
+// Pragma's voor de tsx-testrunner: tsconfig gebruikt "jsx": "preserve",
+// zonder deze faalt node:test met "React is not defined". Next (SWC) negeert ze.
 // @jsxRuntime automatic
 // @jsxImportSource react
 import type { CSSProperties } from "react";
