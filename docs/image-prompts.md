@@ -140,3 +140,30 @@ Winter/kerst-variant:
 - Wil je tekst kunnen overlayen? Vraag om *"plenty of negative space on the [left/right]."*
 - Consistentie = altijd hetzelfde kleurpalet-blok hergebruiken.
 - Controleer handen/gezichten; kies bij twijfel een variant zonder mensen.
+
+---
+
+## Social-covers (social-kit)
+
+Drie sfeerbeelden voor de covers van de wekelijkse posts. Bestanden: `public/images/social/weekend.jpg`,
+`maand.jpg`, `nieuw.jpg`. Formaat **9:16 (1080×1920)**, JPEG, ≤ 400 KB (de route knipt zelf naar 4:5 voor de
+feed). Er komt tekst óver het onderste twee derde, dus houd dat deel rustig en donker genoeg. Geen herkenbare
+interieurs: dit zijn generieke sfeerbeelden, geen foto's van een specifieke sauna.
+
+Gebruik de basis-prompt met `Output: photorealistic, natural film grain, warm tones, 9:16 vertical` en:
+
+### weekend.jpg
+> Scene: close-up of a towel mid-swing in a dim sauna, warm ember glow from below, thick soft steam filling the
+> upper half of the frame, lower half dark and calm for text overlay.
+
+### maand.jpg
+> Scene: a row of small wooden sauna buckets and ladles on a bench, one bucket steaming, low golden side light,
+> deep shadow in the lower half for text overlay.
+
+### nieuw.jpg
+> Scene: a single ladle pouring water onto glowing sauna stones, sharp burst of steam rising, dark wooden wall
+> behind, lower half fading to near-black for text overlay.
+
+Zolang een bestand ontbreekt, valt de cover terug op de houtgradient (geen fout). Alleen JPEG, PNG of SVG:
+de renderer (satori) kan geen WebP of AVIF lezen; dat geldt ook voor sauna-logo's en eventbeelden die op een
+slide komen.

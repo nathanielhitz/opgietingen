@@ -43,6 +43,8 @@ src/
     clicks.ts       # affiliate klik-logging (fase 1: append naar data/clicks.log)
     scraper.ts      # scraper-laag: Firecrawl (markdown + extractie) + Claude-fallback
     scrape-runs.ts  # loader + helpers voor run-metrics (enige plek die data/scrape-runs.json kent)
+    utm.ts          # UTM-helper (kanaal → utm_source), gebruikt door /links, deelknoppen en captions
+    social*.ts(x)   # social-kit: selectie (social.ts), captions, planning-JSON, render (satori) en slides
 keystatic.config.ts  # schema's van het beheerpaneel (1-op-1 op de frontmatter)
 scripts/
   verify-bronnen.ts # verifieert agendaUrl's in bronnen.json (robots, discovery)
@@ -50,6 +52,8 @@ scripts/
   scrape-report.ts  # bouwt het probleem-issue-rapport (concepts + bronnen + ontbrekende profielen)
   run-record.ts     # vouwt scrape-metrics.json tot een run-record in data/scrape-runs.json
   backfill-runs.ts  # eenmalig: run-records uit de scraper-commits reconstrueren
+  social-kit.ts     # haalt planning + slides van de site → data/social/<datum>/ (klaarzetten voor Buffer)
+  vind-instagram.ts # print Instagram-handles die op sauna-websites staan (voorstellen, schrijft niets; -- --sauna <slug>)
   lib/              # net.ts (fetch/robots), content.ts (bronnen/dedup/MDX-write), quality-gate.ts (poort), metrics.ts (run-metrics melden)
 .github/workflows/
   scrape.yml        # wekelijkse scrape (cron ma 06:00) → commit op main + scraper-issue
@@ -60,9 +64,9 @@ data/
 
 ## Datamodel (repo-based content)
 
-**Sauna** (`content/saunas/<slug>.mdx` frontmatter): `slug`, `naam`, `land` (`NL`|`BE`), `provincie`, `plaats`, `adres`, `lat`, `lng`, `faciliteiten[]`, `website`, `affiliateUrl`, `sponsored` (bool), `afbeelding`, `logo` (pad in `public/images/logos/`, fallback-beeld als de foto ontbreekt — geldt via de loader ook voor events zonder eigen afbeelding), `logoAchtergrond` (`licht` (default) | `donker` — witte logovarianten hebben `donker` nodig). MDX-body = beschrijving.
+**Sauna** (`content/saunas/<slug>.mdx` frontmatter): `slug`, `naam`, `land` (`NL`|`BE`), `provincie`, `plaats`, `adres`, `lat`, `lng`, `faciliteiten[]`, `website`, `affiliateUrl`, `sponsored` (bool), `afbeelding`, `logo` (pad in `public/images/logos/`, fallback-beeld als de foto ontbreekt — geldt via de loader ook voor events zonder eigen afbeelding), `logoAchtergrond` (`licht` (default) | `donker` — witte logovarianten hebben `donker` nodig), `instagram` (handle zonder @, alleen als die op de eigen website van de sauna staat; gebruikt om de sauna te taggen in social-captions en in `sameAs`). MDX-body = beschrijving.
 
-**Event** (`content/events/<slug>.mdx` frontmatter): `slug`, `saunaSlug` (koppelt aan sauna), `titel`, `type` (`opgietweekend`|`thema`|`kampioenschap`|`regulier`), `startDatum` (`YYYY-MM-DD`), `eindDatum`, `tijden`, `prijsIndicatie`, `ticketUrl` (affiliate), `afbeelding`, `status` (`concept`|`gepubliceerd`|`afgelopen`|`afgewezen`). MDX-body = beschrijving/programma.
+**Event** (`content/events/<slug>.mdx` frontmatter): `slug`, `saunaSlug` (koppelt aan sauna), `titel`, `type` (`opgietweekend`|`thema`|`kampioenschap`|`regulier`), `startDatum` (`YYYY-MM-DD`), `eindDatum`, `tijden`, `prijsIndicatie`, `ticketUrl` (affiliate), `afbeelding`, `status` (`concept`|`gepubliceerd`|`afgelopen`|`afgewezen`), `gepubliceerdOp` (`YYYY-MM-DD`; gezet door de scraper bij autopublicatie, handmatig in Keystatic bij publiceren; voedt de rubriek *Nieuw in de agenda* van de social-kit). MDX-body = beschrijving/programma.
 
 Optioneel veld `bron: scraper` markeert automatisch gescrapete events. Optioneel veld `keurNotitie` bevat de afkeurreden(en) van de kwaliteitspoort wanneer een gescrapet event als `concept` blijft staan.
 
@@ -87,6 +91,9 @@ Optioneel veld `bron: scraper` markeert automatisch gescrapete events. Optioneel
 | `/uit/product/[id]` | Affiliate-redirect (bol.com-product) met klik-logging + subid |
 | `/keystatic` | Beheerpaneel (Keystatic); noindex + robots-disallow, niet in sitemap |
 | `/beheer` | Beheer-dashboard: laatste scrape-run, te beoordelen concepts (→ Keystatic), aandacht, trend; noindex |
+| `/links` | Link-in-bio op eigen domein; `?k=instagram|facebook|tiktok` zet UTM's op elke knop; noindex, niet in de sitemap |
+| `/social/planning` | JSON met de posts van een week (`?datum=`); contract voor `social-kit` en de latere Buffer-adapter; no-store |
+| `/social/{weekend,maand,nieuw}/[…]`, `/social/event/[slug]`, `/social/afsluiter`, `/social/profiel`, `/social/omslag` | Slides als PNG (`?formaat=feed\|story`), noindex-header, bewust niet in robots-disallow (Facebook-fetcher) |
 | `/over`, `/contact`, `/voor-saunas` | Statische pagina's (B2B-pitch) |
 
 Nieuwsbrief-opt-in is **uitgesteld** naar een latere sessie.
@@ -148,6 +155,10 @@ Flags: `-- --limit N` (eerste N bronnen), `-- --dry-run` (mock-extractie incl. a
 
 **Run-metrics (`npm run run-record`)** — `verify-bronnen` en de drie scrapers melden via `scripts/lib/metrics.ts` per bron zeven tellers (kandidaten, dedup, verleden, afgekeurd, concept, gepubliceerd + `fout`/`methode`; invariant: kandidaten = dedup + verleden + concept + gepubliceerd), elk weggeschreven event en de bronnen-statuswijzigingen aan een tijdelijk `scrape-metrics.json`. Alles in try/catch: een metrics-fout mag nooit een scrape laten falen; `--dry-run` schrijft niets. Na de run vouwt `run-record` dat tot één record in `data/scrape-runs.json` (idempotent op de starttijd `RUN_GESTART`; stopt bij een corrupte of gedeeltelijk onleesbare historie in plaats van te overschrijven), en de workflow commit het mee met een samenvattend bericht — dus elke week een commit, ook bij 0 events. `/beheer` leest het bestand via `src/lib/scrape-runs.ts`. Oude runs zijn met `scripts/backfill-runs.ts` uit de git-historie gereconstrueerd (`backfill: true`, alleen events; alle kanalen tellen daar als website; runs zonder events hebben geen record). `methode` `firecrawl` én `claude` betekenen beide een Firecrawl-fetch (alleen `statisch` is gratis). Spec: [docs/superpowers/specs/2026-08-30-beheer-dashboard-scrape-metrics-design.md](docs/superpowers/specs/2026-08-30-beheer-dashboard-scrape-metrics-design.md).
 
+## Social-kit
+
+Wekelijkse posts voor Instagram, Facebook en TikTok uit de agenda (spec: [docs/superpowers/specs/2026-09-08-social-fundament-en-kit-design.md](docs/superpowers/specs/2026-09-08-social-fundament-en-kit-design.md)). Vier rubrieken: *Dit weekend* (vrijdag, vr–zo van de ISO-week), *Nieuw in de agenda* (maandag; events met `gepubliceerdOp` in de zeven dagen t/m de referentiedatum), *Uitgelicht* (woensdag; drie kandidaten die over 1–4 weken starten, opgietweekend > kampioenschap > thema > regulier), *Deze maand* (de 1e, als die in de komende week valt). Selectie en captions zijn pure functies in `src/lib/social*.ts` (tests in `scripts/lib/social*.test.ts`); post-id's zijn stabiel per week/event (`weekend-2026-W37`, `nieuw-2026-W37`, `uitgelicht-<slug>`, `maand-oktober-2026`) zodat een adapter dubbele aanmaak herkent. Captions komen uit templates (drie openingen die op weeknummer rouleren, kalender-emoji als enig emoji, geen em-streepjes; Facebook krijgt echte URL's met UTM, Instagram/TikTok "link in bio"). De slides worden live gerenderd onder `/social/…` met `next/og` (fonts via de Google Fonts CSS-API, beelden via de eigen oorsprong met HEAD- en content-type-check; ontbrekend sfeerbeeld = houtgradient; alleen JPEG/PNG/SVG). `npm run social-kit -- --datum <vrijdag>` haalt planning en slides naar `data/social/<datum>/<post-id>/` (gitignored) met een `captions.md` per post; Nathaniel plant het op vrijdag in Buffer. Sociale kanalen staan in `socials` (`src/lib/site.ts`); Facebook linkt op paginanummer tot er een gebruikersnaam is. Automatisch plaatsen (Buffer-API, deelproject 2) leest hetzelfde `/social/planning`-contract. Regels: geen beelden die suggereren hoe een specifieke sauna eruitziet; captions feitelijk, zonder superlatieven.
+
 ## Beheer (Keystatic)
 
 `/keystatic` is het beheerpaneel: concepts beoordelen, sauna-profielen, gidsen en `content/bronnen.json` bewerken in de browser. Git blijft de bron van waarheid: in GitHub-mode is elke save een commit op `main` onder het GitHub-account van de ingelogde gebruiker, waarna Vercel deployt. Schema's staan in `keystatic.config.ts` en zijn 1-op-1 op de frontmatter/JSON; `scripts/lib/keystatic-schema.test.ts` bewaakt twee richtingen — elk contentveld staat in het schema (een onbekend veld zou bij een save verdwijnen) én elke entry haalt de schema-validatie via het Keystatic-reader-pad (wat daar faalt, kan in het paneel niet worden opgeslagen). Toegang = schrijfrecht op de repo. Zonder de `KEYSTATIC_*`-env-vars (zie `.env.example`) draait het paneel in local-mode en bewerkt het bestanden op schijf. Local-mode is onbeveiligd en bestaat daarom alleen in development: in productie zonder `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` geven `/keystatic` en `/api/keystatic` 404 (`src/lib/beheer.ts`, test `scripts/lib/beheer.test.ts`). Zet op Vercel altijd alle vier de `KEYSTATIC_*`-variabelen tegelijk en deploy daarna opnieuw (de `NEXT_PUBLIC_`-waarde wordt bij de build ingebakken). `/beheer` is het dashboard van de wekelijkse scrape (zie *Run-metrics*); het volgt dezelfde 404/noindex-regel. Let op: de guard wordt bij de build geëvalueerd, dus de `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` moet in de Vercel-buildomgeving staan.
@@ -188,6 +199,8 @@ npm run indexnow        # meld gewijzigde URL's aan bij IndexNow (Bing c.s.)
 npm run fetch-logos     # haal logo's op voor sauna-profielen zonder beeld (geen keys nodig)
 npm run scrape-report   # bouw scrape-issue.md + print problemen/schoon
 npm run run-record  # vouw scrape-metrics.json tot een run-record (workflow-stap; -- --dry-run toont het record)
+npm run social-kit      # planning + slides + captions van de site → data/social/<datum>/ (-- --datum, --basis, --formaat, --map)
+npm run vind-instagram  # voorstellen voor instagram-handles uit sauna-websites (schrijft niets; -- --sauna <slug>)
 
 ```
 

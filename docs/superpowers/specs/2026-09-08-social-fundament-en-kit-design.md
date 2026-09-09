@@ -171,6 +171,9 @@ ophalen.
   "Link in bio", "Sla op en deel met je saunamaatje".
 - **Uitgelicht** is een event-slide als losse post.
 
+Beelden alleen als JPEG, PNG of SVG: satori kan geen WebP/AVIF lezen; de HEAD-check
+controleert het content-type en valt anders terug op de houtgradient.
+
 Kleuren zijn de hexwaarden van de themetokens uit `globals.css` (satori kent geen
 Tailwind); ze staan als constante in `src/lib/social-stijl.ts` met een verwijzing naar
 de tokens.
@@ -249,17 +252,19 @@ Buffer-adapter) levert dezelfde functie het komende weekend en dezelfde weekdage
 
 `id` is stabiel per week/event zodat een adapter dubbele aanmaak kan herkennen. `rang`
 is 1, behalve bij de tweede en derde `uitgelicht`-kandidaat (2 en 3). `bouwPlanning(events, datum, basis)` levert dit object;
-de route serialiseert het.
+de route serialiseert het. De nieuw-post gebruikt de ISO-week (`nieuw-2026-W37`), niet
+de referentiedatum, zodat een vrijdag- en maandagrun van dezelfde week hetzelfde id
+krijgen.
 
 ### 5.4 Captions — `bouwCaption(post, kanaal)`
 
 Opbouw: opening, eventregels, oproep, tags, hashtags. Regels:
 
 - **Opening** per rubriek: drie varianten, gekozen op `weeknummer % 3`. Feitelijk,
-  geen superlatieven. Voorbeeld weekend: "Dit weekend staan er 6 opgietingen op de
-  agenda in Nederland en België." / "Zin in een opgieting dit weekend? Dit is er te
-  doen." / "Weekendplanning: 6 opgietingen, van Groningen tot Limburg." (de
-  provincies komen uit de events; bij één provincie vervalt dat deel).
+  geen superlatieven. Voorbeeld weekend: "Dit weekend op de agenda: 6 opgietingen."
+  (grammaticaal veilig bij 1 event, geen landenclaim) / "Zin in een opgieting dit
+  weekend? Dit is er te doen." / "Weekendplanning: 6 opgietingen, van Groningen tot
+  Limburg." (de provincies komen uit de events; bij één provincie vervalt dat deel).
 - **Eventregel**: `📅 vr 11 sep · Opgietweekend Herfstgloed · Thermen Bussloo, Voorst`,
   bij Instagram gevolgd door `@handle` als `sauna.instagram` bekend is. Het
   kalender-emoji is het enige emoji in de caption. Meerdaagse events tonen het bereik
@@ -275,11 +280,12 @@ Opbouw: opening, eventregels, oproep, tags, hashtags. Regels:
   `#opgieting #aufguss #sauna`. TikTok: de eerste vijf van de kern.
 - **Limieten**: Instagram 2.200 tekens, TikTok 4.000, Facebook onbeperkt in de
   praktijk. Past het niet, dan worden eventregels van achteren weggelaten en vervangen
-  door "…en N meer op opgietingen.nl", nooit de hashtags of oproep.
+  door "Nog N meer op opgietingen.nl", nooit de hashtags of oproep.
 - **Streepjes**: `normalizeProseDashes` en `normalizeRangeDashes` verhuizen van
   `scripts/lib/content.ts` naar het bestaande `src/lib/text.ts` (met re-export in
   `scripts/lib/content.ts` zodat de scrapers ongewijzigd blijven) en worden op elke
-  caption toegepast. Geen em-streepjes in captions.
+  caption toegepast, per veld: prose op opening/titel/sauna/plaats, bereik op
+  tijden/prijs. Geen em-streepjes in captions.
 
 ## 6. Lokaal script — `npm run social-kit`
 
