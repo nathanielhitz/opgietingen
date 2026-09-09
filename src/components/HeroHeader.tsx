@@ -1,5 +1,6 @@
 import { getImageProps } from "next/image";
 import Link from "next/link";
+import HeroStoom from "@/components/HeroStoom";
 import { getProvincesWithEvents, slugify } from "@/lib/content";
 import { EVENT_TYPES, COUNTRY_LABELS, type EventType } from "@/lib/site";
 
@@ -48,6 +49,9 @@ export default function HeroHeader({
           className="absolute inset-0 h-full w-full object-cover"
         />
       </picture>
+
+      {/* Stoomlaag ónder de scrim, zodat hij meedimt waar tekst staat */}
+      <HeroStoom />
 
       {/* Donkere scrim voor leesbaarheid */}
       <div className="hero-overlay absolute inset-0" aria-hidden />
