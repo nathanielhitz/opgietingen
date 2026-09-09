@@ -140,13 +140,16 @@ h1, h2, h3, h4 {
    dimt mee waar tekst staat. Verankerd rechtsonder met right/bottom: de hero
    wordt door zijn inhoud gemeten en de foto is object-cover, dus de exacte
    positie van de stenen verschuift per viewport; de oven zit in beide foto's
-   rechtsonder. Alleen transform en opacity animeren (composited). */
+   rechtsonder. Alleen transform en opacity animeren (composited); bewust geen
+   will-change, de lopende animatie promoveert al.
+   Leunt op .hero-stoom als absolute inset-0 zónder eigen stacking context
+   (geen z-index/opacity/transform/isolate), anders blenden de wolken tegen
+   een transparante achtergrond. */
 .stoom-wolk,
 .stoom-gloed {
   position: absolute;
   border-radius: 50%;
   mix-blend-mode: screen;
-  will-change: transform, opacity;
 }
 
 .stoom-wolk {
@@ -154,6 +157,7 @@ h1, h2, h3, h4 {
   bottom: 10%;
   width: 17%;
   aspect-ratio: 1;
+  /* Warm licht uit de oven, bewust niet het koele --color-steam-accent. */
   background: radial-gradient(
     closest-side,
     rgba(255, 244, 234, 0.95),
@@ -182,7 +186,7 @@ h1, h2, h3, h4 {
   }
 }
 
-/* Ademende gloed op de stenen: trage puls, geen piek. Kleur = --color-ember-soft. */
+/* Ademende gloed op de stenen: trage puls, geen piek. */
 .stoom-gloed {
   right: 4%;
   bottom: -8%;
@@ -190,16 +194,16 @@ h1, h2, h3, h4 {
   aspect-ratio: 1.4;
   background: radial-gradient(
     closest-side,
-    rgba(224, 149, 95, 0.85),
-    rgba(224, 149, 95, 0.35) 50%,
+    color-mix(in srgb, var(--color-ember-soft) 85%, transparent),
+    color-mix(in srgb, var(--color-ember-soft) 35%, transparent) 50%,
     transparent 100%
   );
   filter: blur(30px);
   opacity: 0.12;
-  animation: stoom-gloed 8s ease-in-out infinite alternate;
+  animation: stoom-adem 8s ease-in-out infinite alternate;
 }
 
-@keyframes stoom-gloed {
+@keyframes stoom-adem {
   from {
     opacity: 0.12;
   }
@@ -215,11 +219,13 @@ h1, h2, h3, h4 {
     right: 6%;
     bottom: 14%;
     width: 30%;
+    filter: blur(14px);
   }
   .stoom-gloed {
     right: -6%;
     bottom: 2%;
     width: 60%;
+    filter: blur(20px);
   }
 }
 
