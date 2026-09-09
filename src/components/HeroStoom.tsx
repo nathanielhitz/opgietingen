@@ -18,14 +18,18 @@ const WOLKEN: Array<{ duur: string; start: string; drift: string }> = [
   { duur: "11.5s", start: "-10.2s", drift: "-48%" },
 ];
 
+// Smal type i.p.v. een brede `as CSSProperties`-cast, zodat de custom-property
+// sleutels (--duur, --start, --drift) getypecheckt blijven.
+type WolkStijl = CSSProperties & Record<"--duur" | "--start" | "--drift", string>;
+
 export default function HeroStoom() {
   return (
     <div className="hero-stoom pointer-events-none absolute inset-0" aria-hidden>
-      {WOLKEN.map((w) => (
+      {WOLKEN.map((w, i) => (
         <span
-          key={w.start}
+          key={i}
           className="stoom-wolk"
-          style={{ "--duur": w.duur, "--start": w.start, "--drift": w.drift } as CSSProperties}
+          style={{ "--duur": w.duur, "--start": w.start, "--drift": w.drift } as WolkStijl}
         />
       ))}
       <span className="stoom-gloed" />
