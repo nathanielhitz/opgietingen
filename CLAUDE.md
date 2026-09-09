@@ -106,6 +106,7 @@ Nieuwsbrief-opt-in is **uitgesteld** naar een latere sessie.
 - **Datums** als ISO-strings (`YYYY-MM-DD`) in frontmatter; formatteren met `Intl.DateTimeFormat("nl-NL")` in `src/lib/dates.ts`.
 - **Geen `Date.now()`/`new Date()` in SSG-render paden** waar determinisme telt — gebruik helpers en behandel "vandaag" bewust.
 - **Kleuren via themetokens** (`bg-cream`, `text-ink`, `text-ember`, ...), niet via hex in components. Tokens staan in `globals.css`.
+- **Animatie: alleen de hero-stoom.** De homepage-hero heeft één decoratieve, CSS-only stoomlaag (`HeroStoom`, stijl in `globals.css`): zes wolken plus een ademende gloed vanaf de oven rechtsonder, alleen `transform`/`opacity`, bewust zonder `will-change`, bij `prefers-reduced-motion` `display: none`. Geen andere animaties op de site; nieuwe beweging eerst afwegen tegen dit ijkpunt. Spec: [docs/superpowers/specs/2026-09-09-hero-stoom-animatie-design.md](docs/superpowers/specs/2026-09-09-hero-stoom-animatie-design.md).
 - **Affiliate-links altijd via `/uit/[event-of-sauna-slug]`** zodat kliks meetbaar zijn — nooit direct naar de sauna linken vanaf CTA's.
 - **SEO:** elke route exporteert `metadata`/`generateMetadata`; detailpagina's renderen JSON-LD structured data; `sitemap.ts` genereert `/sitemap.xml`.
 

@@ -1,6 +1,6 @@
 # Stoomanimatie in de homepage-hero — ontwerp
 
-Datum: 2026-09-09. Status: ontwerp, ter review.
+Datum: 2026-09-09. Status: gebouwd op 2026-09-09; spec bijgewerkt na de bouw (reviewpunten in §8).
 
 ## 1. Aanleiding
 
@@ -52,7 +52,15 @@ niet mee met twee foto-uitsnedes).
 
 De zes wolken staan als vaste lijst in het component (geen config, geen loader).
 De variatie per wolk zit in drie CSS-variabelen; alles verder is klasse. De
-inline-style met custom properties heeft een type-cast nodig (`as React.CSSProperties`).
+inline-style met custom properties is getypeerd als
+`CSSProperties & Record<"--duur" | "--start" | "--drift", string>` (smal type
+i.p.v. een brede `as CSSProperties`-cast, zodat de drie custom-property
+sleutels typegecheckt blijven).
+
+`HeroStoom.tsx` opent met twee JSX-pragma-regels (`@jsxRuntime automatic`,
+`@jsxImportSource react`): de tsx-testrunner gebruikt tsconfig's
+`"jsx": "preserve"`, wat `node:test` laat falen met "React is not defined";
+Next (SWC) negeert deze pragma's en gebruikt zijn eigen instelling toch al.
 
 **Plaatsing** in `HeroHeader.tsx`: direct ná de `<picture>` en vóór
 `div.hero-overlay`. De stoom ligt dus onder de scrim en dimt mee waar tekst staat.
@@ -69,14 +77,16 @@ nieuwe tokens, geen nieuwe dependency, geen JavaScript.
 
 - Vorm: cirkel, `aspect-ratio: 1`, `border-radius: 50%`,
   `background: radial-gradient(closest-side, rgba(255,244,234,.95), rgba(255,244,234,.4) 45%, transparent)`,
-  `filter: blur(22px)`, `mix-blend-mode: screen`, `will-change: transform, opacity`.
+  `filter: blur(22px)`, `mix-blend-mode: screen`.
 - Verankering desktop (≥ 768 px): `width: 17%` van de hero, `right: 13%`,
   `bottom: 10%`. Verankeren met `right`/`bottom` in plaats van `left`/`top`: de
   hero-sectie wordt door zijn inhoud gemeten en de foto is `object-cover`, dus de
   exacte positie van de stenen verschuift per viewport. De oven zit in beide
   foto's rechtsonder; een pluim uit die hoek is bij elke uitsnede geloofwaardig.
 - Verankering mobiel (< 768 px): `width: 30%`, `right: 6%`, `bottom: 14%`
-  (de staande foto heeft de stenen groter en iets hoger in beeld).
+  (de staande foto heeft de stenen groter en iets hoger in beeld), en een
+  kleinere `filter: blur(14px)` — de wolken zijn op mobiel in pixels veel
+  kleiner, dezelfde 22px blur zou ze bijna wegvegen.
 - Animatie: `stoom-pluim var(--duur) ease-out var(--start) infinite`.
 
 ```css
@@ -95,17 +105,23 @@ verschillende starttijden geven een doorlopend, niet-herhalend beeld.
 **Gloed** (`.stoom-gloed`)
 
 - Ellips over de stenen: `width: 34%`, `aspect-ratio: 1.4`, desktop `right: 4%`,
-  `bottom: -8%`; mobiel `width: 60%`, `right: -6%`, `bottom: 2%`.
-  `border-radius: 50%`, `filter: blur(30px)`, `mix-blend-mode: screen`,
-  `background: radial-gradient(closest-side, rgba(224,149,95,.85), rgba(224,149,95,.35) 50%, transparent)`.
-- Animatie: `stoom-gloed 8s ease-in-out infinite alternate`, dekking van .12
-  naar .30. Geen piek; alleen ademen.
+  `bottom: -8%`; mobiel `width: 60%`, `right: -6%`, `bottom: 2%`, met een
+  kleinere `filter: blur(20px)` (i.p.v. 30px) — dezelfde reden als bij de
+  wolk: op mobiel is de ellips in pixels veel kleiner.
+  `border-radius: 50%`, `mix-blend-mode: screen`,
+  `background: radial-gradient(closest-side, color-mix(in srgb, var(--color-ember-soft) 85%, transparent), color-mix(in srgb, var(--color-ember-soft) 35%, transparent) 50%, transparent)`
+  — via het bestaande token in plaats van hardgecodeerde rgba.
+- Animatie: `stoom-adem 8s ease-in-out infinite alternate`, dekking van .12
+  naar .30. Geen piek; alleen ademen. (Eigen naam i.p.v. `stoom-gloed`, om
+  botsing met de klassenaam `.stoom-gloed` te vermijden.)
 
 ## 5. Prestaties en toegankelijkheid
 
 - Alleen `transform` en `opacity` worden geanimeerd: composited, geen layout of
   paint per frame. Zeven kleine elementen met blur is vergelijkbaar met wat de
-  frosted-glass zoekbalk (`backdrop-blur-md`) al vraagt.
+  frosted-glass zoekbalk (`backdrop-blur-md`) al vraagt. Bewust geen
+  `will-change`: de lopende animatie promoveert de elementen al; permanente
+  lagen bovenop het LCP-element zijn ongewenst.
 - Geen afbeeldingen in de laag; de herofoto blijft het LCP-element en de laag
   voegt geen bytes toe aan de kritieke route. Geen client component, dus geen
   hydration en geen bundelgroei.
@@ -126,7 +142,9 @@ verschillende starttijden geven een doorlopend, niet-herhalend beeld.
 
 ## 7. Verificatie
 
-Geen unit-test: het is decoratieve CSS zonder logica. Wel:
+Eén structurele test, `scripts/lib/hero-stoom.test.ts`: zes wolken, één gloed,
+`aria-hidden`, geen tekst, unieke startoffsets. Geen CSS-test — dat blijft
+decoratieve stijl zonder logica. Verder:
 
 1. `npm run lint` en `npm run build` groen.
 2. Handmatig in de dev-server: desktop (stoom komt uit de oven rechtsonder, kop
@@ -136,6 +154,30 @@ Geen unit-test: het is decoratieve CSS zonder logica. Wel:
    tekst te verbergen. Timing, schaal en dekking in §4 zijn dezelfde als in de
    mockup; de verankering is vertaald van `left`/`top` naar `right`/`bottom` en
    wordt op het oog afgestemd op de echte hero-hoogte.
+4. Uitgevoerd op 2026-09-09 met headless Chrome tegen de productie-build:
+   verschilbeeld tussen bewegende en reduced-motion-weergave toont de pluim uit
+   de ovenhoek rechtsonder, weg van kop en zoekbalk; met reduced motion geen
+   laag. Op mobiel (390 px) valt de oven door de smalle uitsnede buiten beeld;
+   de pluim komt uit de hoek rechtsonder en blijft geloofwaardig. Geen
+   bijstelling van de verankering nodig.
 
 Werk in een aparte git-worktree; Nathaniel draait soms twee sessies in één
 checkout.
+
+## 8. Afwijkingen na review
+
+- **Geen `will-change`** op `.stoom-wolk`: de lopende animatie promoveert het
+  element toch al; een permanente laag boven op het LCP-element is onnodige
+  overhead.
+- **Animatienaam `stoom-adem` i.p.v. `stoom-gloed`**: voorkomt botsing met de
+  klassenaam `.stoom-gloed`.
+- **Kleinere blur op mobiel** (`blur(14px)` voor de wolk, `blur(20px)` voor de
+  gloed): de wolken zijn in pixels veel kleiner op mobiel, de desktop-blur zou
+  ze bijna wegvegen.
+- **Kleur via `color-mix(in srgb, var(--color-ember-soft) …, transparent)`**
+  i.p.v. hardgecodeerde rgba: gebruikt het bestaande themetoken in plaats van
+  een losstaande kleurwaarde.
+- **JSX-pragma's + smal `WolkStijl`-type**: de tsx-testrunner heeft de pragma's
+  nodig om te draaien onder `"jsx": "preserve"`; het smalle type i.p.v. een
+  brede `as CSSProperties`-cast houdt de drie custom-property sleutels
+  typegecheckt.
