@@ -171,7 +171,7 @@ ophalen.
   "Link in bio", "Sla op en deel met je saunamaatje".
 - **Uitgelicht** is een event-slide als losse post.
 
-Beelden alleen als JPEG, PNG of SVG: satori kan geen WebP/AVIF lezen; de HEAD-check
+Beelden alleen als JPEG, PNG, GIF of SVG: satori kan geen WebP/AVIF lezen; de HEAD-check
 controleert het content-type en valt anders terug op de houtgradient.
 
 Kleuren zijn de hexwaarden van de themetokens uit `globals.css` (satori kent geen
