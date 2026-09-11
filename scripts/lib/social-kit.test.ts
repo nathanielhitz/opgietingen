@@ -23,10 +23,10 @@ const post: PlanningPost = {
   captions: { instagram: "IG-tekst", facebook: "FB-tekst", tiktok: "TT-tekst" },
 };
 
-test("bestandsnaam: volgnummer, rol, eventslug en formaat", () => {
-  assert.equal(bestandsnaam(0, post.slides[0], "feed"), "01-cover-feed.png");
-  assert.equal(bestandsnaam(1, post.slides[1], "story"), "02-event-herfstgloed-story.png");
-  assert.equal(bestandsnaam(2, post.slides[2], "feed"), "03-afsluiter-feed.png");
+test("bestandsnaam: volgnummer, rol en eventslug (formaat zit in de submap)", () => {
+  assert.equal(bestandsnaam(0, post.slides[0]), "01-cover.png");
+  assert.equal(bestandsnaam(1, post.slides[1]), "02-event-herfstgloed.png");
+  assert.equal(bestandsnaam(2, post.slides[2]), "03-afsluiter.png");
 });
 
 test("captionsMarkdown: titel, plaatsingsdag, slides en drie kanalen", () => {
@@ -39,15 +39,18 @@ test("captionsMarkdown: titel, plaatsingsdag, slides en drie kanalen", () => {
   assert.match(md, /## TikTok\n\nTT-tekst/);
 });
 
-test("downloadPost: schrijft slides en captions; ruimt de map op bij een mislukte download", async () => {
+test("downloadPost: schrijft slides per formaat in een submap en captions; ruimt de map op bij een mislukte download", async () => {
   const basis = fs.mkdtempSync(path.join(os.tmpdir(), "social-kit-"));
   const map = path.join(basis, post.id);
   const ok = async () => new Response(new Uint8Array([137, 80, 78, 71]), { status: 200 });
-  await downloadPost(post, basis, map, ["feed"], ok);
-  assert.ok(fs.existsSync(path.join(map, "01-cover-feed.png")));
-  assert.ok(fs.existsSync(path.join(map, "03-afsluiter-feed.png")));
-  assert.ok(!fs.existsSync(path.join(map, "01-cover-story.png")), "alleen het gevraagde formaat");
+  await downloadPost(post, basis, map, ["feed", "story"], ok);
+  assert.ok(fs.existsSync(path.join(map, "feed", "01-cover.png")));
+  assert.ok(fs.existsSync(path.join(map, "feed", "03-afsluiter.png")));
+  assert.ok(fs.existsSync(path.join(map, "story", "02-event-herfstgloed.png")));
   assert.ok(fs.existsSync(path.join(map, "captions.md")));
+
+  await downloadPost(post, basis, map, ["feed"], ok);
+  assert.ok(!fs.existsSync(path.join(map, "story")), "alleen het gevraagde formaat krijgt een submap");
 
   const kapot = async (url: string) => new Response("", { status: url.includes("herfstgloed") ? 404 : 200 });
   await assert.rejects(() => downloadPost(post, basis, map, ["feed"], kapot), /404/);

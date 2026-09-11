@@ -5,13 +5,18 @@ import { KANALEN, type Formaat, type Kanaal } from "../../src/lib/social";
 
 /* Pure helpers van het social-kit-script; het script zelf regelt flags en de planning-fetch. */
 
-export function bestandsnaam(index: number, slide: PlanningSlide, formaat: Formaat): string {
+/**
+ * Bestandsnaam zonder formaat: de slides staan per formaat in een eigen submap
+ * (`feed/`, `story/`), zodat alle slides van een carrousel in één keer te
+ * selecteren en in Buffer te slepen zijn.
+ */
+export function bestandsnaam(index: number, slide: PlanningSlide): string {
   const nr = String(index + 1).padStart(2, "0");
   // eventSlug komt uit de planning-JSON van de site; sanitiseren voorkomt dat
   // een `../` daarin ooit buiten `map` terechtkomt via path.join.
   const veiligeSlug = slide.eventSlug?.replace(/[^a-z0-9-]/gi, "");
   const slug = veiligeSlug ? `-${veiligeSlug}` : "";
-  return `${nr}-${slide.rol}${slug}-${formaat}.png`;
+  return `${nr}-${slide.rol}${slug}.png`;
 }
 
 const KANAAL_LABEL: Record<Kanaal, string> = { instagram: "Instagram", facebook: "Facebook", tiktok: "TikTok" };
@@ -40,8 +45,8 @@ export type Ophalen = (url: string) => Promise<Response>;
 export const ophalenMetTimeout: Ophalen = (url) => fetch(url, { signal: AbortSignal.timeout(20_000) });
 
 /**
- * Downloadt alle slides van één post in de gevraagde formaten naar `map` en
- * schrijft captions.md. Faalt één download, dan wordt de hele map verwijderd:
+ * Downloadt alle slides van één post naar `map/<formaat>/` (één submap per
+ * gevraagd formaat) en schrijft captions.md in `map`. Faalt één download, dan wordt de hele map verwijderd:
  * een halve kit is verwarrender dan geen kit.
  *
  * Twee veiligheidschecks vooraf: `map` moet binnen `root` liggen (anders zou
@@ -69,13 +74,13 @@ export async function downloadPost(
     }
     fs.rmSync(map, { recursive: true, force: true });
   }
-  fs.mkdirSync(map, { recursive: true });
+  for (const formaat of formaten) fs.mkdirSync(path.join(map, formaat), { recursive: true });
   try {
     for (const [i, slide] of post.slides.entries()) {
       for (const formaat of formaten) {
         const res = await ophalen(slide[formaat]);
         if (!res.ok) throw new Error(`${slide[formaat]}: HTTP ${res.status}`);
-        fs.writeFileSync(path.join(map, bestandsnaam(i, slide, formaat)), Buffer.from(await res.arrayBuffer()));
+        fs.writeFileSync(path.join(map, formaat, bestandsnaam(i, slide)), Buffer.from(await res.arrayBuffer()));
       }
     }
     fs.writeFileSync(path.join(map, "captions.md"), captionsMarkdown(post));
