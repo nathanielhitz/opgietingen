@@ -306,7 +306,9 @@ Werking: haalt `<basis>/social/planning?datum=…` op (altijd met
 expliciete `datum`, ook bij de default); per post een map
 `data/social/<datum>/<id>/` met per formaat een submap `feed/` en `story/` waarin de
 slides staan als `01-cover.png`, `02-event-<slug>.png`, …, `10-afsluiter.png` (zo is een
-hele carrousel in één keer te selecteren en in Buffer te slepen), en een `captions.md` met
+hele carrousel in één keer te selecteren en in Buffer te slepen); een post met één slide
+(*Uitgelicht*) krijgt geen submappen maar `01-event-<slug>-feed.png` en `-story.png` direct
+in de postmap. Daarnaast een `captions.md` met
 plaatsingsdag, slide-overzicht en de drie kanaalvarianten onder kopjes. Print een
 samenvatting (rubriek, plaatsingsdag, aantal slides, aantal events). Exitcode 1 als de
 planning of een beeld niet op te halen is; halve kits worden niet stilzwijgend

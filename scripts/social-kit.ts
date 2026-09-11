@@ -9,7 +9,8 @@
     npm run social-kit -- --map data/social             # doelmap (default)
 
   Uitvoer: data/social/<datum>/<post-id>/<formaat>/NN-<rol>[-<slug>].png + captions.md
-  (één submap per formaat, zodat een hele carrousel in één keer in Buffer te slepen is)
+  (één submap per formaat, zodat een hele carrousel in één keer in Buffer te slepen is;
+  een post met één slide krijgt geen submappen maar NN-<rol>-<slug>-<formaat>.png direct in de postmap)
   Een mislukte post stopt de run niet; exitcode 1 als er iets misging.
 */
 import path from "node:path";
@@ -63,7 +64,7 @@ async function main() {
     console.error(`${mislukt} post(s) mislukt`);
     process.exitCode = 1;
   }
-  console.log("\nKlaar. Selecteer alles in de feed/- of story/-map, sleep het in Buffer en plak de caption uit captions.md.");
+  console.log("\nKlaar. Sleep de slides (bij een carrousel: alles uit feed/ of story/) in Buffer en plak de caption uit captions.md.");
 }
 
 main().catch((err) => {

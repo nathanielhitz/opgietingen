@@ -1,7 +1,7 @@
 // scripts/lib/social-kit.test.ts
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { bestandsnaam, captionsMarkdown, downloadPost } from "./social-kit";
+import { bestandsnaam, captionsMarkdown, downloadPost, metSubmappen } from "./social-kit";
 import type { PlanningPost } from "../../src/lib/social-planning";
 import fs from "node:fs";
 import os from "node:os";
@@ -23,10 +23,29 @@ const post: PlanningPost = {
   captions: { instagram: "IG-tekst", facebook: "FB-tekst", tiktok: "TT-tekst" },
 };
 
-test("bestandsnaam: volgnummer, rol en eventslug (formaat zit in de submap)", () => {
+test("bestandsnaam: volgnummer, rol en eventslug; formaat alleen als achtervoegsel wanneer gevraagd", () => {
   assert.equal(bestandsnaam(0, post.slides[0]), "01-cover.png");
   assert.equal(bestandsnaam(1, post.slides[1]), "02-event-herfstgloed.png");
   assert.equal(bestandsnaam(2, post.slides[2]), "03-afsluiter.png");
+  assert.equal(bestandsnaam(0, post.slides[1], "story"), "01-event-herfstgloed-story.png");
+});
+
+test("metSubmappen: alleen bij een carrousel", () => {
+  assert.equal(metSubmappen(post), true);
+  assert.equal(metSubmappen({ slides: [post.slides[1]] }), false);
+});
+
+test("downloadPost: één slide komt zonder submappen in de postmap, met formaat in de naam", async () => {
+  const basis = fs.mkdtempSync(path.join(os.tmpdir(), "social-kit-"));
+  const los: PlanningPost = { ...post, id: "uitgelicht-herfstgloed", slides: [post.slides[1]] };
+  const map = path.join(basis, los.id);
+  const ok = async () => new Response(new Uint8Array([137, 80, 78, 71]), { status: 200 });
+  await downloadPost(los, basis, map, ["feed", "story"], ok);
+  assert.ok(fs.existsSync(path.join(map, "01-event-herfstgloed-feed.png")));
+  assert.ok(fs.existsSync(path.join(map, "01-event-herfstgloed-story.png")));
+  assert.ok(!fs.existsSync(path.join(map, "feed")), "geen submap voor één bestand");
+  assert.ok(fs.existsSync(path.join(map, "captions.md")));
+  fs.rmSync(basis, { recursive: true, force: true });
 });
 
 test("captionsMarkdown: titel, plaatsingsdag, slides en drie kanalen", () => {

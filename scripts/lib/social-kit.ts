@@ -6,17 +6,23 @@ import { KANALEN, type Formaat, type Kanaal } from "../../src/lib/social";
 /* Pure helpers van het social-kit-script; het script zelf regelt flags en de planning-fetch. */
 
 /**
- * Bestandsnaam zonder formaat: de slides staan per formaat in een eigen submap
- * (`feed/`, `story/`), zodat alle slides van een carrousel in één keer te
- * selecteren en in Buffer te slepen zijn.
+ * Bestandsnaam van een slide. Bij een carrousel staan de slides per formaat in
+ * een eigen submap (`feed/`, `story/`) en is het formaat in de naam overbodig;
+ * bij één slide staan feed en story naast elkaar in de postmap en krijgt de
+ * naam het formaat als achtervoegsel (`01-event-<slug>-feed.png`).
  */
-export function bestandsnaam(index: number, slide: PlanningSlide): string {
+export function bestandsnaam(index: number, slide: PlanningSlide, formaat?: Formaat): string {
   const nr = String(index + 1).padStart(2, "0");
   // eventSlug komt uit de planning-JSON van de site; sanitiseren voorkomt dat
   // een `../` daarin ooit buiten `map` terechtkomt via path.join.
   const veiligeSlug = slide.eventSlug?.replace(/[^a-z0-9-]/gi, "");
   const slug = veiligeSlug ? `-${veiligeSlug}` : "";
-  return `${nr}-${slide.rol}${slug}.png`;
+  return `${nr}-${slide.rol}${slug}${formaat ? `-${formaat}` : ""}.png`;
+}
+
+/** Submappen per formaat alleen bij een carrousel; één slide hoeft niet in een map van één bestand. */
+export function metSubmappen(post: Pick<PlanningPost, "slides">): boolean {
+  return post.slides.length > 1;
 }
 
 const KANAAL_LABEL: Record<Kanaal, string> = { instagram: "Instagram", facebook: "Facebook", tiktok: "TikTok" };
@@ -45,8 +51,10 @@ export type Ophalen = (url: string) => Promise<Response>;
 export const ophalenMetTimeout: Ophalen = (url) => fetch(url, { signal: AbortSignal.timeout(20_000) });
 
 /**
- * Downloadt alle slides van één post naar `map/<formaat>/` (één submap per
- * gevraagd formaat) en schrijft captions.md in `map`. Faalt één download, dan wordt de hele map verwijderd:
+ * Downloadt alle slides van één post naar `map` en schrijft captions.md.
+ * Een carrousel krijgt per gevraagd formaat een submap (`feed/`, `story/`)
+ * zodat alle slides in één keer te selecteren zijn; een post met één slide
+ * krijgt de bestanden direct in `map` met het formaat in de naam. Faalt één download, dan wordt de hele map verwijderd:
  * een halve kit is verwarrender dan geen kit.
  *
  * Twee veiligheidschecks vooraf: `map` moet binnen `root` liggen (anders zou
@@ -74,13 +82,16 @@ export async function downloadPost(
     }
     fs.rmSync(map, { recursive: true, force: true });
   }
-  for (const formaat of formaten) fs.mkdirSync(path.join(map, formaat), { recursive: true });
+  const submappen = metSubmappen(post);
+  fs.mkdirSync(map, { recursive: true });
+  if (submappen) for (const formaat of formaten) fs.mkdirSync(path.join(map, formaat), { recursive: true });
   try {
     for (const [i, slide] of post.slides.entries()) {
       for (const formaat of formaten) {
         const res = await ophalen(slide[formaat]);
         if (!res.ok) throw new Error(`${slide[formaat]}: HTTP ${res.status}`);
-        fs.writeFileSync(path.join(map, formaat, bestandsnaam(i, slide)), Buffer.from(await res.arrayBuffer()));
+        const doel = submappen ? path.join(map, formaat, bestandsnaam(i, slide)) : path.join(map, bestandsnaam(i, slide, formaat));
+        fs.writeFileSync(doel, Buffer.from(await res.arrayBuffer()));
       }
     }
     fs.writeFileSync(path.join(map, "captions.md"), captionsMarkdown(post));
