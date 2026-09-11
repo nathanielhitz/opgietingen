@@ -189,6 +189,17 @@ export function formatDagKort(iso: string): string {
     .replace(/\s+/g, " ");
 }
 
+/**
+ * Compacte dag voor programmaregels op een cover: "vr 11", of bij een
+ * meerdaags event "za 12–13" (weekdag van de start, dagnummers van begin en eind).
+ */
+export function formatDagCompact(start: string, eind?: string): string {
+  const weekdag = formatDate(start, { weekday: "short" }).replace(/\./g, "");
+  const van = parseISO(start).getUTCDate();
+  if (!eind || eind === start) return `${weekdag} ${van}`;
+  return `${weekdag} ${van}–${parseISO(eind).getUTCDate()}`;
+}
+
 /** Geldige kalenderdatum in de vorm YYYY-MM-DD (geen 2026-02-30). */
 export function isGeldigeIsoDatum(iso: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(iso) && addDaysISO(iso, 0) === iso;

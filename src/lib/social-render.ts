@@ -69,3 +69,15 @@ export async function beeldUrlAlsAanwezig(oorsprong: string, pad: string | undef
   }
   return (await aanwezig.get(url)!) ? url : undefined;
 }
+
+/** Generiek sfeerbeeld van de site (geen specifieke sauna), stand-in tot het eigen coverbeeld er is. */
+export const COVER_FALLBACK = "/images/hero/hero-mobiel.jpg";
+
+/**
+ * Sfeerbeeld voor een cover: het rubriekbeeld onder public/images/social/ als
+ * dat er is, anders de hero van de homepage (zelfde palet, ook generiek), en
+ * pas als die ook ontbreekt undefined (houtgradient).
+ */
+export async function coverBeeld(oorsprong: string, pad: string): Promise<string | undefined> {
+  return (await beeldUrlAlsAanwezig(oorsprong, pad)) ?? (await beeldUrlAlsAanwezig(oorsprong, COVER_FALLBACK));
+}

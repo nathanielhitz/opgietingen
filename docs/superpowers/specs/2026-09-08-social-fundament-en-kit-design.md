@@ -159,8 +159,15 @@ ophalen.
   `docs/image-prompts.md` worden toegevoegd), donkere gradient van onder naar boven,
   label bovenin in ember-badge ("Dit weekend" / "Deze maand: oktober" / "Nieuw in de
   agenda"), grote Fraunces-kop met het aantal ("6 opgietingen"), daaronder het bereik
-  of de maand in `ember-soft`. Ontbreekt het sfeerbeeld, dan houtgradient
-  (`wood-dark → wood`) als fallback; de build breekt niet.
+  of de maand in `ember-soft`, en daaronder het **programma**: per event één regel
+  (compacte dag "vr 11" / "za 12–13" in `ember-soft`, saunanaam, plaats), max. 5 regels
+  op feed en 7 op story, daarna "+ N meer op opgietingen.nl" (`programmaRegels`, pure
+  functie). Met programma is de sluier over het beeld zwaarder (donker vanaf ±45%) en de
+  kop een maat kleiner. Ontbreekt het sfeerbeeld, dan valt de cover terug op de
+  homepage-hero (`/images/hero/hero-mobiel.jpg`, hetzelfde palet en ook generiek), en
+  pas daarna op houtgradient (`wood-dark → wood`); de build breekt niet.
+  (Besluit 2026-09-11: variant "sfeerbeeld + programma" gekozen boven een fotomozaïek
+  van de sauna's en een puur typografische cover.)
 - **Event-slide**: als `event.afbeelding` bestaat (eigen eventbeeld of, via de
   loader, de echte saunafoto) → beeld met overlay; anders houtgradient met het
   saunalogo op een crème plaat (werkt voor `logoAchtergrond` licht én donker), zonder
@@ -297,16 +304,17 @@ feed|story|beide` (default `beide`), `--map <pad>` (default `data/social`).
 
 Werking: haalt `<basis>/social/planning?datum=…` op (altijd met
 expliciete `datum`, ook bij de default); per post een map
-`data/social/<datum>/<id>/` met slides als `01-cover-feed.png`, `01-cover-story.png`,
-`02-event-<slug>-feed.png`, …, `10-afsluiter-feed.png`, en een `captions.md` met
+`data/social/<datum>/<id>/` met per formaat een submap `feed/` en `story/` waarin de
+slides staan als `01-cover.png`, `02-event-<slug>.png`, …, `10-afsluiter.png` (zo is een
+hele carrousel in één keer te selecteren en in Buffer te slepen), en een `captions.md` met
 plaatsingsdag, slide-overzicht en de drie kanaalvarianten onder kopjes. Print een
 samenvatting (rubriek, plaatsingsdag, aantal slides, aantal events). Exitcode 1 als de
 planning of een beeld niet op te halen is; halve kits worden niet stilzwijgend
 achtergelaten (de map van die post wordt dan verwijderd). `data/social/` komt in
 `.gitignore`.
 
-Vanuit VS Code: bestanden in Buffer slepen, caption uit `captions.md` plakken, drie
-kanalen aanvinken, plaatsingsdag instellen.
+Vanuit Finder/VS Code: alle bestanden uit `feed/` selecteren en in Buffer slepen,
+caption uit `captions.md` plakken, drie kanalen aanvinken, plaatsingsdag instellen.
 
 ## 7. Publiceerstap (contract; adapter buiten scope)
 

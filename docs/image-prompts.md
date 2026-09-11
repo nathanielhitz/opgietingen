@@ -164,6 +164,6 @@ Gebruik de basis-prompt met `Output: photorealistic, natural film grain, warm to
 > Scene: a single ladle pouring water onto glowing sauna stones, sharp burst of steam rising, dark wooden wall
 > behind, lower half fading to near-black for text overlay.
 
-Zolang een bestand ontbreekt, valt de cover terug op de houtgradient (geen fout). Alleen JPEG, PNG, GIF of SVG:
+Zolang een bestand ontbreekt, gebruikt de cover de homepage-hero (`hero-mobiel.jpg`) als stand-in en pas daarna de houtgradient (geen fout). Alleen JPEG, PNG, GIF of SVG:
 de renderer (satori) kan geen WebP of AVIF lezen; dat geldt ook voor sauna-logo's en eventbeelden die op een
 slide komen.
