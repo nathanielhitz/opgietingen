@@ -268,10 +268,11 @@ export function AfsluiterSlide({ formaat }: { formaat: Formaat }) {
   );
 }
 
+/** Profielfoto: het stoomlogo op houtgradient, zoals het logo-rondje in de sitekop (wood-dark met ember-soft). */
 export function ProfielSlide() {
   return (
-    <div style={{ width: PROFIEL.width, height: PROFIEL.height, display: "flex", alignItems: "center", justifyContent: "center", background: KLEUR.cream }}>
-      <Steam kleur={KLEUR.ember} grootte={720} />
+    <div style={{ width: PROFIEL.width, height: PROFIEL.height, display: "flex", alignItems: "center", justifyContent: "center", background: HOUT_GRADIENT }}>
+      <Steam kleur={KLEUR.emberSoft} grootte={720} />
     </div>
   );
 }

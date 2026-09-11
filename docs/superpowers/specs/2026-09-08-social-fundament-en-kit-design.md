@@ -138,7 +138,7 @@ Alle slides tonen onderin het woordmerk "opgietingen.nl".
 | `/social/nieuw/[datum]` | Cover *Nieuw in de agenda*: events met `gepubliceerdOp` in `[datum-6, datum]` en `startDatum ≥ datum`. | datum ongeldig |
 | `/social/event/[slug]` | Event-slide. | event onbekend of onzichtbaar (loader filtert concept/afgewezen) |
 | `/social/afsluiter` | Afsluiter, statisch. | — |
-| `/social/profiel` | 1080×1080, logo op crème, voor profielfoto's. Geen `formaat`. | — |
+| `/social/profiel` | 1080×1080, logo (ember-soft) op houtgradient zoals het logo-rondje in de sitekop, voor profielfoto's. Geen `formaat`. | — |
 | `/social/omslag` | 1640×624, hero-beeld met overlay + tagline, Facebook-omslag. Geen `formaat`. | — |
 | `/social/planning` | JSON, zie §5.3. `?datum=YYYY-MM-DD`, default vandaag (NL-tijdzone). | datum ongeldig |
 
