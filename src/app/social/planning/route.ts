@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
     events: getAllEvents(),
     vandaag: todayISO(),
     vercelEnv: process.env.VERCEL_ENV,
+    commit: process.env.VERCEL_GIT_COMMIT_SHA ?? null,
   });
   return Response.json(antwoord.body, { status: antwoord.status, headers: antwoord.headers });
 }

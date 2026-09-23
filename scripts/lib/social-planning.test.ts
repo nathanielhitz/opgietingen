@@ -60,3 +60,15 @@ test("planningAntwoord: productie gebruikt site.url als basis, anders de request
   });
   assert.ok("basis" in zonderVercelEnv.body && zonderVercelEnv.body.basis === "https://preview.vercel.app");
 });
+
+test("bouwPlanning: commit is null als er geen deploy-hash is, anders de hash", () => {
+  assert.equal(bouwPlanning([], "2026-09-28", "https://opgietingen.nl").commit, null);
+  assert.equal(bouwPlanning([], "2026-09-28", "https://opgietingen.nl", "abc1234").commit, "abc1234");
+});
+
+test("planningAntwoord: geeft de commit-hash van de deploy door (versheidscheck Buffer-adapter)", () => {
+  const met = planningAntwoord({ datumParam: "2026-09-28", origin: "http://localhost:3000", events: [], vandaag: "2026-09-28", commit: "abc1234" });
+  assert.ok("commit" in met.body && met.body.commit === "abc1234");
+  const zonder = planningAntwoord({ datumParam: "2026-09-28", origin: "http://localhost:3000", events: [], vandaag: "2026-09-28" });
+  assert.ok("commit" in zonder.body && zonder.body.commit === null);
+});
