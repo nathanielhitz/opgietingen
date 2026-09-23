@@ -33,10 +33,15 @@ export interface PlanningJson {
   datum: string;
   /** Oorsprong waarop de slide-URL's zijn gebouwd. */
   basis: string;
+  /**
+   * Commit-hash van de deploy die deze planning maakte (Vercel), null lokaal.
+   * De Buffer-adapter vergelijkt hem met de commit op de runner (versheidscheck).
+   */
+  commit: string | null;
   posts: PlanningPost[];
 }
 
-export function bouwPlanning(events: OpgietEvent[], datum: string, basis: string): PlanningJson {
+export function bouwPlanning(events: OpgietEvent[], datum: string, basis: string, commit: string | null = null): PlanningJson {
   const oorsprong = basis.replace(/\/$/, "");
   const posts = bouwPosts(events, datum).map((post) => {
     // Record<Kanaal, string> dwingt af dat elk kanaal een caption krijgt (compile-time check).
@@ -62,7 +67,7 @@ export function bouwPlanning(events: OpgietEvent[], datum: string, basis: string
       captions,
     };
   });
-  return { datum, basis: oorsprong, posts };
+  return { datum, basis: oorsprong, commit, posts };
 }
 
 export interface PlanningAntwoord {
@@ -83,6 +88,8 @@ export function planningAntwoord(opties: {
   events: OpgietEvent[];
   vandaag: string;
   vercelEnv?: string;
+  /** VERCEL_GIT_COMMIT_SHA van de draaiende deploy; lokaal weglaten. */
+  commit?: string | null;
 }): PlanningAntwoord {
   const datum = opties.datumParam ?? opties.vandaag;
   const headers = { "X-Robots-Tag": "noindex", "Cache-Control": "no-store" };
@@ -90,5 +97,5 @@ export function planningAntwoord(opties: {
     return { status: 400, body: { fout: `Ongeldige datum "${datum}", verwacht YYYY-MM-DD` }, headers };
   }
   const basis = opties.vercelEnv === "production" ? site.url : opties.origin;
-  return { status: 200, body: bouwPlanning(opties.events, datum, basis), headers };
+  return { status: 200, body: bouwPlanning(opties.events, datum, basis, opties.commit ?? null), headers };
 }
