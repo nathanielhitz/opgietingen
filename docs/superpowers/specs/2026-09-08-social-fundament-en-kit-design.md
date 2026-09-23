@@ -169,9 +169,12 @@ ophalen.
   (Besluit 2026-09-11: variant "sfeerbeeld + programma" gekozen boven een fotomozaïek
   van de sauna's en een puur typografische cover.)
 - **Event-slide**: als `event.afbeelding` bestaat (eigen eventbeeld of, via de
-  loader, de echte saunafoto) → beeld met overlay; anders houtgradient met het
-  saunalogo op een crème plaat (werkt voor `logoAchtergrond` licht én donker), zonder
-  logo alleen typografie. Inhoud: type-badge, titel (fontgrootte schaalt bij > 40
+  loader, de echte saunafoto) → beeld met overlay; anders hetzelfde generieke
+  sfeerbeeld als de covers (`/images/social/event.jpg`, anders de homepage-hero, pas
+  daarna houtgradient) met het saunalogo op een crème plaat (werkt voor
+  `logoAchtergrond` licht én donker), zonder logo alleen typografie. Het logo blijft
+  bewust staan bij het sfeerbeeld: het maakt duidelijk dat het beeld sfeer is en niet
+  deze sauna (wijziging 2026-09-23; de kale houtgradient vond Nathaniel niet mooi). Inhoud: type-badge, titel (fontgrootte schaalt bij > 40
   tekens, max. 3 regels, daarna afgekapt met …), sauna + plaats, datum via
   `formatDateRange`, `tijden` en `prijsIndicatie` als aanwezig.
 - **Afsluiter**: houtgradient, "Alle opgietingen in Nederland en België op één plek",

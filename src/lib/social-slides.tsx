@@ -214,19 +214,23 @@ export function EventSlide({
   formaat,
   event,
   beeld,
+  sfeerbeeld,
   logo,
 }: {
   formaat: Formaat;
   event: OpgietEvent;
-  /** Eigen eventbeeld of echte saunafoto; ontbreekt → houtgradient met logo. */
+  /** Eigen eventbeeld of echte saunafoto; ontbreekt → sfeerbeeld (of houtgradient) met logo. */
   beeld?: string;
+  /** Generiek sfeerbeeld als achtergrond wanneer `beeld` ontbreekt (zelfde terugval als de covers); zonder beide houtgradient. */
+  sfeerbeeld?: string;
   logo?: string;
 }) {
   const titel = afkap(event.titel, 90);
   const wanneer = `${formatDateRange(event.startDatum, event.eindDatum)}${event.tijden ? ` · ${event.tijden}` : ""}`;
   const logoPlaat = event.sauna.logoAchtergrond === "donker" ? KLEUR.woodDark : KLEUR.cream;
   return (
-    <Canvas formaat={formaat} beeld={beeld}>
+    <Canvas formaat={formaat} beeld={beeld ?? sfeerbeeld}>
+      {/* Het logo hoort bij het generieke sfeerbeeld: dat maakt duidelijk dat het beeld sfeer is, niet deze sauna. */}
       {!beeld && logo ? (
         <div style={{ display: "flex", alignSelf: "flex-start", padding: 28, borderRadius: 24, background: logoPlaat, marginBottom: 44 }}>
           <img alt="" src={logo} width={320} height={160} style={{ width: 320, height: 160, objectFit: "contain" }} />
