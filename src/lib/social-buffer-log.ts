@@ -1,7 +1,7 @@
 // src/lib/social-buffer-log.ts
 import fs from "node:fs";
 import path from "node:path";
-import type { Kanaal } from "@/lib/social";
+import { KANALEN, type Kanaal } from "@/lib/social";
 
 /*
   Grootboek van de Buffer-adapter (data/social-buffer.json): welke planning-post
@@ -30,16 +30,18 @@ export interface Grootboek {
 
 export const SOCIAL_BUFFER_LOG_PATH = path.join(process.cwd(), "data", "social-buffer.json");
 
-const KANALEN_SET: ReadonlySet<string> = new Set<Kanaal>(["instagram", "facebook", "tiktok"]);
+const KANALEN_SET: ReadonlySet<string> = new Set<string>(KANALEN);
 
 function isRegel(x: unknown): x is GrootboekRegel {
   if (!x || typeof x !== "object") return false;
   const r = x as Record<string, unknown>;
   return (
     typeof r.post === "string" &&
+    r.post.length > 0 &&
     typeof r.kanaal === "string" &&
     KANALEN_SET.has(r.kanaal) &&
     typeof r.bufferId === "string" &&
+    r.bufferId.length > 0 &&
     typeof r.dueAt === "string" &&
     typeof r.aangemaakt === "string" &&
     typeof r.run === "string"
@@ -53,11 +55,19 @@ function isRegel(x: unknown): x is GrootboekRegel {
  */
 export function leesGrootboek(bestand: string = SOCIAL_BUFFER_LOG_PATH): Grootboek {
   if (!fs.existsSync(bestand)) return { posts: [] };
-  const data = JSON.parse(fs.readFileSync(bestand, "utf8")) as { posts?: unknown };
-  if (!Array.isArray(data.posts)) throw new Error(`${bestand}: geen posts-lijst`);
-  const ongeldig = data.posts.findIndex((r) => !isRegel(r));
+  let data: unknown;
+  try {
+    data = JSON.parse(fs.readFileSync(bestand, "utf8"));
+  } catch {
+    throw new Error(`${bestand}: onleesbare JSON (herstel met git checkout data/social-buffer.json)`);
+  }
+  if (!data || typeof data !== "object" || !Array.isArray((data as { posts?: unknown }).posts)) {
+    throw new Error(`${bestand}: geen posts-lijst`);
+  }
+  const posts = (data as { posts: unknown[] }).posts;
+  const ongeldig = posts.findIndex((r) => !isRegel(r));
   if (ongeldig !== -1) throw new Error(`${bestand}: regel ${ongeldig} is ongeldig`);
-  return { posts: data.posts as GrootboekRegel[] };
+  return { posts: posts as GrootboekRegel[] };
 }
 
 export function schrijfGrootboek(grootboek: Grootboek, bestand: string = SOCIAL_BUFFER_LOG_PATH): void {

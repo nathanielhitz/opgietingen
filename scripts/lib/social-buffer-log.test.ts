@@ -1,5 +1,5 @@
 // scripts/lib/social-buffer-log.test.ts
-import { test } from "node:test";
+import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -15,9 +15,19 @@ const regel: GrootboekRegel = {
   run: "1234567890",
 };
 
+const tmpMappen: string[] = [];
+
 function tmpBestand(): string {
-  return path.join(fs.mkdtempSync(path.join(os.tmpdir(), "social-buffer-log-")), "social-buffer.json");
+  const map = fs.mkdtempSync(path.join(os.tmpdir(), "social-buffer-log-"));
+  tmpMappen.push(map);
+  return path.join(map, "social-buffer.json");
 }
+
+after(() => {
+  for (const map of tmpMappen) {
+    fs.rmSync(map, { recursive: true, force: true });
+  }
+});
 
 test("leesGrootboek: ontbrekend bestand is een leeg grootboek", () => {
   assert.deepEqual(leesGrootboek(tmpBestand()), { posts: [] });
@@ -40,6 +50,15 @@ test("leesGrootboek: onleesbaar of ongeldig bestand gooit (nooit stilzwijgend ov
   const ongeldigeRegel = tmpBestand();
   fs.writeFileSync(ongeldigeRegel, JSON.stringify({ posts: [{ post: "x" }] }));
   assert.throws(() => leesGrootboek(ongeldigeRegel), /regel 0 is ongeldig/);
+  const onbekendKanaal = tmpBestand();
+  fs.writeFileSync(onbekendKanaal, JSON.stringify({ posts: [{ ...regel, kanaal: "x" }] }));
+  assert.throws(() => leesGrootboek(onbekendKanaal), /regel 0 is ongeldig/);
+  const nullBestand = tmpBestand();
+  fs.writeFileSync(nullBestand, "null");
+  assert.throws(() => leesGrootboek(nullBestand), /geen posts-lijst|onleesbare JSON/);
+  const legeBufferId = tmpBestand();
+  fs.writeFileSync(legeBufferId, JSON.stringify({ posts: [{ ...regel, bufferId: "" }] }));
+  assert.throws(() => leesGrootboek(legeBufferId), /regel 0 is ongeldig/);
 });
 
 test("zoekRegel: vindt op post-id én kanaal", () => {
