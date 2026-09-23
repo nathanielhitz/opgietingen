@@ -20,6 +20,7 @@
     "scrape-report": "tsx scripts/scrape-report.ts",
     "run-record": "tsx scripts/run-record.ts",
     "social-kit": "tsx scripts/social-kit.ts",
+    "social-buffer": "tsx scripts/social-buffer.ts",
     "vind-instagram": "tsx scripts/vind-instagram.ts"
   },
   "dependencies": {
