@@ -137,6 +137,7 @@ function bepaalKanalen(lijst: BufferKanaal[] | null): Ontdekking {
 }
 
 async function main() {
+  if (CONCEPT && DRY_RUN) throw new Error("--concept en --dry-run gaan niet samen; kies er één.");
   if (!isGeldigeIsoDatum(DATUM)) throw new Error(`Ongeldige --datum: ${DATUM}`);
   if (!BASIS.startsWith("https://") && !DRY_RUN && !ALLEEN_KANALEN) {
     throw new Error("--basis zonder https is alleen toegestaan met --dry-run of --kanalen (Buffer kan lokale beelden niet ophalen).");
@@ -208,7 +209,7 @@ async function main() {
         mislukt += 1;
         let detail = err instanceof Error ? err.message : String(err);
         // Bij een netwerkfout weten we niet of Buffer de post al had aangenomen.
-        if (detail.includes("Buffer onbereikbaar")) detail += " (mogelijk wel aangemaakt; controleer Buffer vóór een herstart)";
+        if (detail.includes("Buffer onbereikbaar") || detail.startsWith("Buffer HTTP 5")) detail += " (mogelijk wel aangemaakt; controleer Buffer vóór een herstart)";
         resultaten.push({ ...basis, status: "mislukt", detail });
         continue;
       }
