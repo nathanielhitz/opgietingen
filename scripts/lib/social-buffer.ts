@@ -1,7 +1,7 @@
 // scripts/lib/social-buffer.ts
 import type { PlanningJson, PlanningPost } from "../../src/lib/social-planning";
 import { KANALEN, type Kanaal, type Rubriek } from "../../src/lib/social";
-import { nlTijdNaarUtc } from "../../src/lib/dates";
+import { nlTijdNaarUtc, todayISOInTimeZone } from "../../src/lib/dates";
 import type { BufferKanaal, BufferPostInput } from "./buffer-client";
 
 /*
@@ -49,15 +49,54 @@ export function dueAtVoor(post: Pick<PlanningPost, "rubriek" | "plaatsingsdag">,
 }
 
 /**
- * Welke posts naar Buffer gaan: alleen rang 1 (van Uitgelicht de hoogste
- * prioriteit), en geen post waarvan de plaatsingsdag vóór de run-dag ligt.
- * `vandaag` is de NL-datum van de run, `nu` het moment (voor dueAt).
+ * Uitgelicht per plaatsingsdag: de kandidaat met de laagste rang die nog niet
+ * eerder is geplaatst. `uitgelicht-<slug>` hangt aan het event, en hetzelfde
+ * event staat vaak twee à drie maandagen op rang 1; zonder deze regel valt
+ * Uitgelicht vanaf de tweede week weg ("al in Buffer"). Een eerdere plaatsing
+ * met een dueAt op dezelfde plaatsingsdag (NL-datum) is een herstart binnen
+ * dezelfde week: die kandidaat blijft gekozen. Geeft de gekozen post-id's.
  */
-export function kiesPosts(planning: Pick<PlanningJson, "posts">, vandaag: string, nu: Date): { gekozen: Keuze[]; overgeslagen: Overgeslagen[] } {
+function kiesUitgelicht(posts: PlanningPost[], eerderGeplaatst: (postId: string) => string | undefined): Set<string> {
+  const perDag = new Map<string, PlanningPost[]>();
+  for (const post of posts) {
+    if (post.rubriek !== "uitgelicht") continue;
+    perDag.set(post.plaatsingsdag, [...(perDag.get(post.plaatsingsdag) ?? []), post]);
+  }
+  const gekozen = new Set<string>();
+  for (const [dag, kandidaten] of perDag) {
+    const keuze = [...kandidaten]
+      .sort((a, b) => a.rang - b.rang)
+      .find((p) => {
+        const dueAt = eerderGeplaatst(p.id);
+        return dueAt === undefined || todayISOInTimeZone(new Date(dueAt)) === dag;
+      });
+    if (keuze) gekozen.add(keuze.id);
+  }
+  return gekozen;
+}
+
+/**
+ * Welke posts naar Buffer gaan: rang 1, behalve bij Uitgelicht (de eerste
+ * kandidaat die nog niet eerder is geplaatst, zie kiesUitgelicht), en geen
+ * post waarvan de plaatsingsdag vóór de run-dag ligt. `vandaag` is de NL-datum
+ * van de run, `nu` het moment (voor dueAt), `eerderGeplaatst` geeft de dueAt
+ * uit het grootboek als de post op enig kanaal al geplaatst is.
+ */
+export function kiesPosts(
+  planning: Pick<PlanningJson, "posts">,
+  vandaag: string,
+  nu: Date,
+  eerderGeplaatst: (postId: string) => string | undefined,
+): { gekozen: Keuze[]; overgeslagen: Overgeslagen[] } {
   const gekozen: Keuze[] = [];
   const overgeslagen: Overgeslagen[] = [];
+  const uitgelicht = kiesUitgelicht(planning.posts, eerderGeplaatst);
   for (const post of planning.posts) {
-    if (post.rang !== 1) {
+    if (post.rubriek === "uitgelicht" && !uitgelicht.has(post.id)) {
+      const dueAt = eerderGeplaatst(post.id);
+      const eerder = dueAt !== undefined && todayISOInTimeZone(new Date(dueAt)) !== post.plaatsingsdag;
+      overgeslagen.push({ post, reden: eerder ? "eerder al uitgelicht" : `kandidaat ${post.rang}` });
+    } else if (post.rubriek !== "uitgelicht" && post.rang !== 1) {
       overgeslagen.push({ post, reden: `kandidaat ${post.rang}` });
     } else if (post.plaatsingsdag < vandaag) {
       overgeslagen.push({ post, reden: "plaatsingsdag verstreken" });

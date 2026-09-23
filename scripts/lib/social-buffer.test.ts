@@ -65,7 +65,7 @@ test("kiesPosts: alleen rang 1, verstreken plaatsingsdag valt weg, dueAt erbij",
       maakPost({ id: "weekend-2026-W39", rubriek: "weekend", plaatsingsdag: "2026-09-25" }),
     ],
   };
-  const { gekozen, overgeslagen } = kiesPosts(planning, "2026-09-28", NU);
+  const { gekozen, overgeslagen } = kiesPosts(planning, "2026-09-28", NU, () => undefined);
   assert.deepEqual(gekozen.map((k) => k.post.id), ["nieuw-2026-W40", "uitgelicht-a"]);
   assert.equal(gekozen[0].dueAt, "2026-09-28T15:00:00.000Z");
   assert.equal(gekozen[1].dueAt, "2026-09-30T17:00:00.000Z");
@@ -80,7 +80,72 @@ test("kiesPosts: alleen rang 1, verstreken plaatsingsdag valt weg, dueAt erbij",
 });
 
 test("kiesPosts: lege planning geeft niets", () => {
-  assert.deepEqual(kiesPosts({ posts: [] }, "2026-09-28", NU), { gekozen: [], overgeslagen: [] });
+  assert.deepEqual(kiesPosts({ posts: [] }, "2026-09-28", NU, () => undefined), { gekozen: [], overgeslagen: [] });
+});
+
+/** Drie uitgelicht-kandidaten voor woensdag 30 september, rang 1..3. */
+function uitgelichtPlanning() {
+  return {
+    posts: [
+      maakPost({ id: "uitgelicht-a", rubriek: "uitgelicht", plaatsingsdag: "2026-09-30" }),
+      maakPost({ id: "uitgelicht-b", rubriek: "uitgelicht", plaatsingsdag: "2026-09-30", rang: 2 }),
+      maakPost({ id: "uitgelicht-c", rubriek: "uitgelicht", plaatsingsdag: "2026-09-30", rang: 3 }),
+    ],
+  };
+}
+
+test("kiesPosts: rang 1 vorige week al uitgelicht, dan gaat rang 2", () => {
+  const eerder = (id: string) => (id === "uitgelicht-a" ? "2026-09-23T17:00:00.000Z" : undefined);
+  const { gekozen, overgeslagen } = kiesPosts(uitgelichtPlanning(), "2026-09-28", NU, eerder);
+  assert.deepEqual(gekozen.map((k) => k.post.id), ["uitgelicht-b"]);
+  assert.equal(gekozen[0].dueAt, "2026-09-30T17:00:00.000Z");
+  assert.deepEqual(
+    overgeslagen.map((o) => [o.post.id, o.reden]),
+    [
+      ["uitgelicht-a", "eerder al uitgelicht"],
+      ["uitgelicht-c", "kandidaat 3"],
+    ],
+  );
+});
+
+test("kiesPosts: rang 1 al geplaatst op dezelfde plaatsingsdag is een herstart, rang 1 blijft gekozen", () => {
+  // 19:00 NL op woensdag 30 september = 17:00 UTC.
+  const eerder = (id: string) => (id === "uitgelicht-a" ? "2026-09-30T17:00:00.000Z" : undefined);
+  const { gekozen, overgeslagen } = kiesPosts(uitgelichtPlanning(), "2026-09-28", NU, eerder);
+  assert.deepEqual(gekozen.map((k) => k.post.id), ["uitgelicht-a"]);
+  assert.deepEqual(
+    overgeslagen.map((o) => [o.post.id, o.reden]),
+    [
+      ["uitgelicht-b", "kandidaat 2"],
+      ["uitgelicht-c", "kandidaat 3"],
+    ],
+  );
+});
+
+test("kiesPosts: dezelfde plaatsingsdag telt in NL-tijd, niet in UTC", () => {
+  // 23:30 UTC op dinsdag is woensdag 01:30 NL: dezelfde plaatsingsdag.
+  const eerder = (id: string) => (id === "uitgelicht-a" ? "2026-09-29T23:30:00.000Z" : undefined);
+  const { gekozen } = kiesPosts(uitgelichtPlanning(), "2026-09-28", NU, eerder);
+  assert.deepEqual(gekozen.map((k) => k.post.id), ["uitgelicht-a"]);
+});
+
+test("kiesPosts: alle drie eerder uitgelicht, dan geen Uitgelicht deze week", () => {
+  const { gekozen, overgeslagen } = kiesPosts(uitgelichtPlanning(), "2026-09-28", NU, () => "2026-09-16T17:00:00.000Z");
+  assert.deepEqual(gekozen, []);
+  assert.deepEqual(
+    overgeslagen.map((o) => [o.post.id, o.reden]),
+    [
+      ["uitgelicht-a", "eerder al uitgelicht"],
+      ["uitgelicht-b", "eerder al uitgelicht"],
+      ["uitgelicht-c", "eerder al uitgelicht"],
+    ],
+  );
+});
+
+test("kiesPosts: andere rubrieken negeren eerdere plaatsingen (het grootboek beslist per kanaal)", () => {
+  const planning = { posts: [maakPost({ id: "weekend-2026-W40", rubriek: "weekend", plaatsingsdag: "2026-10-02" })] };
+  const { gekozen } = kiesPosts(planning, "2026-09-28", NU, () => "2026-09-25T10:00:00.000Z");
+  assert.deepEqual(gekozen.map((k) => k.post.id), ["weekend-2026-W40"]);
 });
 
 test("tiktokTitel: korte titel ongewijzigd, lange afgekapt op een woordgrens met …", () => {

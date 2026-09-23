@@ -66,10 +66,12 @@ alleen het plaatsen toe.
 2. Haal `<basis>/social/planning?datum=<datum>` op (default: vandaag NL-tijd,
    basis `https://opgietingen.nl`). Versheidscheck, zie §8.
 3. Ontdek de kanalen (§9). Ontbrekende kanalen: waarschuwing, geen fout.
-4. Selecteer de posts (§5): alle posts met `rang === 1`; bereken per post het
-   `dueAt`; laat posts met een verstreken plaatsingsdag weg met een melding.
-5. Lees het grootboek (§7). Combinaties post-id + kanaal die er al in staan
-   worden overgeslagen ("al in Buffer").
+4. Lees het grootboek (§7), vóór de selectie: Uitgelicht slaat kandidaten over
+   die eerder al geplaatst zijn.
+5. Selecteer de posts (§5): rang 1, van Uitgelicht de eerste kandidaat die nog
+   niet eerder is geplaatst; bereken per post het `dueAt`; laat posts met een
+   verstreken plaatsingsdag weg met een melding. Combinaties post-id + kanaal die
+   al in het grootboek staan worden overgeslagen ("al in Buffer").
 6. Per post, per kanaal: bouw de `createPost`-input (§6), roep Buffer aan,
    schrijf bij succes direct een grootboekregel weg. Een fout stopt de andere
    posts niet.
@@ -89,7 +91,13 @@ lokale server kan Buffer niet ophalen.
 Referentiedatum is de dag van de run (maandag). `bouwPosts` levert dan precies de
 komende week: *Nieuw* op die maandag, *Uitgelicht* woensdag, *Dit weekend*
 vrijdag en *Deze maand* op de 1e als die in de zeven dagen valt. Van de drie
-uitgelicht-kandidaten gaat alleen `rang === 1` de deur uit.
+uitgelicht-kandidaten gaat er één de deur uit: de eerste op volgorde van rang die
+nog niet eerder is geplaatst. `uitgelicht-<slug>` hangt aan het event, en hetzelfde
+opgietweekend staat vaak twee à drie maandagen op rang 1; zonder deze regel viel
+Uitgelicht vanaf de tweede week weg. Staat een kandidaat al in het grootboek met
+een `dueAt` op dezelfde plaatsingsdag (NL-datum), dan is dat een herstart binnen de
+week en blijft die kandidaat gekozen (de tabel toont "al in Buffer"). De overige
+kandidaten krijgen de reden `kandidaat N` of `eerder al uitgelicht`.
 
 Vaste plaatsingstijden in NL-tijd, één constante `PLAATSINGSTIJD` in
 `scripts/lib/social-buffer.ts`:
@@ -254,7 +262,7 @@ Nieuw:
   sleutel bij een dry-run alle drie als "dry-run"), flow uit §4.
 - `scripts/lib/buffer-client.ts`: `organisaties()`, `kanalen(orgId)`,
   `maakPost(input)`; GraphQL-strings als constanten; foutvertaling.
-- `scripts/lib/social-buffer.ts`: pure functies `kiesPosts(planning, vandaag, nu)`,
+- `scripts/lib/social-buffer.ts`: pure functies `kiesPosts(planning, vandaag, nu, eerderGeplaatst)`,
   `dueAtVoor(post, nu)`, `bouwInput(post, kanaal, kanaalId, dueAt, opties)`,
   `tiktokTitel(titel)`, `ontdekKanalen(channels, overrides)`,
   `overridesUitEnv(env: Record<string, string | undefined>)`,
@@ -264,7 +272,7 @@ Nieuw:
   Buffer, dry-run of maak; alleen de concept-modus negeert het grootboek).
 - `src/lib/social-buffer-log.ts`: typen + `leesGrootboek(pad)`, `schrijfGrootboek`
   (atomair: tijdelijk bestand + hernoemen), `zoekRegel(grootboek, post, kanaal)`,
-  `voegRegelToe(grootboek, regel)`.
+  `voegRegelToe(grootboek, regel)`, `eersteRegelVoorPost(grootboek, post)`.
 - `src/lib/dates.ts`: `nlTijdNaarUtc(datum, tijd)`.
 - `.github/workflows/social.yml`.
 - Tests: `scripts/lib/social-buffer.test.ts`, `scripts/lib/buffer-client.test.ts`.
@@ -312,7 +320,9 @@ delen. `social-kit` blijft bestaan als handmatige terugvaloptie.
 ## 14. Tests
 
 - `scripts/lib/social-buffer.test.ts` (`node:test`, zonder netwerk):
-  `kiesPosts` neemt alleen `rang === 1` en laat verstreken plaatsingsdagen weg;
+  `kiesPosts` neemt rang 1 (Uitgelicht: de eerste kandidaat die nog niet eerder
+  is geplaatst, een herstart op dezelfde plaatsingsdag houdt de keuze) en laat
+  verstreken plaatsingsdagen weg;
   `dueAtVoor` in zomertijd (CEST, +02:00) en wintertijd (CET, +01:00) en over de
   jaargrens; verstreken tijdstip wordt nu + 15 min; `bouwInput` per kanaal
   (feed vs. story, juiste caption, metadata alleen voor Instagram en TikTok,
