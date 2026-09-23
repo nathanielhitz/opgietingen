@@ -52,8 +52,11 @@ alleen het plaatsen toe.
   Antwoord is een union: `PostActionSuccess { post { id dueAt } }` of
   `MutationError { message }`.
 - **Metadata**: `metadata.instagram { type, shouldShareToFeed }` met `type`
-  `post` (of `carousel`; zie §13), `metadata.tiktok { title, type }` met `title`
-  voor fotoposts. Facebook krijgt geen metadata.
+  `post` (of `carousel`; zie §13), `metadata.tiktok { title }` met `title` voor
+  fotoposts (`TikTokPostMetadataInput` heeft geen `type`-veld), `metadata.facebook
+  { type: "post" }` (verplicht: Facebook weigert een post zonder metadata met
+  "Facebook posts require a type (post, story, or reel)"). Geverifieerd tegen
+  de API op 2026-09-23 via de concept-run.
 - **Niet gedocumenteerd**, dus verificatiepunten (§13): of meerdere `assets` op
   Instagram, Facebook en TikTok een carrousel/fotopost opleveren, en of Buffer
   onze PNG-slides voor Instagram zelf naar JPEG omzet (de Instagram-API accepteert
@@ -133,9 +136,11 @@ Regels:
 
 | Kanaal | Slides (`assets`) | Tekst | `metadata` |
 |---|---|---|---|
-| `facebook` | `slide.feed` van alle slides, in volgorde | `captions.facebook` | geen |
+| `facebook` | `slide.feed` van alle slides, in volgorde | `captions.facebook` | `facebook: { type: "post" }` |
 | `instagram` | `slide.feed` | `captions.instagram` | `instagram: { type: INSTAGRAM_TYPE, shouldShareToFeed: true }` |
-| `tiktok` | `slide.story` | `captions.tiktok` | `tiktok: { title: tiktokTitel(post.titel), type: "post" }` |
+| `tiktok` | `slide.story` | `captions.tiktok` | `tiktok: { title: tiktokTitel(post.titel) }` |
+
+Geverifieerd tegen de API op 2026-09-23 via de concept-run.
 
 `INSTAGRAM_TYPE` is een constante (`"post"`, eventueel `"carousel"` na §13).
 `tiktokTitel` kapt af op 90 tekens op een woordgrens met "…" (TikTok-limiet voor

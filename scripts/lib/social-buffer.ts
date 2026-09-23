@@ -143,8 +143,9 @@ export function bouwInput(post: PlanningPost, kanaal: Kanaal, kanaalId: string, 
     needsApproval: false,
     ...(opties.concept ? { mode: "addToQueue" as const, saveToDraft: true } : { mode: "customScheduled" as const, dueAt }),
   };
+  if (kanaal === "facebook") input.metadata = { facebook: { type: "post" } };
   if (kanaal === "instagram") input.metadata = { instagram: { type: INSTAGRAM_TYPE, shouldShareToFeed: true } };
-  if (kanaal === "tiktok") input.metadata = { tiktok: { title: tiktokTitel(post.titel), type: "post" } };
+  if (kanaal === "tiktok") input.metadata = { tiktok: { title: tiktokTitel(post.titel) } };
   return input;
 }
 
