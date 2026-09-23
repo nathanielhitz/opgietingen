@@ -13,13 +13,23 @@ on:
         description: "inplannen | concept | dry-run"
         required: false
         default: "inplannen"
+        type: choice
+        options:
+          - inplannen
+          - concept
+          - dry-run
 
 permissions:
   contents: write
 
+concurrency:
+  group: push-naar-main
+  cancel-in-progress: false
+
 jobs:
   social:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,25 +59,28 @@ jobs:
           ARGS=""
           if [ -n "$DATUM" ]; then ARGS="$ARGS --datum $DATUM"; fi
           case "$MODUS" in
+            inplannen) ;;
             concept) ARGS="$ARGS --concept" ;;
             dry-run) ARGS="$ARGS --dry-run" ;;
+            *) echo "Onbekende modus: $MODUS"; exit 1 ;;
           esac
           npm run social-buffer -- $ARGS
 
       # Het grootboek is het geheugen tegen dubbele posts. Ook committen als het
       # script faalde: al geplaatste posts mogen niet verloren gaan met de runner.
       - name: Commit grootboek op main
-        if: always() && (github.event.inputs.modus == '' || github.event.inputs.modus == 'inplannen')
+        if: always() && github.ref == 'refs/heads/main' && (github.event.inputs.modus || 'inplannen') == 'inplannen'
         env:
           INGEPLAND: ${{ steps.buffer.outputs.ingepland || '0' }}
+          DATUM: ${{ github.event.inputs.datum }}
         run: |
           git config user.name "opgietingen-bot"
           git config user.email "bot@opgietingen.nl"
-          git add data/social-buffer.json 2>/dev/null || true
+          if [ -f data/social-buffer.json ]; then git add data/social-buffer.json; fi
           if git diff --cached --quiet; then
             echo "Geen wijzigingen in het grootboek."
           else
-            git commit -m "chore(social): week $(date -u +%G-W%V), $INGEPLAND post(s) ingepland in Buffer"
+            git commit -m "chore(social): week $(date -u -d "${DATUM:-now}" +%G-W%V), $INGEPLAND post(s) ingepland in Buffer"
             git pull --rebase origin main
             git push origin HEAD:main
           fi
