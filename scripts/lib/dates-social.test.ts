@@ -64,6 +64,7 @@ test("isGeldigeIsoDatum: vorm én kalender", () => {
 test("nlTijdNaarUtc: zomertijd (CEST, +02:00)", () => {
   assert.equal(nlTijdNaarUtc("2026-10-02", "12:00"), "2026-10-02T10:00:00.000Z");
   assert.equal(nlTijdNaarUtc("2026-09-28", "17:00"), "2026-09-28T15:00:00.000Z");
+  assert.equal(nlTijdNaarUtc("2026-10-02", "09:45"), "2026-10-02T07:45:00.000Z");
 });
 
 test("nlTijdNaarUtc: wintertijd (CET, +01:00), ook over de jaargrens", () => {
@@ -72,8 +73,16 @@ test("nlTijdNaarUtc: wintertijd (CET, +01:00), ook over de jaargrens", () => {
   assert.equal(nlTijdNaarUtc("2027-01-01", "10:00"), "2027-01-01T09:00:00.000Z");
 });
 
+test("nlTijdNaarUtc: wisseldagen", () => {
+  assert.equal(nlTijdNaarUtc("2026-10-25", "12:00"), "2026-10-25T11:00:00.000Z");
+  assert.equal(nlTijdNaarUtc("2027-03-28", "12:00"), "2027-03-28T10:00:00.000Z");
+  assert.equal(nlTijdNaarUtc("2026-10-25", "01:30"), "2026-10-24T23:30:00.000Z"); // nog CEST
+  assert.equal(nlTijdNaarUtc("2027-03-28", "01:30"), "2027-03-28T00:30:00.000Z"); // nog CET
+});
+
 test("nlTijdNaarUtc: ongeldige datum of tijd gooit", () => {
   assert.throws(() => nlTijdNaarUtc("2026-13-01", "12:00"), /Ongeldige datum\/tijd/);
   assert.throws(() => nlTijdNaarUtc("2026-10-02", "12.00"), /Ongeldige datum\/tijd/);
   assert.throws(() => nlTijdNaarUtc("2026-10-02", "25:00"), /Ongeldige datum\/tijd/);
+  assert.throws(() => nlTijdNaarUtc("2026-10-02", "24:00"), /Ongeldige datum\/tijd/);
 });
