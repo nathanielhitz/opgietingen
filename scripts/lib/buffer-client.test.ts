@@ -73,3 +73,20 @@ test("HTTP-fout en GraphQL-errors worden een BufferFout met status of bericht", 
   const leeg = mock({});
   await assert.rejects(maakBufferClient("k", leeg.ophalen).organisaties(), /leeg antwoord/);
 });
+
+test("niet-JSON-antwoord wordt een BufferFout", async () => {
+  const ophalen: Ophalen = async () => new Response("<html>", { status: 200 });
+  await assert.rejects(maakBufferClient("k", ophalen).organisaties(), /geen JSON-antwoord/);
+});
+
+test("netwerkfout of timeout wordt een BufferFout met 'onbereikbaar'", async () => {
+  const ophalen: Ophalen = async () => {
+    throw new Error("fetch failed");
+  };
+  await assert.rejects(maakBufferClient("k", ophalen).organisaties(), /Buffer onbereikbaar: fetch failed/);
+});
+
+test("HTTP-fout met parsebare errors in de body geeft die door in de melding", async () => {
+  const { ophalen } = mock({ errors: [{ message: 'Variable "$input" got invalid value' }] }, 400);
+  await assert.rejects(maakBufferClient("k", ophalen).organisaties(), /HTTP 400: Variable/);
+});
