@@ -2,7 +2,20 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import type { PlanningPost } from "../../src/lib/social-planning";
-import { dueAtVoor, kiesPosts, PLAATSINGSTIJD, tiktokTitel } from "./social-buffer";
+import {
+  bouwInput,
+  commitKomtOvereen,
+  dueAtVoor,
+  formatNlTijd,
+  INSTAGRAM_TYPE,
+  kiesPosts,
+  ontdekKanalen,
+  overridesUitEnv,
+  PLAATSINGSTIJD,
+  resultaatTabel,
+  tiktokTitel,
+  type Resultaat,
+} from "./social-buffer";
 
 /** Minimale planning-post; velden overschrijfbaar per test. */
 export function maakPost(o: Partial<PlanningPost> & { id: string; rubriek: PlanningPost["rubriek"]; plaatsingsdag: string }): PlanningPost {
@@ -77,4 +90,105 @@ test("tiktokTitel: korte titel ongewijzigd, lange afgekapt op een woordgrens met
   assert.ok(kort.endsWith("…"));
   assert.ok(!kort.endsWith(" …"), "geen spatie vóór het beletselteken");
   assert.ok(lang.startsWith(kort.slice(0, -1)), "afgekapt op een woordgrens binnen de titel");
+});
+
+const DUE = "2026-10-02T10:00:00.000Z";
+
+test("bouwInput facebook: feed-slides in volgorde, FB-caption, ingepland, geen metadata", () => {
+  const post = maakPost({ id: "weekend-2026-W40", rubriek: "weekend", plaatsingsdag: "2026-10-02" });
+  const input = bouwInput(post, "facebook", "ch_fb", DUE, { concept: false });
+  assert.equal(input.channelId, "ch_fb");
+  assert.equal(input.text, "FB");
+  assert.deepEqual(
+    input.assets.map((a) => a.image.url),
+    [
+      "https://opgietingen.nl/social/weekend/2026-W40?formaat=feed",
+      "https://opgietingen.nl/social/event/ev?formaat=feed",
+      "https://opgietingen.nl/social/afsluiter?formaat=feed",
+    ],
+  );
+  assert.equal(input.schedulingType, "automatic");
+  assert.equal(input.mode, "customScheduled");
+  assert.equal(input.dueAt, DUE);
+  assert.equal(input.needsApproval, false);
+  assert.equal(input.saveToDraft, undefined);
+  assert.equal(input.metadata, undefined);
+});
+
+test("bouwInput instagram: feed-slides, IG-caption, instagram-metadata", () => {
+  const post = maakPost({ id: "weekend-2026-W40", rubriek: "weekend", plaatsingsdag: "2026-10-02" });
+  const input = bouwInput(post, "instagram", "ch_ig", DUE, { concept: false });
+  assert.equal(input.text, "IG");
+  assert.ok(input.assets.every((a) => a.image.url.endsWith("formaat=feed")));
+  assert.deepEqual(input.metadata, { instagram: { type: INSTAGRAM_TYPE, shouldShareToFeed: true } });
+});
+
+test("bouwInput tiktok: story-slides, TT-caption, titel in metadata", () => {
+  const post = maakPost({ id: "weekend-2026-W40", rubriek: "weekend", plaatsingsdag: "2026-10-02", titel: "Dit weekend: 2 opgietingen" });
+  const input = bouwInput(post, "tiktok", "ch_tt", DUE, { concept: false });
+  assert.equal(input.text, "TT");
+  assert.ok(input.assets.every((a) => a.image.url.endsWith("formaat=story")));
+  assert.deepEqual(input.metadata, { tiktok: { title: "Dit weekend: 2 opgietingen", type: "post" } });
+});
+
+test("bouwInput concept: addToQueue + saveToDraft, zonder dueAt", () => {
+  const post = maakPost({ id: "weekend-2026-W40", rubriek: "weekend", plaatsingsdag: "2026-10-02" });
+  const input = bouwInput(post, "facebook", "ch_fb", DUE, { concept: true });
+  assert.equal(input.mode, "addToQueue");
+  assert.equal(input.saveToDraft, true);
+  assert.equal(input.dueAt, undefined);
+});
+
+test("ontdekKanalen: één per service, ontbrekende gemeld, service hoofdletterongevoelig", () => {
+  const { ids, ontbrekend } = ontdekKanalen([
+    { id: "ch_fb", name: "Opgietingen.nl", service: "Facebook" },
+    { id: "ch_tt", name: "opgietingen.nl", service: "tiktok" },
+    { id: "ch_x", name: "iets", service: "twitter" },
+  ]);
+  assert.deepEqual(ids, { facebook: "ch_fb", tiktok: "ch_tt" });
+  assert.deepEqual(ontbrekend, ["instagram"]);
+});
+
+test("ontdekKanalen: twee van dezelfde service is een fout met de id's, tenzij een override kiest", () => {
+  const kanalen = [
+    { id: "ch_fb1", name: "Pagina 1", service: "facebook" },
+    { id: "ch_fb2", name: "Pagina 2", service: "facebook" },
+  ];
+  assert.throws(() => ontdekKanalen(kanalen), /Meer dan één facebook-kanaal.*ch_fb1.*ch_fb2.*BUFFER_KANAAL_FACEBOOK/);
+  const { ids } = ontdekKanalen(kanalen, { facebook: "ch_fb2" });
+  assert.equal(ids.facebook, "ch_fb2");
+});
+
+test("overridesUitEnv: leest BUFFER_KANAAL_<KANAAL>, lege waarden tellen niet", () => {
+  assert.deepEqual(overridesUitEnv({ BUFFER_KANAAL_FACEBOOK: "ch_fb", BUFFER_KANAAL_INSTAGRAM: "" }), { facebook: "ch_fb" });
+  assert.deepEqual(overridesUitEnv({}), {});
+});
+
+test("commitKomtOvereen: overeen, afwijkend of onbekend", () => {
+  assert.equal(commitKomtOvereen("abc", "abc"), "overeen");
+  assert.equal(commitKomtOvereen("abc", "def"), "afwijkend");
+  assert.equal(commitKomtOvereen(null, "abc"), "onbekend");
+  assert.equal(commitKomtOvereen("abc", undefined), "onbekend");
+});
+
+test("formatNlTijd: dag, datum en tijd in NL-tijd", () => {
+  const tekst = formatNlTijd("2026-10-02T10:00:00.000Z");
+  assert.match(tekst, /02-10/);
+  assert.match(tekst, /12:00/);
+  assert.ok(!tekst.includes(","));
+});
+
+test("resultaatTabel: markdown-tabel met één rij per resultaat, pipes in detail ontsnapt", () => {
+  const regels: Resultaat[] = [
+    { post: "weekend-2026-W40", kanaal: "facebook", dueAt: DUE, status: "ingepland", detail: "post_1" },
+    { post: "weekend-2026-W40", kanaal: "instagram", dueAt: DUE, status: "kanaal ontbreekt", detail: "" },
+    { post: "weekend-2026-W40", kanaal: "tiktok", dueAt: DUE, status: "mislukt", detail: "a | b" },
+  ];
+  const tabel = resultaatTabel(regels);
+  const rijen = tabel.split("\n");
+  assert.equal(rijen[0], "| Post | Kanaal | Plaatsing (NL) | Status | Detail |");
+  assert.equal(rijen[1], "|---|---|---|---|---|");
+  assert.equal(rijen.length, 5);
+  assert.match(rijen[2], /^\| weekend-2026-W40 \| facebook \| .*12:00 \| ingepland \| post_1 \|$/);
+  assert.match(rijen[4], /a \/ b/);
 });
