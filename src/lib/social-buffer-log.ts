@@ -72,7 +72,11 @@ export function leesGrootboek(bestand: string = SOCIAL_BUFFER_LOG_PATH): Grootbo
 
 export function schrijfGrootboek(grootboek: Grootboek, bestand: string = SOCIAL_BUFFER_LOG_PATH): void {
   fs.mkdirSync(path.dirname(bestand), { recursive: true });
-  fs.writeFileSync(bestand, JSON.stringify(grootboek, null, 2) + "\n");
+  // Atomair: eerst naar een tijdelijk bestand, dan hernoemen, zodat een crash
+  // halverwege nooit een half grootboek achterlaat.
+  const tijdelijk = bestand + ".tmp";
+  fs.writeFileSync(tijdelijk, JSON.stringify(grootboek, null, 2) + "\n");
+  fs.renameSync(tijdelijk, bestand);
 }
 
 /** De regel voor een post-id op een kanaal, of undefined. */

@@ -6,8 +6,8 @@
 
     npm run social-buffer                          # inplannen (vereist BUFFER_API_KEY)
     npm run social-buffer -- --concept             # alles als concept in Buffer (verificatie; grootboek blijft ongemoeid)
-    npm run social-buffer -- --dry-run             # toon wat er zou gebeuren; geen Buffer-aanroepen, schrijft niets
-    npm run social-buffer -- --kanalen             # print de gekoppelde kanalen met id en stop
+    npm run social-buffer -- --dry-run             # toon wat er zou gebeuren; geen schrijvende Buffer-aanroepen (met sleutel worden wel de kanalen opgevraagd), schrijft niets
+    npm run social-buffer -- --kanalen             # print de gekoppelde kanalen met id en stop (vereist BUFFER_API_KEY)
     npm run social-buffer -- --datum 2026-09-28    # andere referentiedatum (default: vandaag NL-tijd)
     npm run social-buffer -- --basis http://localhost:3000   # alleen zinvol met --dry-run/--kanalen
 
@@ -20,8 +20,9 @@ import { isGeldigeIsoDatum, todayISOInTimeZone } from "../src/lib/dates";
 import { KANALEN, type Kanaal } from "../src/lib/social";
 import type { PlanningJson } from "../src/lib/social-planning";
 import { leesGrootboek, schrijfGrootboek, voegRegelToe, zoekRegel, SOCIAL_BUFFER_LOG_PATH } from "../src/lib/social-buffer-log";
-import { maakBufferClient, type BufferClient } from "./lib/buffer-client";
+import { maakBufferClient, type BufferClient, type BufferKanaal, type BufferPost } from "./lib/buffer-client";
 import {
+  besluit,
   bouwInput,
   commitKomtOvereen,
   kiesPosts,
@@ -29,6 +30,8 @@ import {
   overridesUitEnv,
   resultaatTabel,
   type KanaalIds,
+  type Modus,
+  type Ontdekking,
   type Resultaat,
 } from "./lib/social-buffer";
 
@@ -42,19 +45,61 @@ const BASIS = flag("--basis", "https://opgietingen.nl").replace(/\/$/, "");
 const CONCEPT = process.argv.includes("--concept");
 const DRY_RUN = process.argv.includes("--dry-run");
 const ALLEEN_KANALEN = process.argv.includes("--kanalen");
+const MODUS: Modus = DRY_RUN ? "dry-run" : CONCEPT ? "concept" : "inplannen";
 
 /** Versheidscheck: zo lang wachten op de Vercel-deploy van de scrape-commit, in stappen van 30 s. */
 const WACHT_MAX_MS = 10 * 60_000;
 const WACHT_STAP_MS = 30_000;
 
+const wacht = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** Fout waarbij opnieuw proberen zin heeft (netwerk, 5xx, half uitgerolde deploy). */
+class TijdelijkeFout extends Error {}
+
+/** Samenvatting voor de workflow: $GITHUB_STEP_SUMMARY en de output `ingepland`. */
+function meldAanCi(inhoud: string, ingepland: number): void {
+  if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Social-posts ${DATUM} (${MODUS})\n\n${inhoud}\n`);
+  if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `ingepland=${ingepland}\n`);
+}
+
+/** Eén poging; tijdelijke problemen als TijdelijkeFout, de rest als gewone fout. */
+async function haalPlanningEenmaal(url: string): Promise<PlanningJson> {
+  let res: Response;
+  try {
+    res = await fetch(url, { signal: AbortSignal.timeout(20_000) });
+  } catch (err) {
+    throw new TijdelijkeFout(`Planning onbereikbaar: ${url} (${err instanceof Error ? err.message : String(err)})`);
+  }
+  if (res.status >= 500) throw new TijdelijkeFout(`Planning ophalen mislukt: ${url} → HTTP ${res.status}`);
+  if (!res.ok) throw new Error(`Planning ophalen mislukt: ${url} → HTTP ${res.status}`);
+  let planning: PlanningJson;
+  try {
+    planning = (await res.json()) as PlanningJson;
+  } catch {
+    throw new TijdelijkeFout(`Planning is geen JSON: ${url}`);
+  }
+  if (!planning || !Array.isArray(planning.posts)) throw new Error(`Planning heeft geen posts-lijst: ${url}`);
+  return planning;
+}
+
 async function haalPlanning(): Promise<PlanningJson> {
   const url = `${BASIS}/social/planning?datum=${DATUM}`;
+  const runner = process.env.GITHUB_SHA;
   const gestart = Date.now();
+  // Alleen in CI (GITHUB_SHA) wachten we op de deploy; lokaal faalt een fout meteen.
+  const binnenVenster = () => Boolean(runner) && Date.now() - gestart < WACHT_MAX_MS;
   for (;;) {
-    const res = await fetch(url, { signal: AbortSignal.timeout(20_000) });
-    if (!res.ok) throw new Error(`Planning ophalen mislukt: ${url} → HTTP ${res.status}`);
-    const planning = (await res.json()) as PlanningJson;
-    const runner = process.env.GITHUB_SHA;
+    let planning: PlanningJson;
+    try {
+      planning = await haalPlanningEenmaal(url);
+    } catch (err) {
+      if (err instanceof TijdelijkeFout && binnenVenster()) {
+        console.log(`${err.message}; opnieuw over 30 s…`);
+        await wacht(WACHT_STAP_MS);
+        continue;
+      }
+      throw err;
+    }
     const check = commitKomtOvereen(planning.commit ?? null, runner);
     if (check === "overeen") return planning;
     if (check === "onbekend") {
@@ -66,101 +111,143 @@ async function haalPlanning(): Promise<PlanningJson> {
       return planning;
     }
     console.log(`Deploy nog niet live (planning ${planning.commit?.slice(0, 7)} ≠ runner ${runner?.slice(0, 7)}); opnieuw over 30 s…`);
-    await new Promise((r) => setTimeout(r, WACHT_STAP_MS));
+    await wacht(WACHT_STAP_MS);
   }
 }
 
-/** Kanaal-id's via Buffer; bij --dry-run zonder sleutel doen we alsof alle drie bestaan. */
-async function bepaalKanalen(client: BufferClient | null): Promise<{ ids: KanaalIds; ontbrekend: Kanaal[] }> {
+/** De Buffer-kanalen van de enige organisatie. */
+async function haalKanalen(client: BufferClient): Promise<BufferKanaal[]> {
+  const orgs = await client.organisaties();
+  if (orgs.length !== 1) {
+    throw new Error(`Verwacht één Buffer-organisatie, gevonden ${orgs.length}: ${orgs.map((o) => `${o.name}=${o.id}`).join(", ")}`);
+  }
+  return client.kanalen(orgs[0].id);
+}
+
+/** Kanaal-id's via Buffer; zonder client (dry-run zonder sleutel) doen we alsof alle drie bestaan. */
+function bepaalKanalen(lijst: BufferKanaal[] | null): Ontdekking {
   const overrides = overridesUitEnv(process.env);
-  if (!client) {
+  if (!lijst) {
     console.log("Geen BUFFER_API_KEY: kanalen niet gecontroleerd (dry-run).");
     const ids: KanaalIds = { ...overrides };
     for (const k of KANALEN) ids[k] ??= "dry-run";
     return { ids, ontbrekend: [] };
   }
-  const orgs = await client.organisaties();
-  if (orgs.length !== 1) {
-    throw new Error(`Verwacht één Buffer-organisatie, gevonden ${orgs.length}: ${orgs.map((o) => `${o.name}=${o.id}`).join(", ")}`);
-  }
-  const kanalen = await client.kanalen(orgs[0].id);
-  if (ALLEEN_KANALEN) {
-    for (const k of kanalen) console.log(`${k.service.padEnd(10)} ${k.id}  ${k.name}`);
-    process.exit(0);
-  }
-  return ontdekKanalen(kanalen, overrides);
+  return ontdekKanalen(lijst, overrides);
 }
 
 async function main() {
   if (!isGeldigeIsoDatum(DATUM)) throw new Error(`Ongeldige --datum: ${DATUM}`);
-  const sleutel = process.env.BUFFER_API_KEY;
-  if (!sleutel && !DRY_RUN) {
-    console.log("BUFFER_API_KEY ontbreekt: Buffer-adapter overgeslagen.");
-    return;
+  if (!BASIS.startsWith("https://") && !DRY_RUN && !ALLEEN_KANALEN) {
+    throw new Error("--basis zonder https is alleen toegestaan met --dry-run of --kanalen (Buffer kan lokale beelden niet ophalen).");
   }
+  const sleutel = process.env.BUFFER_API_KEY;
   const client = sleutel ? maakBufferClient(sleutel) : null;
 
-  const { ids, ontbrekend } = await bepaalKanalen(client);
+  if (ALLEEN_KANALEN) {
+    if (!client) {
+      console.error("Kanalen opvragen vereist BUFFER_API_KEY.");
+      process.exitCode = 1;
+      return;
+    }
+    // Ruwe lijst, zonder ontdekking: juist bij dubbele kanalen is dit het hulpmiddel om de override te kiezen.
+    for (const k of await haalKanalen(client)) console.log(`${k.service.padEnd(10)} ${k.id}  ${k.name}`);
+    return;
+  }
+  if (!client && !DRY_RUN) {
+    console.log("BUFFER_API_KEY ontbreekt: Buffer-adapter overgeslagen.");
+    meldAanCi("BUFFER_API_KEY ontbreekt: Buffer-adapter overgeslagen.", 0);
+    return;
+  }
+
+  const { ids, ontbrekend } = bepaalKanalen(client ? await haalKanalen(client) : null);
   for (const k of ontbrekend) console.warn(`⚠ Geen ${k}-kanaal in Buffer; ${k} wordt overgeslagen.`);
 
   const planning = await haalPlanning();
-  const { gekozen, overgeslagen } = kiesPosts(planning, todayISOInTimeZone(), new Date());
+  const nu = new Date();
+  const { gekozen, overgeslagen } = kiesPosts(planning, todayISOInTimeZone(nu), nu);
   for (const o of overgeslagen) console.log(`– ${o.post.id}: ${o.reden}`);
   if (gekozen.length === 0) {
     console.log(`Geen posts om in te plannen voor ${DATUM}.`);
+    meldAanCi(`Geen posts om in te plannen voor ${DATUM}.`, 0);
     return;
   }
 
-  const modus = DRY_RUN ? "dry-run" : CONCEPT ? "concept" : "inplannen";
-  console.log(`Buffer-adapter ${DATUM} (${modus}): ${gekozen.length} post(s) × ${KANALEN.length} kanalen\n`);
+  console.log(`Buffer-adapter ${DATUM} (${MODUS}): ${gekozen.length} post(s) × ${KANALEN.length} kanalen\n`);
 
   let grootboek = leesGrootboek();
   const run = process.env.GITHUB_RUN_ID ?? "lokaal";
   const resultaten: Resultaat[] = [];
+  const telIngepland = () => resultaten.filter((r) => r.status === "ingepland").length;
   let mislukt = 0;
 
   for (const { post, dueAt } of gekozen) {
     for (const kanaal of KANALEN) {
-      const basis = { post: post.id, kanaal, dueAt };
+      const basis: { post: string; kanaal: Kanaal; dueAt: string } = { post: post.id, kanaal, dueAt };
       const kanaalId = ids[kanaal];
-      if (!kanaalId) {
+      const bestaand = zoekRegel(grootboek, post.id, kanaal);
+      const actie = besluit({ kanaalId, inGrootboek: Boolean(bestaand), modus: MODUS });
+      if (actie === "kanaal ontbreekt" || !kanaalId) {
         resultaten.push({ ...basis, status: "kanaal ontbreekt", detail: "" });
         continue;
       }
-      const bestaand = zoekRegel(grootboek, post.id, kanaal);
-      if (!CONCEPT && bestaand) {
-        resultaten.push({ ...basis, status: "al in Buffer", detail: bestaand.bufferId });
+      if (actie === "al in Buffer") {
+        resultaten.push({ ...basis, status: "al in Buffer", detail: bestaand?.bufferId ?? "" });
         continue;
       }
       const input = bouwInput(post, kanaal, kanaalId, dueAt, { concept: CONCEPT });
-      if (DRY_RUN || !client) {
+      if (actie === "dry-run" || !client) {
         resultaten.push({ ...basis, status: "dry-run", detail: `${input.assets.length} slides, ${input.text.length} tekens` });
         continue;
       }
+
+      let aangemaakt: BufferPost;
       try {
-        const aangemaakt = await client.maakPost(input);
-        if (CONCEPT) {
-          resultaten.push({ ...basis, status: "concept", detail: aangemaakt.id });
-        } else {
-          // Direct wegschrijven: een crash verderop mag een al geplaatste post niet vergeten.
-          grootboek = voegRegelToe(grootboek, { post: post.id, kanaal, bufferId: aangemaakt.id, dueAt, aangemaakt: new Date().toISOString(), run });
-          schrijfGrootboek(grootboek);
-          resultaten.push({ ...basis, status: "ingepland", detail: aangemaakt.id });
-        }
+        aangemaakt = await client.maakPost(input);
       } catch (err) {
         mislukt += 1;
-        resultaten.push({ ...basis, status: "mislukt", detail: err instanceof Error ? err.message : String(err) });
+        let detail = err instanceof Error ? err.message : String(err);
+        // Bij een netwerkfout weten we niet of Buffer de post al had aangenomen.
+        if (detail.includes("Buffer onbereikbaar")) detail += " (mogelijk wel aangemaakt; controleer Buffer vóór een herstart)";
+        resultaten.push({ ...basis, status: "mislukt", detail });
+        continue;
       }
+
+      if (CONCEPT) {
+        console.log(`✓ concept ${post.id} ${kanaal} → ${aangemaakt.id}`);
+        resultaten.push({ ...basis, status: "concept", detail: aangemaakt.id });
+        continue;
+      }
+
+      // Direct wegschrijven: een crash verderop mag een al geplaatste post niet vergeten.
+      grootboek = voegRegelToe(grootboek, { post: post.id, kanaal, bufferId: aangemaakt.id, dueAt, aangemaakt: new Date().toISOString(), run });
+      try {
+        schrijfGrootboek(grootboek);
+      } catch (err) {
+        // Doorgaan zou bij een herstart een dubbele post opleveren: hier stoppen.
+        resultaten.push({ ...basis, status: "mislukt", detail: `staat in Buffer als ${aangemaakt.id}; grootboek niet geschreven` });
+        console.error(`✗ ${post.id} ${kanaal}: staat in Buffer als ${aangemaakt.id} maar het grootboek kon niet worden geschreven; voeg de regel handmatig toe vóór een herstart`);
+        console.error(err instanceof Error ? err.message : String(err));
+        const tabel = resultaatTabel(resultaten);
+        console.log(`\n${tabel}`);
+        try {
+          meldAanCi(tabel, telIngepland());
+        } catch {
+          // De samenvatting is bijzaak; de melding hierboven telt.
+        }
+        process.exit(1);
+      }
+      console.log(`✓ ${post.id} ${kanaal} → ${aangemaakt.id}`);
+      resultaten.push({ ...basis, status: "ingepland", detail: aangemaakt.id });
     }
   }
 
   const tabel = resultaatTabel(resultaten);
   console.log(tabel);
-  const ingepland = resultaten.filter((r) => r.status === "ingepland").length;
-  if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Social-posts ${DATUM} (${modus})\n\n${tabel}\n`);
-  if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `ingepland=${ingepland}\n`);
+  const ingepland = telIngepland();
+  meldAanCi(tabel, ingepland);
   if (ingepland > 0) console.log(`\n${ingepland} post(s) ingepland; grootboek: ${SOCIAL_BUFFER_LOG_PATH}`);
-  if (CONCEPT) console.log("\nConcepten staan in Buffer ter controle; verwijder ze daar na het nakijken.");
+  if (CONCEPT && !DRY_RUN) console.log("\nConcepten staan in Buffer ter controle; verwijder ze daar na het nakijken.");
   if (mislukt > 0) {
     console.error(`\n${mislukt} post(s) mislukt`);
     process.exitCode = 1;
