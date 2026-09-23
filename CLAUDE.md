@@ -45,6 +45,7 @@ src/
     scrape-runs.ts  # loader + helpers voor run-metrics (enige plek die data/scrape-runs.json kent)
     utm.ts          # UTM-helper (kanaal → utm_source), gebruikt door /links, deelknoppen en captions
     social*.ts(x)   # social-kit: selectie (social.ts), captions, planning-JSON, render (satori) en slides
+    social-buffer-log.ts # grootboek van in Buffer geplaatste posts (enige plek die data/social-buffer.json kent)
 keystatic.config.ts  # schema's van het beheerpaneel (1-op-1 op de frontmatter)
 scripts/
   verify-bronnen.ts # verifieert agendaUrl's in bronnen.json (robots, discovery)
@@ -53,13 +54,16 @@ scripts/
   run-record.ts     # vouwt scrape-metrics.json tot een run-record in data/scrape-runs.json
   backfill-runs.ts  # eenmalig: run-records uit de scraper-commits reconstrueren
   social-kit.ts     # haalt planning + slides van de site → data/social/<datum>/ (klaarzetten voor Buffer)
+  social-buffer.ts  # plant de weekposts via de Buffer-API in (Facebook/Instagram/TikTok); wekelijks via social.yml
   vind-instagram.ts # print Instagram-handles die op sauna-websites staan (voorstellen, schrijft niets; -- --sauna <slug>)
-  lib/              # net.ts (fetch/robots), content.ts (bronnen/dedup/MDX-write), quality-gate.ts (poort), metrics.ts (run-metrics melden)
+  lib/              # net.ts (fetch/robots), content.ts (bronnen/dedup/MDX-write), quality-gate.ts (poort), metrics.ts (run-metrics melden), buffer-client.ts (Buffer-GraphQL) en social-buffer.ts (selectie, dueAt, mapping per kanaal, beslisregel)
 .github/workflows/
   scrape.yml        # wekelijkse scrape (cron ma 06:00) → commit op main + scraper-issue
+  social.yml        # wekelijks (ma 07:30 UTC) social-posts inplannen in Buffer → commit grootboek
 data/
   clicks.log        # klik-log (gitignored)
   scrape-runs.json  # run-metrics van de wekelijkse scrape (gecommit door de workflow; bron voor /beheer)
+  social-buffer.json # grootboek Buffer-adapter: post-id × kanaal → Buffer-post-id (gecommit door social.yml)
 ```
 
 ## Datamodel (repo-based content)
@@ -92,7 +96,7 @@ Optioneel veld `bron: scraper` markeert automatisch gescrapete events. Optioneel
 | `/keystatic` | Beheerpaneel (Keystatic); noindex + robots-disallow, niet in sitemap |
 | `/beheer` | Beheer-dashboard: laatste scrape-run, te beoordelen concepts (→ Keystatic), aandacht, trend; noindex |
 | `/links` | Link-in-bio op eigen domein; `?k=instagram|facebook|tiktok` zet UTM's op elke knop; noindex, niet in de sitemap |
-| `/social/planning` | JSON met de posts van een week (`?datum=`); contract voor `social-kit` en de latere Buffer-adapter; no-store |
+| `/social/planning` | JSON met de posts van een week (`?datum=`); contract voor `social-kit` en `social-buffer` (veld `commit` = deploy-commit, voor de versheidscheck); no-store |
 | `/social/{weekend,maand,nieuw}/[…]`, `/social/event/[slug]`, `/social/afsluiter`, `/social/profiel`, `/social/omslag` | Slides als PNG (`?formaat=feed\|story`), noindex-header, bewust niet in robots-disallow (Facebook-fetcher) |
 | `/over`, `/contact`, `/voor-saunas` | Statische pagina's (B2B-pitch) |
 
@@ -160,6 +164,8 @@ Flags: `-- --limit N` (eerste N bronnen), `-- --dry-run` (mock-extractie incl. a
 
 Wekelijkse posts voor Instagram, Facebook en TikTok uit de agenda (spec: [docs/superpowers/specs/2026-09-08-social-fundament-en-kit-design.md](docs/superpowers/specs/2026-09-08-social-fundament-en-kit-design.md)). Vier rubrieken: *Dit weekend* (vrijdag, vr–zo van de ISO-week), *Nieuw in de agenda* (maandag; events met `gepubliceerdOp` in de zeven dagen t/m de referentiedatum), *Uitgelicht* (woensdag; drie kandidaten die over 1–4 weken starten, opgietweekend > kampioenschap > thema > regulier), *Deze maand* (de 1e, als die in de komende week valt). Selectie en captions zijn pure functies in `src/lib/social*.ts` (tests in `scripts/lib/social*.test.ts`); post-id's zijn stabiel per week/event (`weekend-2026-W37`, `nieuw-2026-W37`, `uitgelicht-<slug>`, `maand-oktober-2026`) zodat een adapter dubbele aanmaak herkent. Captions komen uit templates (drie openingen die op weeknummer rouleren, kalender-emoji als enig emoji, geen em-streepjes; Facebook krijgt echte URL's met UTM, Instagram/TikTok "link in bio"). De slides worden live gerenderd onder `/social/…` met `next/og` (fonts via de Google Fonts CSS-API, beelden via de eigen oorsprong met HEAD- en content-type-check; ontbrekend coverbeeld = homepage-hero, dan houtgradient; covers tonen onder de kop het programma (dag, sauna, plaats; max. 5 regels feed / 7 story, daarna "+ N meer"); alleen JPEG/PNG/GIF/SVG, geen WebP/AVIF). `npm run social-kit -- --datum <vrijdag>` haalt planning en slides naar `data/social/<datum>/<post-id>/{feed,story}/` (gitignored; één submap per formaat zodat een carrousel in één keer in Buffer te slepen is; een post met één slide krijgt geen submappen maar `-feed`/`-story` in de bestandsnaam) met een `captions.md` per post; Nathaniel plant het op vrijdag in Buffer. Sociale kanalen staan in `socials` (`src/lib/site.ts`); Facebook linkt op paginanummer tot er een gebruikersnaam is. Automatisch plaatsen (Buffer-API, deelproject 2) leest hetzelfde `/social/planning`-contract. Regels: geen beelden die suggereren hoe een specifieke sauna eruitziet; captions feitelijk, zonder superlatieven.
 
+**Buffer-adapter (`npm run social-buffer`, deelproject 2, spec [docs/superpowers/specs/2026-09-23-social-buffer-adapter-design.md](docs/superpowers/specs/2026-09-23-social-buffer-adapter-design.md)):** plaatst de posts automatisch. `.github/workflows/social.yml` draait elke maandag 07:30 UTC (anderhalf uur na de scrape), leest `/social/planning` van de live site (wacht tot 10 minuten tot het `commit`-veld gelijk is aan de runner-commit, daarna met waarschuwing door) en maakt per post × kanaal een **ingeplande** Buffer-post via de GraphQL-API (`createPost` met de slide-URL's als `assets`, `customScheduled` + `dueAt`). Alleen `rang === 1` gaat mee (van *Uitgelicht* de hoogste prioriteit). Vaste NL-tijden: nieuw ma 17:00, uitgelicht wo 19:00, weekend vr 12:00, maand de 1e 10:00 (`PLAATSINGSTIJD`); een verstreken tijdstip wordt nu + 15 min, een verstreken plaatsingsdag valt weg. Facebook en Instagram krijgen de feed-slides, TikTok de story-slides (fotomodus, titel ≤ 90 tekens). Kanaal-id's worden per run via de `channels`-query ontdekt (één secret `BUFFER_API_KEY`; `BUFFER_KANAAL_<KANAAL>` alleen bij twee kanalen van dezelfde soort); een niet-gekoppeld kanaal wordt overgeslagen met een waarschuwing. Tegen dubbele posts houdt de adapter een grootboek bij in `data/social-buffer.json` (post-id × kanaal → Buffer-id), dat na elke geslaagde post atomair wordt geschreven (tijdelijk bestand + hernoemen) en dat de workflow in de modus `inplannen` commit (alleen vanaf `main`, ook als het script faalde); een in Buffer verwijderde post komt daardoor niet terug. `--concept` zet alles als concept in Buffer (verificatie; negeert en schrijft niets in het grootboek), `--dry-run` toont alleen de tabel (met sleutel worden wel de kanalen opgevraagd), `--kanalen` print de kanalen; `--concept` en `--dry-run` gaan niet samen (het script weigert). Zonder `BUFFER_API_KEY` slaat het script zichzelf over. `social.yml` en `scrape.yml` zitten in dezelfde concurrency-groep `push-naar-main`, zodat er maar één workflow tegelijk naar `main` pusht. Loopt de scrape uit, dan wacht de social-run in de rij; de versheidscheck wacht daarna tot 10 minuten op de deploy en gaat dan met een waarschuwing door. Instagram-stories en het delen in Facebook-groepen blijven handmatig; `social-kit` blijft als terugvaloptie.
+
 ## Beheer (Keystatic)
 
 `/keystatic` is het beheerpaneel: concepts beoordelen, sauna-profielen, gidsen en `content/bronnen.json` bewerken in de browser. Git blijft de bron van waarheid: in GitHub-mode is elke save een commit op `main` onder het GitHub-account van de ingelogde gebruiker, waarna Vercel deployt. Schema's staan in `keystatic.config.ts` en zijn 1-op-1 op de frontmatter/JSON; `scripts/lib/keystatic-schema.test.ts` bewaakt twee richtingen — elk contentveld staat in het schema (een onbekend veld zou bij een save verdwijnen) én elke entry haalt de schema-validatie via het Keystatic-reader-pad (wat daar faalt, kan in het paneel niet worden opgeslagen). Toegang = schrijfrecht op de repo. Zonder de `KEYSTATIC_*`-env-vars (zie `.env.example`) draait het paneel in local-mode en bewerkt het bestanden op schijf. Local-mode is onbeveiligd en bestaat daarom alleen in development: in productie zonder `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` geven `/keystatic` en `/api/keystatic` 404 (`src/lib/beheer.ts`, test `scripts/lib/beheer.test.ts`). Zet op Vercel altijd alle vier de `KEYSTATIC_*`-variabelen tegelijk en deploy daarna opnieuw (de `NEXT_PUBLIC_`-waarde wordt bij de build ingebakken). `/beheer` is het dashboard van de wekelijkse scrape (zie *Run-metrics*); het volgt dezelfde 404/noindex-regel. Let op: de guard wordt bij de build geëvalueerd, dus de `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` moet in de Vercel-buildomgeving staan.
@@ -201,6 +207,7 @@ npm run fetch-logos     # haal logo's op voor sauna-profielen zonder beeld (geen
 npm run scrape-report   # bouw scrape-issue.md + print problemen/schoon
 npm run run-record  # vouw scrape-metrics.json tot een run-record (workflow-stap; -- --dry-run toont het record)
 npm run social-kit      # planning + slides + captions van de site → data/social/<datum>/ (-- --datum, --basis, --formaat, --map)
+npm run social-buffer   # plan de weekposts in Buffer (BUFFER_API_KEY; -- --concept | --dry-run | --kanalen | --datum)
 npm run vind-instagram  # voorstellen voor instagram-handles uit sauna-websites (schrijft niets; -- --sauna <slug>)
 
 ```

@@ -320,6 +320,12 @@ caption uit `captions.md` plakken, drie kanalen aanvinken, plaatsingsdag instell
 
 ## 7. Publiceerstap (contract; adapter buiten scope)
 
+> **Bijgewerkt 2026-09-23:** deelproject 2 is ontworpen in
+> [2026-09-23-social-buffer-adapter-design.md](2026-09-23-social-buffer-adapter-design.md);
+> het script heet `social-buffer`, draait in een eigen workflow `social.yml` en plant
+> ingeplande posts (geen concepten), met een grootboek in `data/social-buffer.json`.
+> De tekst hieronder is het oorspronkelijke contract.
+
 Alles wat publiceert is consument van de planning-JSON. Nu: het script uit §6
 (download-adapter). Later, deelproject 2: `scripts/social-buffer.ts` maakt per post via
 de Buffer-API een **concept** aan in de wachtrij van de drie kanalen (feed-slides als
