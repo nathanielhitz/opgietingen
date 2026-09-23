@@ -1,7 +1,8 @@
 // scripts/lib/social-buffer.ts
 import type { PlanningJson, PlanningPost } from "../../src/lib/social-planning";
-import type { Rubriek } from "../../src/lib/social";
+import { KANALEN, type Kanaal, type Rubriek } from "../../src/lib/social";
 import { nlTijdNaarUtc } from "../../src/lib/dates";
+import type { BufferKanaal, BufferPostInput } from "./buffer-client";
 
 /*
   Pure functies van de Buffer-adapter (spec §5, §6, §8, §9): welke posts,
@@ -73,4 +74,125 @@ export function tiktokTitel(titel: string): string {
   const kort = titel.slice(0, TIKTOK_TITEL_MAX - 1);
   const spatie = kort.lastIndexOf(" ");
   return `${(spatie > 0 ? kort.slice(0, spatie) : kort).trimEnd()}…`;
+}
+
+/* ---------- Mapping per kanaal (spec §6) ---------- */
+
+/** Instagram-posttype voor een reeks beelden; na de verificatie met een concept eventueel "carousel". */
+export const INSTAGRAM_TYPE = "post";
+
+export interface InputOpties {
+  /** true = concept in Buffer (saveToDraft, wachtrijmodus, geen dueAt). */
+  concept: boolean;
+}
+
+/**
+ * createPost-input voor één post op één kanaal. Facebook en Instagram krijgen
+ * de feed-slides (4:5), TikTok de story-slides (9:16, fotomodus). Caption per
+ * kanaal komt uit de planning.
+ */
+export function bouwInput(post: PlanningPost, kanaal: Kanaal, kanaalId: string, dueAt: string, opties: InputOpties): BufferPostInput {
+  const formaat = kanaal === "tiktok" ? "story" : "feed";
+  const input: BufferPostInput = {
+    channelId: kanaalId,
+    text: post.captions[kanaal],
+    assets: post.slides.map((s) => ({ image: { url: s[formaat] } })),
+    schedulingType: "automatic",
+    needsApproval: false,
+    ...(opties.concept ? { mode: "addToQueue" as const, saveToDraft: true } : { mode: "customScheduled" as const, dueAt }),
+  };
+  if (kanaal === "instagram") input.metadata = { instagram: { type: INSTAGRAM_TYPE, shouldShareToFeed: true } };
+  if (kanaal === "tiktok") input.metadata = { tiktok: { title: tiktokTitel(post.titel), type: "post" } };
+  return input;
+}
+
+/* ---------- Kanaalontdekking (spec §9) ---------- */
+
+export type KanaalIds = Partial<Record<Kanaal, string>>;
+
+export interface Ontdekking {
+  ids: KanaalIds;
+  /** Kanalen zonder Buffer-koppeling; worden overgeslagen met een waarschuwing. */
+  ontbrekend: Kanaal[];
+}
+
+/**
+ * Per social-kanaal precies één Buffer-kanaal: een override wint; anders het
+ * enige kanaal met die service; geen kanaal = ontbrekend; meer dan één = fout
+ * met de id's, zodat de override gezet kan worden.
+ */
+export function ontdekKanalen(kanalen: BufferKanaal[], overrides: KanaalIds = {}): Ontdekking {
+  const ids: KanaalIds = {};
+  const ontbrekend: Kanaal[] = [];
+  for (const kanaal of KANALEN) {
+    const override = overrides[kanaal];
+    if (override) {
+      ids[kanaal] = override;
+      continue;
+    }
+    const gevonden = kanalen.filter((k) => k.service.toLowerCase() === kanaal);
+    if (gevonden.length === 1) {
+      ids[kanaal] = gevonden[0].id;
+    } else if (gevonden.length === 0) {
+      ontbrekend.push(kanaal);
+    } else {
+      const lijst = gevonden.map((k) => `${k.name}=${k.id}`).join(", ");
+      throw new Error(`Meer dan één ${kanaal}-kanaal in Buffer (${lijst}); zet BUFFER_KANAAL_${kanaal.toUpperCase()} op de juiste id`);
+    }
+  }
+  return { ids, ontbrekend };
+}
+
+/** Kanaal-id-overrides uit de omgeving (BUFFER_KANAAL_FACEBOOK enz.); lege waarden tellen niet. */
+export function overridesUitEnv(env: Record<string, string | undefined>): KanaalIds {
+  const ids: KanaalIds = {};
+  for (const kanaal of KANALEN) {
+    const waarde = env[`BUFFER_KANAAL_${kanaal.toUpperCase()}`];
+    if (waarde) ids[kanaal] = waarde;
+  }
+  return ids;
+}
+
+/* ---------- Versheidscheck (spec §8) ---------- */
+
+/** Komt de deploy die de planning maakte overeen met de commit op de runner? Onbekend als een van beide ontbreekt. */
+export function commitKomtOvereen(planningCommit: string | null, runnerCommit: string | undefined): "overeen" | "afwijkend" | "onbekend" {
+  if (!planningCommit || !runnerCommit) return "onbekend";
+  return planningCommit === runnerCommit ? "overeen" : "afwijkend";
+}
+
+/* ---------- Samenvatting (spec §4 stap 7) ---------- */
+
+export type ResultaatStatus = "ingepland" | "concept" | "al in Buffer" | "dry-run" | "kanaal ontbreekt" | "mislukt";
+
+export interface Resultaat {
+  post: string;
+  kanaal: Kanaal;
+  /** UTC-ISO. */
+  dueAt: string;
+  status: ResultaatStatus;
+  detail: string;
+}
+
+/** "vr 02-10 12:00" in Europe/Amsterdam. */
+export function formatNlTijd(iso: string): string {
+  return new Intl.DateTimeFormat("nl-NL", {
+    timeZone: "Europe/Amsterdam",
+    weekday: "short",
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+    .format(new Date(iso))
+    .replace(/,/g, "");
+}
+
+/** Markdown-tabel voor de console en $GITHUB_STEP_SUMMARY. */
+export function resultaatTabel(regels: Resultaat[]): string {
+  const kop = ["| Post | Kanaal | Plaatsing (NL) | Status | Detail |", "|---|---|---|---|---|"];
+  const rijen = regels.map(
+    (r) => `| ${r.post} | ${r.kanaal} | ${formatNlTijd(r.dueAt)} | ${r.status} | ${r.detail.replace(/\|/g, "/")} |`,
+  );
+  return [...kop, ...rijen].join("\n");
 }
