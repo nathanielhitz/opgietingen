@@ -9,6 +9,7 @@ import {
   formatDagKort,
   isGeldigeIsoDatum,
   nlTijdNaarUtc,
+  maandagVanWeek,
 } from "../../src/lib/dates";
 
 test("isoWeek: vrijdag 11 september 2026 valt in 2026-W37", () => {
@@ -85,4 +86,11 @@ test("nlTijdNaarUtc: ongeldige datum of tijd gooit", () => {
   assert.throws(() => nlTijdNaarUtc("2026-10-02", "12.00"), /Ongeldige datum\/tijd/);
   assert.throws(() => nlTijdNaarUtc("2026-10-02", "25:00"), /Ongeldige datum\/tijd/);
   assert.throws(() => nlTijdNaarUtc("2026-10-02", "24:00"), /Ongeldige datum\/tijd/);
+});
+
+test("maandagVanWeek: maandag van de ISO-week, of de dag zelf op maandag", () => {
+  assert.equal(maandagVanWeek("2026-09-21"), "2026-09-21"); // ma
+  assert.equal(maandagVanWeek("2026-09-23"), "2026-09-21"); // wo
+  assert.equal(maandagVanWeek("2026-09-27"), "2026-09-21"); // zo hoort bij de week ervoor
+  assert.equal(maandagVanWeek("2027-01-01"), "2026-12-28"); // vr, over de jaargrens (2026-W53)
 });

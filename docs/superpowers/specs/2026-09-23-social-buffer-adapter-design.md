@@ -63,7 +63,7 @@ alleen het plaatsen toe.
 
 1. Zonder `BUFFER_API_KEY`: melding "Buffer-adapter overgeslagen", exitcode 0
    (zoals `scrape-mail` zonder `MAIL_IMAP_HOST`).
-2. Haal `<basis>/social/planning?datum=<datum>` op (default: vandaag NL-tijd,
+2. Haal `<basis>/social/planning?datum=<datum>` op (default: de maandag van de huidige week, NL-tijd,
    basis `https://opgietingen.nl`). Versheidscheck, zie §8.
 3. Ontdek de kanalen (§9). Ontbrekende kanalen: waarschuwing, geen fout.
 4. Lees het grootboek (§7), vóór de selectie: Uitgelicht slaat kandidaten over
@@ -88,7 +88,10 @@ lokale server kan Buffer niet ophalen.
 
 ## 5. Selectie en tijdstip
 
-Referentiedatum is de dag van de run (maandag). `bouwPosts` levert dan precies de
+Referentiedatum is de maandag van de huidige week (`maandagVanWeek`, NL-tijd): de
+cron draait op maandag, en een handmatige run later in de week houdt zo dezelfde
+weekindeling. Een expliciete `--datum` die geen maandag is geeft in de modus
+`inplannen` een waarschuwing, geen fout. `bouwPosts` levert dan precies de
 komende week: *Nieuw* op die maandag, *Uitgelicht* woensdag, *Dit weekend*
 vrijdag en *Deze maand* op de 1e als die in de zeven dagen valt. Van de drie
 uitgelicht-kandidaten gaat er één de deur uit: de eerste op volgorde van rang die
@@ -207,7 +210,7 @@ on:
     - cron: "30 7 * * 1"   # maandag 07:30 UTC, anderhalf uur na de scrape
   workflow_dispatch:
     inputs:
-      datum:  { description: "Referentiedatum YYYY-MM-DD (leeg = vandaag)", required: false }
+      datum:  { description: "Referentiedatum YYYY-MM-DD (leeg = maandag van de huidige week)", required: false }
       modus:
         description: "inplannen | concept | dry-run"
         required: false

@@ -207,7 +207,7 @@ npm run fetch-logos     # haal logo's op voor sauna-profielen zonder beeld (geen
 npm run scrape-report   # bouw scrape-issue.md + print problemen/schoon
 npm run run-record  # vouw scrape-metrics.json tot een run-record (workflow-stap; -- --dry-run toont het record)
 npm run social-kit      # planning + slides + captions van de site → data/social/<datum>/ (-- --datum, --basis, --formaat, --map)
-npm run social-buffer   # plan de weekposts in Buffer (BUFFER_API_KEY; -- --concept | --dry-run | --kanalen | --datum)
+npm run social-buffer   # plan de weekposts in Buffer (BUFFER_API_KEY; -- --concept | --dry-run | --kanalen | --datum <maandag>, default maandag van de huidige week)
 npm run vind-instagram  # voorstellen voor instagram-handles uit sauna-websites (schrijft niets; -- --sauna <slug>)
 
 ```
