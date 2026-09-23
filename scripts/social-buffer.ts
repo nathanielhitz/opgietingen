@@ -258,7 +258,7 @@ async function main() {
   const ingepland = telIngepland();
   meldAanCi(tabel, ingepland);
   if (ingepland > 0) console.log(`\n${ingepland} post(s) ingepland; grootboek: ${SOCIAL_BUFFER_LOG_PATH}`);
-  if (CONCEPT && !DRY_RUN) console.log("\nConcepten staan in Buffer ter controle; verwijder ze daar na het nakijken.");
+  if (CONCEPT) console.log("\nConcepten staan in Buffer ter controle; verwijder ze daar na het nakijken.");
   if (mislukt > 0) {
     console.error(`\n${mislukt} post(s) mislukt`);
     process.exitCode = 1;
