@@ -18,7 +18,7 @@ import {
 } from "./social-buffer";
 
 /** Minimale planning-post; velden overschrijfbaar per test. */
-export function maakPost(o: Partial<PlanningPost> & { id: string; rubriek: PlanningPost["rubriek"]; plaatsingsdag: string }): PlanningPost {
+function maakPost(o: Partial<PlanningPost> & { id: string; rubriek: PlanningPost["rubriek"]; plaatsingsdag: string }): PlanningPost {
   return {
     rang: 1,
     titel: `Post ${o.id}`,
@@ -92,6 +92,19 @@ test("tiktokTitel: korte titel ongewijzigd, lange afgekapt op een woordgrens met
   assert.ok(lang.startsWith(kort.slice(0, -1)), "afgekapt op een woordgrens binnen de titel");
 });
 
+test("tiktokTitel: zonder spaties harde knip op codepoints, lengte binnen de limiet", () => {
+  const lang = "x".repeat(120);
+  const kort = tiktokTitel(lang);
+  assert.ok(kort.length <= 90, `lengte ${kort.length}`);
+  assert.ok(kort.endsWith("…"));
+});
+
+test("tiktokTitel: spatie precies op de laatste toegestane positie behoudt het woord ervoor", () => {
+  const titel = "a".repeat(89) + " " + "b".repeat(40);
+  const kort = tiktokTitel(titel);
+  assert.equal(kort, "a".repeat(89) + "…");
+});
+
 const DUE = "2026-10-02T10:00:00.000Z";
 
 test("bouwInput facebook: feed-slides in volgorde, FB-caption, ingepland, geen metadata", () => {
@@ -159,6 +172,14 @@ test("ontdekKanalen: twee van dezelfde service is een fout met de id's, tenzij e
   assert.equal(ids.facebook, "ch_fb2");
 });
 
+test("ontdekKanalen: override-id die niet voorkomt onder de kanalen is een fout", () => {
+  const kanalen = [{ id: "ch_fb1", name: "Pagina 1", service: "facebook" }];
+  assert.throws(
+    () => ontdekKanalen(kanalen, { facebook: "ch_onbekend" }),
+    /BUFFER_KANAAL_FACEBOOK=ch_onbekend komt niet voor onder de Buffer-kanalen/,
+  );
+});
+
 test("overridesUitEnv: leest BUFFER_KANAAL_<KANAAL>, lege waarden tellen niet", () => {
   assert.deepEqual(overridesUitEnv({ BUFFER_KANAAL_FACEBOOK: "ch_fb", BUFFER_KANAAL_INSTAGRAM: "" }), { facebook: "ch_fb" });
   assert.deepEqual(overridesUitEnv({}), {});
@@ -191,4 +212,14 @@ test("resultaatTabel: markdown-tabel met één rij per resultaat, pipes in detai
   assert.equal(rijen.length, 5);
   assert.match(rijen[2], /^\| weekend-2026-W40 \| facebook \| .*12:00 \| ingepland \| post_1 \|$/);
   assert.match(rijen[4], /a \/ b/);
+});
+
+test("resultaatTabel: regeleindes in detail worden een spatie, blijft één rij", () => {
+  const regels: Resultaat[] = [
+    { post: "weekend-2026-W40", kanaal: "facebook", dueAt: DUE, status: "mislukt", detail: "regel1\nregel2" },
+  ];
+  const tabel = resultaatTabel(regels);
+  const rijen = tabel.split("\n");
+  assert.equal(rijen.length, 3);
+  assert.match(rijen[2], /regel1 regel2/);
 });

@@ -37,7 +37,7 @@ export interface Overgeslagen {
 
 /**
  * Plaatsingsdag + rubriektijd (NL) als UTC. Is dat tijdstip niet meer in de
- * toekomst (late herstart), dan nu + 15 minuten, afgerond op de minuut:
+ * toekomst (late herstart), dan nu + 15 minuten, afgekapt op de minuut:
  * Buffer wil een toekomstig tijdstip.
  */
 export function dueAtVoor(post: Pick<PlanningPost, "rubriek" | "plaatsingsdag">, nu: Date): string {
@@ -71,9 +71,12 @@ export function kiesPosts(planning: Pick<PlanningJson, "posts">, vandaag: string
 /** Titel van een TikTok-fotopost: maximaal 90 tekens, afgekapt op een woordgrens met "…". */
 export function tiktokTitel(titel: string): string {
   if (titel.length <= TIKTOK_TITEL_MAX) return titel;
-  const kort = titel.slice(0, TIKTOK_TITEL_MAX - 1);
+  const kort = titel.slice(0, TIKTOK_TITEL_MAX);
   const spatie = kort.lastIndexOf(" ");
-  return `${(spatie > 0 ? kort.slice(0, spatie) : kort).trimEnd()}…`;
+  if (spatie > 0) return `${kort.slice(0, spatie).trimEnd()}…`;
+  // Geen spatie binnen de limiet: harde knip op codepoints, anders raakt een
+  // emoji (die uit meerdere UTF-16-eenheden bestaat) halverwege geknipt.
+  return `${Array.from(titel).slice(0, TIKTOK_TITEL_MAX - 1).join("").trimEnd()}…`;
 }
 
 /* ---------- Mapping per kanaal (spec §6) ---------- */
@@ -127,6 +130,9 @@ export function ontdekKanalen(kanalen: BufferKanaal[], overrides: KanaalIds = {}
   for (const kanaal of KANALEN) {
     const override = overrides[kanaal];
     if (override) {
+      if (kanalen.length > 0 && !kanalen.some((k) => k.id === override)) {
+        throw new Error(`BUFFER_KANAAL_${kanaal.toUpperCase()}=${override} komt niet voor onder de Buffer-kanalen`);
+      }
       ids[kanaal] = override;
       continue;
     }
@@ -192,7 +198,8 @@ export function formatNlTijd(iso: string): string {
 export function resultaatTabel(regels: Resultaat[]): string {
   const kop = ["| Post | Kanaal | Plaatsing (NL) | Status | Detail |", "|---|---|---|---|---|"];
   const rijen = regels.map(
-    (r) => `| ${r.post} | ${r.kanaal} | ${formatNlTijd(r.dueAt)} | ${r.status} | ${r.detail.replace(/\|/g, "/")} |`,
+    (r) =>
+      `| ${r.post} | ${r.kanaal} | ${formatNlTijd(r.dueAt)} | ${r.status} | ${r.detail.replace(/\|/g, "/").replace(/\s*\n\s*/g, " ")} |`,
   );
   return [...kop, ...rijen].join("\n");
 }
