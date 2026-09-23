@@ -8,6 +8,7 @@ import {
   eersteVanMaandIn,
   formatDagKort,
   isGeldigeIsoDatum,
+  nlTijdNaarUtc,
 } from "../../src/lib/dates";
 
 test("isoWeek: vrijdag 11 september 2026 valt in 2026-W37", () => {
@@ -58,4 +59,21 @@ test("isGeldigeIsoDatum: vorm én kalender", () => {
   assert.equal(isGeldigeIsoDatum("11-09-2026"), false);
   assert.equal(isGeldigeIsoDatum("2028-02-29"), true);
   assert.equal(isGeldigeIsoDatum("2027-02-29"), false);
+});
+
+test("nlTijdNaarUtc: zomertijd (CEST, +02:00)", () => {
+  assert.equal(nlTijdNaarUtc("2026-10-02", "12:00"), "2026-10-02T10:00:00.000Z");
+  assert.equal(nlTijdNaarUtc("2026-09-28", "17:00"), "2026-09-28T15:00:00.000Z");
+});
+
+test("nlTijdNaarUtc: wintertijd (CET, +01:00), ook over de jaargrens", () => {
+  assert.equal(nlTijdNaarUtc("2026-11-02", "17:00"), "2026-11-02T16:00:00.000Z");
+  assert.equal(nlTijdNaarUtc("2026-12-31", "10:00"), "2026-12-31T09:00:00.000Z");
+  assert.equal(nlTijdNaarUtc("2027-01-01", "10:00"), "2027-01-01T09:00:00.000Z");
+});
+
+test("nlTijdNaarUtc: ongeldige datum of tijd gooit", () => {
+  assert.throws(() => nlTijdNaarUtc("2026-13-01", "12:00"), /Ongeldige datum\/tijd/);
+  assert.throws(() => nlTijdNaarUtc("2026-10-02", "12.00"), /Ongeldige datum\/tijd/);
+  assert.throws(() => nlTijdNaarUtc("2026-10-02", "25:00"), /Ongeldige datum\/tijd/);
 });
