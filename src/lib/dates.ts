@@ -204,3 +204,34 @@ export function formatDagCompact(start: string, eind?: string): string {
 export function isGeldigeIsoDatum(iso: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(iso) && addDaysISO(iso, 0) === iso;
 }
+
+/* ---------- NL-tijd naar UTC (Buffer-adapter) ---------- */
+
+/** Offset van Europe/Amsterdam op een moment, in minuten (+120 zomer, +60 winter). */
+function amsterdamOffsetMinuten(moment: Date): number {
+  const naam =
+    new Intl.DateTimeFormat("en-US", { timeZone: "Europe/Amsterdam", timeZoneName: "longOffset" })
+      .formatToParts(moment)
+      .find((p) => p.type === "timeZoneName")?.value ?? "GMT";
+  const m = naam.match(/GMT([+-])(\d{2}):(\d{2})/);
+  if (!m) return 0;
+  return (m[1] === "-" ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3]));
+}
+
+/**
+ * Zet een NL-datum plus "HH:MM" (Europe/Amsterdam) om naar een UTC-ISO-string,
+ * zomer- en wintertijd via Intl (geen tijdzonebibliotheek). De offset wordt
+ * bepaald op het gokmoment "datum+tijd als UTC"; dat is alleen fout in het
+ * omschakeluur (02:00-03:00 's nachts), waar de adapter nooit plant.
+ */
+export function nlTijdNaarUtc(datum: string, tijd: string): string {
+  const m = tijd.match(/^(\d{2}):(\d{2})$/);
+  const uur = m ? Number(m[1]) : NaN;
+  const minuut = m ? Number(m[2]) : NaN;
+  if (!isGeldigeIsoDatum(datum) || !m || uur > 23 || minuut > 59) {
+    throw new Error(`Ongeldige datum/tijd: ${datum} ${tijd}`);
+  }
+  const [j, ma, d] = datum.split("-").map(Number);
+  const gok = Date.UTC(j, ma - 1, d, uur, minuut);
+  return new Date(gok - amsterdamOffsetMinuten(new Date(gok)) * 60_000).toISOString();
+}
