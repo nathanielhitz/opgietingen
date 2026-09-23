@@ -171,11 +171,12 @@ productie), zodat Buffer ze bij aanmaken én plaatsen kan ophalen.
 `process.env.VERCEL_GIT_COMMIT_SHA` (op Vercel beschikbaar; lokaal `null`). De
 wijziging is achterwaarts compatibel; `social-kit` negeert het veld.
 
-De adapter vergelijkt `commit` met `GITHUB_SHA`. Wijken ze af, dan is de deploy
+De adapter vergelijkt `commit` met `RUNNER_COMMIT` (de branch-tip die de workflow
+uitcheckte, zie §10; zonder die variabele `GITHUB_SHA`). Wijken ze af, dan is de deploy
 van de scrape-commit nog niet live: wacht en probeer elke 30 seconden opnieuw, tot
 10 minuten. Daarna gaat de run met een waarschuwing door: een planning van vorige
 week is beter dan geen posts. Is `commit` `null` (variabele niet beschikbaar) of
-ontbreekt `GITHUB_SHA` (lokaal), dan wordt de check overgeslagen met een melding.
+ontbreken `RUNNER_COMMIT` en `GITHUB_SHA` (lokaal), dan wordt de check overgeslagen met een melding.
 
 ## 9. Configuratie
 
@@ -222,7 +223,10 @@ en `scrape.yml` delen de concurrency-groep `push-naar-main`: er pusht maar één
 workflow tegelijk naar `main`, zodat de grootboek-commit en de scrape-commit
 elkaar niet laten falen.
 
-Stappen: checkout, Node 22 met npm-cache, `npm ci`, `npm run social-buffer` met
+Stappen: checkout op de branch-tip (`ref: ${{ github.ref }}`, niet `GITHUB_SHA`: bij
+een Re-run of een run die in de concurrency-rij wachtte is `GITHUB_SHA` ouder dan de
+laatste grootboek-commit) en die commit vastleggen als `RUNNER_COMMIT` voor de
+versheidscheck, Node 22 met npm-cache, `npm ci`, `npm run social-buffer` met
 de flags uit de inputs en `BUFFER_API_KEY` uit de secrets, daarna (alleen in de
 modus `inplannen` en alleen vanaf `main`, ook als het script faalde: geslaagde
 posts mogen niet verloren gaan) `data/social-buffer.json` committen als het
@@ -298,6 +302,8 @@ Stappen voor Nathaniel, in volgorde:
    vorige PR's).
 6. Eerste echte run handmatig via `workflow_dispatch` (modus `inplannen`) en de
    wachtrij in Buffer nakijken; daarna loopt het op de cron.
+7. Herstarten na een faalmail: via Re-run of een dispatch, altijd op maandag of met
+   `--datum` van die maandag.
 
 Daarna is het weekritme uit de vorige spec (§8.3) teruggebracht tot: niets
 verplicht. Optioneel blijven stories plaatsen en de weekendpost in een saunagroep

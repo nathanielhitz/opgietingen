@@ -13,7 +13,8 @@
 
   Env: BUFFER_API_KEY (zonder: overslaan met exitcode 0), optioneel
        BUFFER_KANAAL_FACEBOOK / _INSTAGRAM / _TIKTOK (kanaal-id-override);
-       in CI GITHUB_SHA (versheidscheck), GITHUB_RUN_ID, GITHUB_STEP_SUMMARY, GITHUB_OUTPUT.
+       in CI RUNNER_COMMIT (versheidscheck; valt terug op GITHUB_SHA), GITHUB_RUN_ID,
+       GITHUB_STEP_SUMMARY, GITHUB_OUTPUT.
 */
 import fs from "node:fs";
 import { isGeldigeIsoDatum, todayISOInTimeZone } from "../src/lib/dates";
@@ -84,10 +85,11 @@ async function haalPlanningEenmaal(url: string): Promise<PlanningJson> {
 
 async function haalPlanning(): Promise<PlanningJson> {
   const url = `${BASIS}/social/planning?datum=${DATUM}`;
-  const runner = process.env.GITHUB_SHA;
+  // De commit die de workflow uitcheckte (branch-tip, zie social.yml); GITHUB_SHA als terugval.
+  const runnerCommit = process.env.RUNNER_COMMIT ?? process.env.GITHUB_SHA;
   const gestart = Date.now();
-  // Alleen in CI (GITHUB_SHA) wachten we op de deploy; lokaal faalt een fout meteen.
-  const binnenVenster = () => Boolean(runner) && Date.now() - gestart < WACHT_MAX_MS;
+  // Alleen in CI (runner-commit bekend) wachten we op de deploy; lokaal faalt een fout meteen.
+  const binnenVenster = () => Boolean(runnerCommit) && Date.now() - gestart < WACHT_MAX_MS;
   for (;;) {
     let planning: PlanningJson;
     try {
@@ -100,17 +102,17 @@ async function haalPlanning(): Promise<PlanningJson> {
       }
       throw err;
     }
-    const check = commitKomtOvereen(planning.commit ?? null, runner);
+    const check = commitKomtOvereen(planning.commit ?? null, runnerCommit);
     if (check === "overeen") return planning;
     if (check === "onbekend") {
-      console.log("Versheidscheck overgeslagen (geen commit-hash in de planning of geen GITHUB_SHA).");
+      console.log("Versheidscheck overgeslagen (geen commit-hash in de planning of geen RUNNER_COMMIT/GITHUB_SHA).");
       return planning;
     }
     if (Date.now() - gestart >= WACHT_MAX_MS) {
-      console.warn(`⚠ Planning komt van deploy ${planning.commit?.slice(0, 7)}, runner staat op ${runner?.slice(0, 7)}; na 10 minuten wachten toch doorgegaan.`);
+      console.warn(`⚠ Planning komt van deploy ${planning.commit?.slice(0, 7)}, runner staat op ${runnerCommit?.slice(0, 7)}; na 10 minuten wachten toch doorgegaan.`);
       return planning;
     }
-    console.log(`Deploy nog niet live (planning ${planning.commit?.slice(0, 7)} ≠ runner ${runner?.slice(0, 7)}); opnieuw over 30 s…`);
+    console.log(`Deploy nog niet live (planning ${planning.commit?.slice(0, 7)} ≠ runner ${runnerCommit?.slice(0, 7)}); opnieuw over 30 s…`);
     await wacht(WACHT_STAP_MS);
   }
 }
