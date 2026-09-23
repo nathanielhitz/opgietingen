@@ -58,3 +58,6 @@ opgietingen_research_pack_2026/
 
 # social-kit: lokaal gegenereerde slides + captions voor Buffer (spec 2026-09-08)
 /data/social/
+
+# Buffer-adapter: tijdelijk bestand van de atomaire grootboek-schrijfactie (het grootboek zelf wordt wel gecommit)
+/data/social-buffer.json.tmp

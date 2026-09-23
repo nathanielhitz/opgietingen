@@ -1262,7 +1262,7 @@ async function main() {
   if (!isGeldigeIsoDatum(DATUM)) throw new Error(`Ongeldige --datum: ${DATUM}`);
   const sleutel = process.env.BUFFER_API_KEY;
   if (!sleutel && !DRY_RUN) {
-    console.log("BUFFER_API_KEY ontbreekt — Buffer-adapter overgeslagen.");
+    console.log("BUFFER_API_KEY ontbreekt: Buffer-adapter overgeslagen.");
     return;
   }
   const client = sleutel ? maakBufferClient(sleutel) : null;
