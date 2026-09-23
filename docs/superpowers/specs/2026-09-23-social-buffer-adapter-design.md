@@ -199,16 +199,34 @@ on:
   workflow_dispatch:
     inputs:
       datum:  { description: "Referentiedatum YYYY-MM-DD (leeg = vandaag)", required: false }
-      modus:  { description: "inplannen | concept | dry-run", required: false, default: "inplannen" }
+      modus:
+        description: "inplannen | concept | dry-run"
+        required: false
+        default: "inplannen"
+        type: choice
+        options: [inplannen, concept, dry-run]
 permissions:
   contents: write
+concurrency:
+  group: push-naar-main      # dezelfde groep als scrape.yml
+  cancel-in-progress: false
+jobs:
+  social:
+    timeout-minutes: 30
 ```
+
+`modus` is een keuzelijst, zodat een tikfout in de handmatige start niet kan; het
+script weigert bovendien `--concept` samen met `--dry-run`. De job heeft
+`timeout-minutes: 30` (de versheidscheck wacht hooguit 10 minuten). `social.yml`
+en `scrape.yml` delen de concurrency-groep `push-naar-main`: er pusht maar één
+workflow tegelijk naar `main`, zodat de grootboek-commit en de scrape-commit
+elkaar niet laten falen.
 
 Stappen: checkout, Node 22 met npm-cache, `npm ci`, `npm run social-buffer` met
 de flags uit de inputs en `BUFFER_API_KEY` uit de secrets, daarna (alleen in de
-modus `inplannen`, ook als het script faalde: geslaagde posts mogen niet verloren
-gaan) `data/social-buffer.json` committen als het gewijzigd is, met dezelfde
-bot-identiteit als `scrape.yml` en een `git pull --rebase origin main` vóór de
+modus `inplannen` en alleen vanaf `main`, ook als het script faalde: geslaagde
+posts mogen niet verloren gaan) `data/social-buffer.json` committen als het
+gewijzigd is, met dezelfde bot-identiteit als `scrape.yml` en een `git pull --rebase origin main` vóór de
 push. Commitbericht: `chore(social): week <ISO-week>, <n> posts ingepland`. Een
 gefaalde run levert GitHub's standaard-mail op; er komt geen apart issue.
 
@@ -226,13 +244,23 @@ gefaalde run levert GitHub's standaard-mail op; er komt geen apart issue.
 
 Nieuw:
 
-- `scripts/social-buffer.ts`: flags, planning ophalen, flow uit §4.
+- `scripts/social-buffer.ts`: flags, planning ophalen met versheidscheck
+  (`haalPlanning`), kanalen ophalen (`haalKanalen`: de enige organisatie, dan
+  `channels`) en bepalen (`bepaalKanalen`: overrides uit de omgeving, zonder
+  sleutel bij een dry-run alle drie als "dry-run"), flow uit §4.
 - `scripts/lib/buffer-client.ts`: `organisaties()`, `kanalen(orgId)`,
   `maakPost(input)`; GraphQL-strings als constanten; foutvertaling.
-- `scripts/lib/social-buffer.ts`: pure functies `kiesPosts(planning, vandaag)`,
-  `dueAtVoor(post, nu)`, `bouwInput(post, kanaal, kanaalId, opties)`,
-  `tiktokTitel(titel)`, `ontdekKanalen(channels, overrides)`, `grootboekSleutel`.
-- `src/lib/social-buffer-log.ts`: typen + `leesGrootboek(pad)` / `schrijfGrootboek`.
+- `scripts/lib/social-buffer.ts`: pure functies `kiesPosts(planning, vandaag, nu)`,
+  `dueAtVoor(post, nu)`, `bouwInput(post, kanaal, kanaalId, dueAt, opties)`,
+  `tiktokTitel(titel)`, `ontdekKanalen(channels, overrides)`,
+  `overridesUitEnv(env: Record<string, string | undefined>)`,
+  `commitKomtOvereen(planningCommit, runnerCommit)`, `resultaatTabel(regels)`,
+  en de beslisregel `besluit({ kanaalId, inGrootboek, modus })` met
+  `type Modus = "inplannen" | "concept" | "dry-run"` (kanaal ontbreekt, al in
+  Buffer, dry-run of maak; alleen de concept-modus negeert het grootboek).
+- `src/lib/social-buffer-log.ts`: typen + `leesGrootboek(pad)`, `schrijfGrootboek`
+  (atomair: tijdelijk bestand + hernoemen), `zoekRegel(grootboek, post, kanaal)`,
+  `voegRegelToe(grootboek, regel)`.
 - `src/lib/dates.ts`: `nlTijdNaarUtc(datum, tijd)`.
 - `.github/workflows/social.yml`.
 - Tests: `scripts/lib/social-buffer.test.ts`, `scripts/lib/buffer-client.test.ts`.
@@ -241,6 +269,7 @@ Aangepast:
 
 - `src/lib/social-planning.ts` + `src/app/social/planning/route.ts`: veld `commit`.
 - `package.json`: script `social-buffer`.
+- `.github/workflows/scrape.yml`: concurrency-groep `push-naar-main` (gedeeld met `social.yml`).
 - `.env.example`: Buffer-variabelen.
 - `.gitignore`: niets nieuws; het grootboek wordt juist gecommit.
 - `CLAUDE.md`: projectstructuur (script, workflow, `data/social-buffer.json`),
@@ -311,3 +340,10 @@ van het grootboek, gids- of merchposts.
 - **Wachtrijlimiet gratis plan** (10 per kanaal): alleen te raken als handmatige
   posts de wachtrij vullen; de `MutationError` noemt het en de rest gaat door.
 - **PNG op Instagram**: verificatiepunt met kant-en-klare terugvaloptie (§13).
+- **Overlap met de scrape**: loopt `scrape.yml` langer dan anderhalf uur, dan
+  wacht de social-run in de concurrency-rij `push-naar-main`. `GITHUB_SHA` is de
+  commit van het moment waarop de run werd aangemaakt en is dan ouder dan de live
+  deploy (die al de scrape-commit bevat). De versheidscheck ziet een afwijkende
+  commit, wacht 10 minuten en gaat met een waarschuwing door op de verse
+  planning. Onschadelijk, alleen traag. Komt er een derde run in de rij, dan
+  annuleert GitHub de wachtende (per groep wacht er hooguit één).
