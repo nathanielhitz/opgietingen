@@ -8,7 +8,7 @@
     npm run social-buffer -- --concept             # alles als concept in Buffer (verificatie; grootboek blijft ongemoeid)
     npm run social-buffer -- --dry-run             # toon wat er zou gebeuren; geen schrijvende Buffer-aanroepen (met sleutel worden wel de kanalen opgevraagd), schrijft niets
     npm run social-buffer -- --kanalen             # print de gekoppelde kanalen met id en stop (vereist BUFFER_API_KEY)
-    npm run social-buffer -- --datum 2026-09-28    # andere referentiedatum (default: vandaag NL-tijd)
+    npm run social-buffer -- --datum 2026-09-28    # andere referentiedatum (default: maandag van de huidige week, NL-tijd; hoort een maandag te zijn)
     npm run social-buffer -- --basis http://localhost:3000   # alleen zinvol met --dry-run/--kanalen
 
   Env: BUFFER_API_KEY (zonder: overslaan met exitcode 0), optioneel
@@ -17,7 +17,7 @@
        GITHUB_STEP_SUMMARY, GITHUB_OUTPUT.
 */
 import fs from "node:fs";
-import { isGeldigeIsoDatum, todayISOInTimeZone } from "../src/lib/dates";
+import { isGeldigeIsoDatum, maandagVanWeek, todayISOInTimeZone } from "../src/lib/dates";
 import { KANALEN, type Kanaal } from "../src/lib/social";
 import type { PlanningJson } from "../src/lib/social-planning";
 import { eersteRegelVoorPost, leesGrootboek, schrijfGrootboek, voegRegelToe, zoekRegel, SOCIAL_BUFFER_LOG_PATH } from "../src/lib/social-buffer-log";
@@ -41,7 +41,10 @@ function flag(naam: string, standaard: string): string {
   return i !== -1 && process.argv[i + 1] ? process.argv[i + 1] : standaard;
 }
 
-const DATUM = flag("--datum", todayISOInTimeZone());
+// Default de maandag van deze week: een dispatch op dinsdag zou anders de week verschuiven
+// (nieuw-W40 met plaatsingsdag volgende maandag, botsend met de cron-run).
+const DATUM = flag("--datum", maandagVanWeek(todayISOInTimeZone()));
+const DATUM_EXPLICIET = process.argv.includes("--datum");
 const BASIS = flag("--basis", "https://opgietingen.nl").replace(/\/$/, "");
 const CONCEPT = process.argv.includes("--concept");
 const DRY_RUN = process.argv.includes("--dry-run");
@@ -141,6 +144,9 @@ function bepaalKanalen(lijst: BufferKanaal[] | null): Ontdekking {
 async function main() {
   if (CONCEPT && DRY_RUN) throw new Error("--concept en --dry-run gaan niet samen; kies er één.");
   if (!isGeldigeIsoDatum(DATUM)) throw new Error(`Ongeldige --datum: ${DATUM}`);
+  if (DATUM_EXPLICIET && MODUS === "inplannen" && maandagVanWeek(DATUM) !== DATUM) {
+    console.warn("⚠ --datum is geen maandag; de weekindeling kan afwijken van de cron-run.");
+  }
   if (!BASIS.startsWith("https://") && !DRY_RUN && !ALLEEN_KANALEN) {
     throw new Error("--basis zonder https is alleen toegestaan met --dry-run of --kanalen (Buffer kan lokale beelden niet ophalen).");
   }

@@ -173,6 +173,12 @@ export function volgendeWeekdag(iso: string, dag: number): string {
   return addDaysISO(iso, (dag - huidige + 7) % 7);
 }
 
+/** Maandag van de ISO-week van `iso`; `iso` zelf als het een maandag is (zondag hoort bij de week ervoor). */
+export function maandagVanWeek(iso: string): string {
+  const dag = parseISO(iso).getUTCDay() || 7; // ma = 1 … zo = 7
+  return addDaysISO(iso, 1 - dag);
+}
+
 /** De eerste dag van een maand binnen [iso, iso + dagen], of undefined. */
 export function eersteVanMaandIn(iso: string, dagen: number): string | undefined {
   for (let i = 0; i <= dagen; i++) {

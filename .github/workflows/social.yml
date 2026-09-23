@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       datum:
-        description: "Referentiedatum YYYY-MM-DD (leeg = vandaag, NL-tijd)"
+        description: "Referentiedatum YYYY-MM-DD, een maandag (leeg = maandag van de huidige week, NL-tijd)"
         required: false
         default: ""
       modus:
