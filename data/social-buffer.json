@@ -15,6 +15,22 @@
       "dueAt": "2026-09-23T17:00:00.000Z",
       "aangemaakt": "2026-09-23T15:53:00.688Z",
       "run": "35884734298"
+    },
+    {
+      "post": "weekend-2026-W39",
+      "kanaal": "facebook",
+      "bufferId": "6ab3f7434b03091dc1e74fbb",
+      "dueAt": "2026-09-25T10:00:00.000Z",
+      "aangemaakt": "2026-09-23T15:58:59.690Z",
+      "run": "35885465963"
+    },
+    {
+      "post": "weekend-2026-W39",
+      "kanaal": "tiktok",
+      "bufferId": "6ab3f7437775eb2d5e268862",
+      "dueAt": "2026-09-25T10:00:00.000Z",
+      "aangemaakt": "2026-09-23T15:59:00.097Z",
+      "run": "35885465963"
     }
   ]
 }
