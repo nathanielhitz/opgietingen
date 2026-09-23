@@ -20,7 +20,7 @@ import fs from "node:fs";
 import { isGeldigeIsoDatum, todayISOInTimeZone } from "../src/lib/dates";
 import { KANALEN, type Kanaal } from "../src/lib/social";
 import type { PlanningJson } from "../src/lib/social-planning";
-import { leesGrootboek, schrijfGrootboek, voegRegelToe, zoekRegel, SOCIAL_BUFFER_LOG_PATH } from "../src/lib/social-buffer-log";
+import { eersteRegelVoorPost, leesGrootboek, schrijfGrootboek, voegRegelToe, zoekRegel, SOCIAL_BUFFER_LOG_PATH } from "../src/lib/social-buffer-log";
 import { maakBufferClient, type BufferClient, type BufferKanaal, type BufferPost } from "./lib/buffer-client";
 import {
   besluit,
@@ -163,12 +163,15 @@ async function main() {
     return;
   }
 
+  // Vóór de selectie: Uitgelicht slaat kandidaten over die eerder al geplaatst zijn.
+  let grootboek = leesGrootboek();
+
   const { ids, ontbrekend } = bepaalKanalen(client ? await haalKanalen(client) : null);
   for (const k of ontbrekend) console.warn(`⚠ Geen ${k}-kanaal in Buffer; ${k} wordt overgeslagen.`);
 
   const planning = await haalPlanning();
   const nu = new Date();
-  const { gekozen, overgeslagen } = kiesPosts(planning, todayISOInTimeZone(nu), nu);
+  const { gekozen, overgeslagen } = kiesPosts(planning, todayISOInTimeZone(nu), nu, (id) => eersteRegelVoorPost(grootboek, id)?.dueAt);
   for (const o of overgeslagen) console.log(`– ${o.post.id}: ${o.reden}`);
   if (gekozen.length === 0) {
     console.log(`Geen posts om in te plannen voor ${DATUM}.`);
@@ -178,7 +181,6 @@ async function main() {
 
   console.log(`Buffer-adapter ${DATUM} (${MODUS}): ${gekozen.length} post(s) × ${KANALEN.length} kanalen\n`);
 
-  let grootboek = leesGrootboek();
   const run = process.env.GITHUB_RUN_ID ?? "lokaal";
   const resultaten: Resultaat[] = [];
   const telIngepland = () => resultaten.filter((r) => r.status === "ingepland").length;

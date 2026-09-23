@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { leesGrootboek, schrijfGrootboek, voegRegelToe, zoekRegel, type GrootboekRegel } from "../../src/lib/social-buffer-log";
+import { eersteRegelVoorPost, leesGrootboek, schrijfGrootboek, voegRegelToe, zoekRegel, type GrootboekRegel } from "../../src/lib/social-buffer-log";
 
 const regel: GrootboekRegel = {
   post: "weekend-2026-W40",
@@ -78,4 +78,18 @@ test("voegRegelToe: geen mutatie, geen dubbele combinatie", () => {
   assert.equal(nogEens.posts[0].bufferId, "68d2abc");
   const anderKanaal = voegRegelToe(een, { ...regel, kanaal: "tiktok" });
   assert.equal(anderKanaal.posts.length, 2);
+});
+
+test("eersteRegelVoorPost: eerste regel van een post-id op welk kanaal ook", () => {
+  const grootboek = {
+    posts: [
+      { ...regel, post: "uitgelicht-x", kanaal: "instagram" as const, bufferId: "ig1" },
+      { ...regel, post: "uitgelicht-x", kanaal: "facebook" as const, bufferId: "fb1" },
+      regel,
+    ],
+  };
+  assert.equal(eersteRegelVoorPost(grootboek, "uitgelicht-x")?.bufferId, "ig1");
+  assert.equal(eersteRegelVoorPost(grootboek, "weekend-2026-W40")?.bufferId, "68d2abc");
+  assert.equal(eersteRegelVoorPost(grootboek, "uitgelicht-y"), undefined);
+  assert.equal(eersteRegelVoorPost({ posts: [] }, "uitgelicht-x"), undefined);
 });

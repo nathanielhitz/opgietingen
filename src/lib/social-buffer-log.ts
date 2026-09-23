@@ -84,6 +84,11 @@ export function zoekRegel(grootboek: Grootboek, post: string, kanaal: Kanaal): G
   return grootboek.posts.find((r) => r.post === post && r.kanaal === kanaal);
 }
 
+/** De eerste regel voor een post-id, op welk kanaal ook, of undefined (voor de keuze van Uitgelicht). */
+export function eersteRegelVoorPost(grootboek: Grootboek, post: string): GrootboekRegel | undefined {
+  return grootboek.posts.find((r) => r.post === post);
+}
+
 /** Nieuw grootboek met de regel erbij (geen mutatie); een bestaande combinatie blijft staan. */
 export function voegRegelToe(grootboek: Grootboek, regel: GrootboekRegel): Grootboek {
   if (zoekRegel(grootboek, regel.post, regel.kanaal)) return grootboek;
