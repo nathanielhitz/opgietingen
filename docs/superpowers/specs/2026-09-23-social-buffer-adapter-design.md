@@ -287,7 +287,7 @@ delen. `social-kit` blijft bestaan als handmatige terugvaloptie.
 - `scripts/lib/buffer-client.test.ts` met gemockte fetch: juiste headers en
   body, `PostActionSuccess` → id, `MutationError` → fout met bericht, HTTP 401 →
   fout met status, GraphQL-`errors` → fout.
-- `src/lib/dates.ts`-test voor `nlTijdNaarUtc` (in `scripts/lib/social.test.ts`, waar de andere datumhelpers al getest worden).
+- `src/lib/dates.ts`-test voor `nlTijdNaarUtc` (in `scripts/lib/dates-social.test.ts`, waar de andere social-datumhelpers al getest worden).
 - Planningtests uitgebreid met het `commit`-veld (`null` zonder env).
 - Handmatig: §13.
 
