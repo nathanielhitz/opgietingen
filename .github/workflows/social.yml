@@ -1,0 +1,73 @@
+name: Social-posts inplannen in Buffer
+
+on:
+  schedule:
+    - cron: "30 7 * * 1"   # elke maandag 07:30 UTC, anderhalf uur na de scrape (06:00 UTC)
+  workflow_dispatch:
+    inputs:
+      datum:
+        description: "Referentiedatum YYYY-MM-DD (leeg = vandaag, NL-tijd)"
+        required: false
+        default: ""
+      modus:
+        description: "inplannen | concept | dry-run"
+        required: false
+        default: "inplannen"
+
+permissions:
+  contents: write
+
+jobs:
+  social:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Leest /social/planning van de live site (wacht tot de deploy van deze
+      # commit live is) en maakt per post en kanaal een ingeplande Buffer-post.
+      # Zonder BUFFER_API_KEY slaat het script zichzelf over.
+      - name: Plan social-posts in Buffer
+        id: buffer
+        env:
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+          BUFFER_KANAAL_FACEBOOK: ${{ secrets.BUFFER_KANAAL_FACEBOOK }}
+          BUFFER_KANAAL_INSTAGRAM: ${{ secrets.BUFFER_KANAAL_INSTAGRAM }}
+          BUFFER_KANAAL_TIKTOK: ${{ secrets.BUFFER_KANAAL_TIKTOK }}
+          DATUM: ${{ github.event.inputs.datum }}
+          MODUS: ${{ github.event.inputs.modus || 'inplannen' }}
+        run: |
+          ARGS=""
+          if [ -n "$DATUM" ]; then ARGS="$ARGS --datum $DATUM"; fi
+          case "$MODUS" in
+            concept) ARGS="$ARGS --concept" ;;
+            dry-run) ARGS="$ARGS --dry-run" ;;
+          esac
+          npm run social-buffer -- $ARGS
+
+      # Het grootboek is het geheugen tegen dubbele posts. Ook committen als het
+      # script faalde: al geplaatste posts mogen niet verloren gaan met de runner.
+      - name: Commit grootboek op main
+        if: always() && (github.event.inputs.modus == '' || github.event.inputs.modus == 'inplannen')
+        env:
+          INGEPLAND: ${{ steps.buffer.outputs.ingepland || '0' }}
+        run: |
+          git config user.name "opgietingen-bot"
+          git config user.email "bot@opgietingen.nl"
+          git add data/social-buffer.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "Geen wijzigingen in het grootboek."
+          else
+            git commit -m "chore(social): week $(date -u +%G-W%V), $INGEPLAND post(s) ingepland in Buffer"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
