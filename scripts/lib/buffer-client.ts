@@ -38,9 +38,16 @@ export interface BufferPostInput {
   dueAt?: string;
   /** Concept in Buffer; publiceert niet en telt niet mee voor de wachtrijlimiet. */
   saveToDraft?: boolean;
+  /**
+   * Vorm geverifieerd tegen de echte API op 2026-09-23 (concept-run):
+   * FacebookPostMetadataInput heeft een verplicht `type` (post/story/reel;
+   * zonder metadata weigert Facebook de post), TikTokPostMetadataInput heeft
+   * juist géén `type`-veld (alleen `title` en `isAiGenerated`).
+   */
   metadata?: {
+    facebook?: { type: string };
     instagram?: { type: string; shouldShareToFeed: boolean };
-    tiktok?: { title: string; type: string };
+    tiktok?: { title: string };
   };
 }
 

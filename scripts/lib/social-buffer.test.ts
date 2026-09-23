@@ -173,7 +173,7 @@ test("tiktokTitel: spatie precies op de laatste toegestane positie behoudt het w
 
 const DUE = "2026-10-02T10:00:00.000Z";
 
-test("bouwInput facebook: feed-slides in volgorde, FB-caption, ingepland, geen metadata", () => {
+test("bouwInput facebook: feed-slides in volgorde, FB-caption, ingepland, facebook-metadata", () => {
   const post = maakPost({ id: "weekend-2026-W40", rubriek: "weekend", plaatsingsdag: "2026-10-02" });
   const input = bouwInput(post, "facebook", "ch_fb", DUE, { concept: false });
   assert.equal(input.channelId, "ch_fb");
@@ -191,7 +191,7 @@ test("bouwInput facebook: feed-slides in volgorde, FB-caption, ingepland, geen m
   assert.equal(input.dueAt, DUE);
   assert.equal(input.needsApproval, false);
   assert.equal(input.saveToDraft, undefined);
-  assert.equal(input.metadata, undefined);
+  assert.deepEqual(input.metadata, { facebook: { type: "post" } });
 });
 
 test("bouwInput instagram: feed-slides, IG-caption, instagram-metadata", () => {
@@ -207,7 +207,7 @@ test("bouwInput tiktok: story-slides, TT-caption, titel in metadata", () => {
   const input = bouwInput(post, "tiktok", "ch_tt", DUE, { concept: false });
   assert.equal(input.text, "TT");
   assert.ok(input.assets.every((a) => a.image.url.endsWith("formaat=story")));
-  assert.deepEqual(input.metadata, { tiktok: { title: "Dit weekend: 2 opgietingen", type: "post" } });
+  assert.deepEqual(input.metadata, { tiktok: { title: "Dit weekend: 2 opgietingen" } });
 });
 
 test("bouwInput concept: addToQueue + saveToDraft, zonder dueAt", () => {
