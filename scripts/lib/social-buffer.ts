@@ -167,6 +167,22 @@ export function commitKomtOvereen(planningCommit: string | null, runnerCommit: s
   return planningCommit === runnerCommit ? "overeen" : "afwijkend";
 }
 
+/* ---------- Beslisregel per post × kanaal ---------- */
+
+export type Modus = "inplannen" | "concept" | "dry-run";
+
+/**
+ * Wat de adapter doet met één post op één kanaal. Een post in het grootboek
+ * wordt ook bij een dry-run als "al in Buffer" getoond; alleen concept-modus
+ * negeert het grootboek (verificatie, schrijft er ook niet in).
+ */
+export function besluit(opties: { kanaalId: string | undefined; inGrootboek: boolean; modus: Modus }): "kanaal ontbreekt" | "al in Buffer" | "dry-run" | "maak" {
+  if (!opties.kanaalId) return "kanaal ontbreekt";
+  if (opties.inGrootboek && opties.modus !== "concept") return "al in Buffer";
+  if (opties.modus === "dry-run") return "dry-run";
+  return "maak";
+}
+
 /* ---------- Samenvatting (spec §4 stap 7) ---------- */
 
 export type ResultaatStatus = "ingepland" | "concept" | "al in Buffer" | "dry-run" | "kanaal ontbreekt" | "mislukt";

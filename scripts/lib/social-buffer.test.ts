@@ -3,6 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import type { PlanningPost } from "../../src/lib/social-planning";
 import {
+  besluit,
   bouwInput,
   commitKomtOvereen,
   dueAtVoor,
@@ -222,4 +223,22 @@ test("resultaatTabel: regeleindes in detail worden een spatie, blijft één rij"
   const rijen = tabel.split("\n");
   assert.equal(rijen.length, 3);
   assert.match(rijen[2], /regel1 regel2/);
+});
+
+test("besluit: geen kanaal-id gaat voor alles", () => {
+  for (const modus of ["inplannen", "concept", "dry-run"] as const) {
+    for (const inGrootboek of [true, false]) {
+      assert.equal(besluit({ kanaalId: undefined, inGrootboek, modus }), "kanaal ontbreekt");
+      assert.equal(besluit({ kanaalId: "", inGrootboek, modus }), "kanaal ontbreekt");
+    }
+  }
+});
+
+test("besluit: alle combinaties met een kanaal-id", () => {
+  assert.equal(besluit({ kanaalId: "k1", inGrootboek: true, modus: "inplannen" }), "al in Buffer");
+  assert.equal(besluit({ kanaalId: "k1", inGrootboek: true, modus: "dry-run" }), "al in Buffer");
+  assert.equal(besluit({ kanaalId: "k1", inGrootboek: true, modus: "concept" }), "maak");
+  assert.equal(besluit({ kanaalId: "k1", inGrootboek: false, modus: "inplannen" }), "maak");
+  assert.equal(besluit({ kanaalId: "k1", inGrootboek: false, modus: "concept" }), "maak");
+  assert.equal(besluit({ kanaalId: "k1", inGrootboek: false, modus: "dry-run" }), "dry-run");
 });
