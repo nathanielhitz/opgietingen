@@ -1,0 +1,36 @@
+{
+  "posts": [
+    {
+      "post": "uitgelicht-finale-aufguss-challenge-2026-10-02",
+      "kanaal": "facebook",
+      "bufferId": "6ab3ec821186fd566a938c45",
+      "dueAt": "2026-09-23T17:00:00.000Z",
+      "aangemaakt": "2026-09-23T15:13:06.888Z",
+      "run": "35879854183"
+    },
+    {
+      "post": "uitgelicht-finale-aufguss-challenge-2026-10-02",
+      "kanaal": "tiktok",
+      "bufferId": "6ab3ec8389ee7d2c118fb387",
+      "dueAt": "2026-09-23T17:00:00.000Z",
+      "aangemaakt": "2026-09-23T15:13:07.276Z",
+      "run": "35879854183"
+    },
+    {
+      "post": "weekend-2026-W39",
+      "kanaal": "facebook",
+      "bufferId": "6ab3ec83856fe431ee892389",
+      "dueAt": "2026-09-25T10:00:00.000Z",
+      "aangemaakt": "2026-09-23T15:13:07.675Z",
+      "run": "35879854183"
+    },
+    {
+      "post": "weekend-2026-W39",
+      "kanaal": "tiktok",
+      "bufferId": "6ab3ec84856fe431ee8923d4",
+      "dueAt": "2026-09-25T10:00:00.000Z",
+      "aangemaakt": "2026-09-23T15:13:08.192Z",
+      "run": "35879854183"
+    }
+  ]
+}
