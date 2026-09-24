@@ -95,7 +95,7 @@ vult, en hoe de Facebook-Reel de URL's in de caption toont.
 - `ffmpegArgumenten(opties: { slides: string[]; track: string; uit: string })`:
   pure functie die de complete argumentenlijst bouwt (`-loop 1 -t 3.5 -i` per
   slide, de `xfade`-keten in een `filter_complex`, `atrim`/`afade`/`loudnorm` op
-  de track, codecs, `-shortest`). Getest op 1, 2 en 10 slides.
+  de track, codecs, `-t <duur>` als harde grens). Getest op 1, 2 en 10 slides.
 - `renderSlideshow(opties)`: start ffmpeg via `child_process.spawn` met het pad
   uit `FFMPEG_PATH` of `ffmpeg` op PATH, wacht op exit 0, geeft anders een fout
   met de laatste regels stderr. `ffmpegBeschikbaar()`: `ffmpeg -version` slaagt.
@@ -213,7 +213,7 @@ het nakijken van een week.
 
 - `scripts/lib/video.test.ts`: `videoDuur` (1, 2, 10 slides), `ffmpegArgumenten`
   (inputs in volgorde, `xfade`-keten met de juiste offsets, geen `xfade` bij één
-  slide, audiofilters en codecs aanwezig, `-shortest`). Rooktest `renderSlideshow`
+  slide, audiofilters en codecs aanwezig, `-t <duur>`). Rooktest `renderSlideshow`
   op twee met ffmpeg gegenereerde testbeelden, overgeslagen (`t.skip`) als
   `ffmpegBeschikbaar()` faalt.
 - `scripts/lib/blob.test.ts`: `blobPad`, `verouderdePaden` (grens op precies
