@@ -90,8 +90,14 @@ in de Reel-caption is een visuele controle in Buffer/Facebook (§15, eerste risi
   limieten uit §3.
 - **Beeld**: 1080×1920, 30 fps, H.264 (`libx264`, `yuv420p`, `crf 20`, preset
   `medium`), `-movflags +faststart`. Verwachte grootte 2 tot 6 MB.
-- **Geluid**: de track vanaf het begin, afgekapt op de videoduur, fade-in 0,5 s,
-  fade-out 1,5 s, `loudnorm` naar −14 LUFS, AAC 128 kbps stereo 44,1 kHz.
+- **Geluid**: de track vanaf het startpunt van die track (`Track.start`, slaat
+  een zachte intro over), afgekapt op de videoduur. Het gebruikte stuk wordt
+  eerst gemeten (`meetLoudness`, eerste doorgang van `loudnorm`) en met één
+  vaste `volume`-gain naar −14 LUFS gebracht, begrensd op een true peak van
+  −1 dBTP (`gainDb`); daarna fade-in 1 s en fade-out 1,5 s. Bewust geen
+  dynamische `loudnorm` in de keten: die trok in één doorgang de fade-out weer
+  omhoog (hoorbaar "harder-zachter" aan het einde, gemeten 2026-09-24).
+  AAC 128 kbps stereo 44,1 kHz.
 - **Thumbnail**: `thumbnailOffset: 1000` (één seconde in de cover) voor TikTok en
   Instagram.
 
@@ -101,7 +107,9 @@ in de Reel-caption is een visuele controle in Buffer/Facebook (§15, eerste risi
 - `ffmpegArgumenten(opties: { slides: string[]; track: string; uit: string })`:
   pure functie die de complete argumentenlijst bouwt (`-loop 1 -t 3.5 -i` per
   slide, de `xfade`-keten in een `filter_complex`, `atrim`/`afade`/`loudnorm` op
-  de track, codecs, `-t <duur>` als harde grens). Getest op 1, 2 en 10 slides.
+  de track met `volume`-gain en startpunt, codecs, `-t <duur>` als harde grens).
+  Getest op 1, 2 en 10 slides. `gainDb(meting)` en `parseLoudnormJson(stderr)`
+  zijn eveneens puur; `meetLoudness(track, duur, start)` spawnt ffmpeg.
 - `renderSlideshow(opties)`: start ffmpeg via `child_process.spawn` met het pad
   uit `FFMPEG_PATH` of `ffmpeg` op PATH, wacht op exit 0, geeft anders een fout
   met de laatste regels stderr. `ffmpegBeschikbaar()`: `ffmpeg -version` slaagt.

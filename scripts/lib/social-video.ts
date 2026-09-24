@@ -28,6 +28,7 @@ export async function renderPostVideo(post: PlanningPost, root: string, map: str
   await downloadPost(post, root, map, ["story"], ophalen);
   const slides = slidePaden(post, map, "story");
   const bestand = path.join(map, "video.mp4");
-  await renderSlideshow({ slides, track: trackVoorDatum(post.plaatsingsdag), uit: bestand });
+  const track = trackVoorDatum(post.plaatsingsdag);
+  await renderSlideshow({ slides, track: track.pad, trackStart: track.start, uit: bestand });
   return { bestand, duur: videoDuur(slides.length), aantalSlides: slides.length };
 }
