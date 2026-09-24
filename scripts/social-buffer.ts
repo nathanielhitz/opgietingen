@@ -13,28 +13,37 @@
 
   Env: BUFFER_API_KEY (zonder: overslaan met exitcode 0), optioneel
        BUFFER_KANAAL_FACEBOOK / _INSTAGRAM / _TIKTOK (kanaal-id-override);
+       BLOB_READ_WRITE_TOKEN (slideshow-video's op Vercel Blob; zonder: fotocarrousel
+       met waarschuwing en exitcode 1), optioneel FFMPEG_PATH;
        in CI RUNNER_COMMIT (versheidscheck; valt terug op GITHUB_SHA), GITHUB_RUN_ID,
        GITHUB_STEP_SUMMARY, GITHUB_OUTPUT.
 */
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { isGeldigeIsoDatum, maandagVanWeek, todayISOInTimeZone } from "../src/lib/dates";
 import { KANALEN, type Kanaal } from "../src/lib/social";
-import type { PlanningJson } from "../src/lib/social-planning";
+import type { PlanningJson, PlanningPost } from "../src/lib/social-planning";
 import { eersteRegelVoorPost, leesGrootboek, schrijfGrootboek, voegRegelToe, zoekRegel, SOCIAL_BUFFER_LOG_PATH } from "../src/lib/social-buffer-log";
+import { blobBeschikbaar, blobPad, ruimOp, uploadVideo } from "./lib/blob";
 import { maakBufferClient, type BufferClient, type BufferKanaal, type BufferPost } from "./lib/buffer-client";
 import {
   besluit,
   bouwInput,
   commitKomtOvereen,
+  heeftVideoNodig,
   kiesPosts,
   ontdekKanalen,
   overridesUitEnv,
   resultaatTabel,
+  VORM,
   type KanaalIds,
   type Modus,
   type Ontdekking,
   type Resultaat,
 } from "./lib/social-buffer";
+import { renderPostVideo } from "./lib/social-video";
+import { ffmpegBeschikbaar, MUZIEK_PAD } from "./lib/video";
 
 function flag(naam: string, standaard: string): string {
   const i = process.argv.indexOf(naam);
@@ -141,6 +150,28 @@ function bepaalKanalen(lijst: BufferKanaal[] | null): Ontdekking {
   return ontdekKanalen(lijst, overrides);
 }
 
+type VideoUitkomst = { url: string } | { fout: string };
+
+/**
+ * Rendert en uploadt de slideshow-video van één post (spec 2026-09-24 §7 stap 3).
+ * Elke fout is een terugvalreden, geen crash: de post gaat dan als fotocarrousel.
+ */
+async function maakVideo(post: PlanningPost): Promise<VideoUitkomst> {
+  if (!blobBeschikbaar()) return { fout: "BLOB_READ_WRITE_TOKEN ontbreekt" };
+  if (!fs.existsSync(MUZIEK_PAD)) return { fout: `muziektrack ontbreekt (${path.relative(process.cwd(), MUZIEK_PAD)})` };
+  if (!(await ffmpegBeschikbaar())) return { fout: "ffmpeg niet gevonden" };
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "social-video-"));
+  try {
+    const map = path.join(root, post.id.replace(/[^a-z0-9-]/gi, ""));
+    const r = await renderPostVideo(post, root, map);
+    return { url: await uploadVideo(blobPad(post), r.bestand) };
+  } catch (err) {
+    return { fout: err instanceof Error ? err.message : String(err) };
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+}
+
 async function main() {
   if (CONCEPT && DRY_RUN) throw new Error("--concept en --dry-run gaan niet samen; kies er één.");
   if (!isGeldigeIsoDatum(DATUM)) throw new Error(`Ongeldige --datum: ${DATUM}`);
@@ -192,7 +223,28 @@ async function main() {
   const telIngepland = () => resultaten.filter((r) => r.status === "ingepland").length;
   let mislukt = 0;
 
+  const videoWaarschuwingen: string[] = [];
+
   for (const { post, dueAt } of gekozen) {
+    // Eén video per post, vóór de kanaal-lus; alle videokanalen delen de URL.
+    let videoUrl: string | undefined;
+    let vormDetail = "foto";
+    const nodig = heeftVideoNodig(ids, (k) => Boolean(zoekRegel(grootboek, post.id, k)), MODUS);
+    if (nodig && MODUS === "dry-run") {
+      vormDetail = "video (niet gerenderd)";
+    } else if (nodig) {
+      const uitkomst = await maakVideo(post);
+      if ("url" in uitkomst) {
+        videoUrl = uitkomst.url;
+        vormDetail = "video";
+        console.log(`  video ${post.id} → ${videoUrl}`);
+      } else {
+        vormDetail = `foto (video mislukt: ${uitkomst.fout})`;
+        videoWaarschuwingen.push(`${post.id}: video mislukt, als fotocarrousel geplaatst (${uitkomst.fout})`);
+        console.warn(`⚠ ${post.id}: ${uitkomst.fout}; terugval op de fotocarrousel`);
+      }
+    }
+
     for (const kanaal of KANALEN) {
       const basis: { post: string; kanaal: Kanaal; dueAt: string } = { post: post.id, kanaal, dueAt };
       const kanaalId = ids[kanaal];
@@ -206,9 +258,9 @@ async function main() {
         resultaten.push({ ...basis, status: "al in Buffer", detail: bestaand?.bufferId ?? "" });
         continue;
       }
-      const input = bouwInput(post, kanaal, kanaalId, dueAt, { concept: CONCEPT });
+      const input = bouwInput(post, kanaal, kanaalId, dueAt, { concept: CONCEPT, videoUrl });
       if (actie === "dry-run" || !client) {
-        resultaten.push({ ...basis, status: "dry-run", detail: `${input.assets.length} slides, ${input.text.length} tekens` });
+        resultaten.push({ ...basis, status: "dry-run", detail: `${input.assets.length} asset(s), ${input.text.length} tekens, ${vormDetail}` });
         continue;
       }
 
@@ -226,12 +278,20 @@ async function main() {
 
       if (CONCEPT) {
         console.log(`✓ concept ${post.id} ${kanaal} → ${aangemaakt.id}`);
-        resultaten.push({ ...basis, status: "concept", detail: aangemaakt.id });
+        resultaten.push({ ...basis, status: "concept", detail: `${aangemaakt.id}, ${vormDetail}` });
         continue;
       }
 
       // Direct wegschrijven: een crash verderop mag een al geplaatste post niet vergeten.
-      grootboek = voegRegelToe(grootboek, { post: post.id, kanaal, bufferId: aangemaakt.id, dueAt, aangemaakt: new Date().toISOString(), run });
+      grootboek = voegRegelToe(grootboek, {
+        post: post.id,
+        kanaal,
+        bufferId: aangemaakt.id,
+        dueAt,
+        aangemaakt: new Date().toISOString(),
+        run,
+        ...(videoUrl && VORM[kanaal] === "video" ? { video: videoUrl } : {}),
+      });
       try {
         schrijfGrootboek(grootboek);
       } catch (err) {
@@ -249,18 +309,34 @@ async function main() {
         process.exit(1);
       }
       console.log(`✓ ${post.id} ${kanaal} → ${aangemaakt.id}`);
-      resultaten.push({ ...basis, status: "ingepland", detail: aangemaakt.id });
+      resultaten.push({ ...basis, status: "ingepland", detail: `${aangemaakt.id}, ${vormDetail}` });
     }
   }
 
-  const tabel = resultaatTabel(resultaten);
+  let tabel = resultaatTabel(resultaten);
+  if (videoWaarschuwingen.length > 0) tabel += `\n\n${videoWaarschuwingen.map((w) => `⚠ ${w}`).join("\n")}`;
   console.log(tabel);
   const ingepland = telIngepland();
   meldAanCi(tabel, ingepland);
   if (ingepland > 0) console.log(`\n${ingepland} post(s) ingepland; grootboek: ${SOCIAL_BUFFER_LOG_PATH}`);
   if (CONCEPT) console.log("\nConcepten staan in Buffer ter controle; verwijder ze daar na het nakijken.");
+
+  // Oude video's opruimen: alleen bij echt inplannen; een fout hier is een waarschuwing.
+  if (MODUS === "inplannen" && client && blobBeschikbaar()) {
+    try {
+      const n = await ruimOp(todayISOInTimeZone(nu));
+      if (n > 0) console.log(`${n} oude video('s) van Blob verwijderd.`);
+    } catch (err) {
+      console.warn(`⚠ Blob opruimen mislukt: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
   if (mislukt > 0) {
     console.error(`\n${mislukt} post(s) mislukt`);
+    process.exitCode = 1;
+  }
+  if (videoWaarschuwingen.length > 0) {
+    console.error(`\n${videoWaarschuwingen.length} post(s) zonder video geplaatst; zie de waarschuwingen hierboven`);
     process.exitCode = 1;
   }
 }
