@@ -21,15 +21,31 @@ export interface BufferKanaal {
   service: string;
 }
 
-export interface BufferAsset {
+export interface BufferImageAsset {
   image: { url: string };
+}
+
+export interface BufferVideoAsset {
+  video: {
+    url: string;
+    /** thumbnailOffset alleen voor Instagram, TikTok en Pinterest (schema-beschrijving); title vult bij Facebook de "Reel Title". */
+    metadata?: { thumbnailOffset?: number; title?: string };
+  };
+}
+
+/** Precies één variant per asset (AssetInput). */
+export type BufferAsset = BufferImageAsset | BufferVideoAsset;
+
+/** URL van een asset, welke variant ook. */
+export function assetUrl(asset: BufferAsset): string {
+  return "image" in asset ? asset.image.url : asset.video.url;
 }
 
 /** Subset van CreatePostInput die wij gebruiken. Enum-waarden gaan als string mee in de variabelen. */
 export interface BufferPostInput {
   channelId: string;
   text: string;
-  /** Geordend; elke url publiek, direct en https. */
+  /** Geordend; elke url publiek, direct en https. Beelden (carrousel) of één video. */
   assets: BufferAsset[];
   schedulingType: "automatic";
   mode: "customScheduled" | "addToQueue";
@@ -42,7 +58,9 @@ export interface BufferPostInput {
    * Vorm geverifieerd tegen de echte API op 2026-09-23 (concept-run):
    * FacebookPostMetadataInput heeft een verplicht `type` (post/story/reel;
    * zonder metadata weigert Facebook de post), TikTokPostMetadataInput heeft
-   * juist géén `type`-veld (alleen `title` en `isAiGenerated`).
+   * juist géén `type`-veld (alleen `title` voor fotoposts en `isAiGenerated`).
+   * Instagram kent post/carousel/reel. Bij een video (spec 2026-09-24) gaan
+   * Facebook en Instagram als `reel` en krijgt TikTok geen metadata.
    */
   metadata?: {
     facebook?: { type: string };
