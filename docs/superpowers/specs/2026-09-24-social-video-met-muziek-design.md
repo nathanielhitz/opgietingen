@@ -42,7 +42,7 @@ bibliotheek.
 | Kanalen | TikTok, Facebook (Reel) en straks Instagram (Reel) op video | Eén formaat, muziek op alle posts. Facebook-Reels bereiken meer niet-volgers; de link staat als tekst in de omschrijving. Per kanaal instelbaar via één constante (`VORM`), dus omkeerbaar. |
 | Waar renderen | In de GitHub-workflow met ffmpeg | Vercel-functies hebben geen ffmpeg en te krappe tijd- en geheugengrenzen; Remotion is te zwaar voor een slideshow. |
 | Waar hosten | Vercel Blob, publiek | Buffer kent geen upload, alleen URL-assets. Een MP4 in `public/` committen groeit de repo met ~20 MB per week en vergt een extra deploy-wachttijd. Blob zit in het Vercel-ecosysteem dat we al gebruiken; Hobby-quotum 1 GB opslag en 10 GB verkeer per maand. |
-| Muziek | Eén vaste track, in de repo met licentiebewijs | Eén keuze, één licentie. Roulerende of rubriekgebonden tracks zijn een latere optie. |
+| Muziek | Drie tracks in de repo met licentiebewijs, roulerend per ISO-week (besluit 2026-09-24 na het beluisteren van de kandidaten; eerst één track) | Afwisseling tussen weken zonder dat posts binnen één week verschillend klinken. Rubriekgebonden tracks blijven een latere optie. |
 | Bron van de track | Mixkit, Stock Music Free License | Commercieel gebruik incl. social, geen naamsvermelding, en scriptmatig te downloaden (Pixabay blokkeert scripts). Nathaniel keurt de track goed via een proefvideo. |
 | Vorm van de video | Story-slides (9:16) na elkaar met crossfade, geen bewegende elementen | De story-slides zijn al voor 9:16 ontworpen; beweging op de slides zou een tweede ontwerpslag zijn zonder aantoonbaar nut. |
 | Bij falen | Terugvallen op de fotocarrousel, waarschuwing, exitcode 1 | Er gaat altijd een post uit; de rode run is de melding (GitHub mailt bij een mislukte workflow). |
@@ -178,15 +178,19 @@ het nakijken van een week.
 
 ## 9. Muziek
 
-- Bestand: `assets/social/muziek/achtergrond.mp3`, constante `MUZIEK_PAD` in
-  `scripts/lib/video.ts`. Niet onder `public/`: de track hoeft niet geserveerd
-  te worden.
-- `assets/social/muziek/LICENTIE.md`: titel, artiest, bron-URL, licentienaam met
-  link, downloaddatum en de kern van de voorwaarden.
+- Bestanden: `assets/social/muziek/{valley-sunset,serene-view,forest-mist-whispers}.mp3`,
+  lijst `TRACKS` en map `MUZIEK_MAP` in `scripts/lib/video.ts`. Niet onder
+  `public/`: de tracks hoeven niet geserveerd te worden.
+- Rotatie: `trackVoorDatum(plaatsingsdag)` kiest `TRACKS[(weeknummer − 1) % 3]`
+  op het ISO-weeknummer, zodat alle posts van één week dezelfde track hebben en
+  opeenvolgende weken verschillen. `ontbrekendeTracks()` bewaakt dat alle drie
+  op schijf staan (anders terugval op foto, §7).
+- `assets/social/muziek/LICENTIE.md`: per track titel, artiest, bron-URL,
+  licentienaam met link, downloaddatum en de kern van de voorwaarden.
 - Criteria: instrumentaal, rustig en warm (ambient, zachte piano of lo-fi), geen
   zang, minimaal 35 s (langer dan de langste video, dus geen loop nodig),
   geen bekende melodie (Rights Manager).
-- Keuze door Claude, goedkeuring door Nathaniel via een proefvideo (§11). Bij
+- Keuze door Nathaniel na beluisteren van vier kandidaten (2026-09-24). Bij
   een claim van Meta of TikTok: track vervangen, het ontwerp verandert niet.
 
 ## 10. Workflow `.github/workflows/social.yml`
@@ -234,7 +238,7 @@ het nakijken van een week.
 ## 13. Bestanden
 
 Nieuw: `scripts/lib/video.ts`, `scripts/lib/blob.ts`, `scripts/social-video.ts`,
-`assets/social/muziek/achtergrond.mp3` + `LICENTIE.md`, tests uit §12, dit document.
+`assets/social/muziek/*.mp3` (drie tracks) + `LICENTIE.md`, tests uit §12, dit document.
 
 Aangepast: `scripts/lib/social-buffer.ts` (`Vorm`, `VORM`, `bouwInput`,
 `heeftVideoNodig`), `scripts/lib/buffer-client.ts` (asset-union, `reel`),
@@ -247,8 +251,8 @@ commando's, env), spec 2026-09-23 §6 (verwijzing naar dit document).
 ## 14. Buiten scope
 
 Instagram-catalogusmuziek via Buffers audio-queries (zodra Buffer het aan een
-post kan hangen), TikTok's `auto_add_music`, roulerende of rubriekgebonden
-tracks, bewegende slides (Ken Burns), ondertitels of voice-over, video-uitvoer
+post kan hangen), TikTok's `auto_add_music`, rubriekgebonden
+tracks per rubriek, bewegende slides (Ken Burns), ondertitels of voice-over, video-uitvoer
 in `social-kit`, Instagram-stories.
 
 ## 15. Risico's

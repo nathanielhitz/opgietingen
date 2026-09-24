@@ -5,7 +5,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { CROSSFADE, ffmpegArgumenten, ffmpegBeschikbaar, ffmpegPad, renderSlideshow, SLIDE_DUUR, videoDuur } from "./video";
+import { CROSSFADE, ffmpegArgumenten, ffmpegBeschikbaar, ffmpegPad, MUZIEK_MAP, ontbrekendeTracks, renderSlideshow, SLIDE_DUUR, TRACKS, trackVoorDatum, videoDuur } from "./video";
 
 test("videoDuur: één slide is de uitzondering van 7 s; daarna n × 3,5 − (n − 1) × 0,5", () => {
   assert.equal(videoDuur(1), 7);
@@ -95,4 +95,19 @@ test("renderSlideshow: een ontbrekende slide geeft een fout met de ffmpeg-uitvoe
     renderSlideshow({ slides: ["/bestaat/niet.png"], track: "/bestaat/niet.mp3", uit: path.join(os.tmpdir(), "nooit.mp4") }),
     /ffmpeg eindigde met code/,
   );
+});
+
+test("trackVoorDatum: rouleert op ISO-weeknummer, week 1 krijgt de eerste track, hele week dezelfde", () => {
+  assert.equal(TRACKS.length, 3);
+  assert.equal(trackVoorDatum("2026-01-02"), path.join(MUZIEK_MAP, TRACKS[0])); // 2026-W01
+  assert.equal(trackVoorDatum("2026-09-28"), path.join(MUZIEK_MAP, TRACKS[(40 - 1) % 3])); // W40 → index 0
+  assert.equal(trackVoorDatum("2026-10-05"), path.join(MUZIEK_MAP, TRACKS[(41 - 1) % 3])); // W41 → index 1
+  assert.equal(trackVoorDatum("2026-10-16"), path.join(MUZIEK_MAP, TRACKS[(42 - 1) % 3])); // W42 → index 2
+  // Maandag en vrijdag van dezelfde week: dezelfde track.
+  assert.equal(trackVoorDatum("2026-10-05"), trackVoorDatum("2026-10-09"));
+  assert.notEqual(trackVoorDatum("2026-10-05"), trackVoorDatum("2026-10-12"));
+});
+
+test("ontbrekendeTracks: alle drie de tracks staan in de repo", () => {
+  assert.deepEqual(ontbrekendeTracks(), []);
 });
