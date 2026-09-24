@@ -2,7 +2,7 @@
 import type { PlanningJson, PlanningPost } from "../../src/lib/social-planning";
 import { KANALEN, type Kanaal, type Rubriek } from "../../src/lib/social";
 import { nlTijdNaarUtc, todayISOInTimeZone } from "../../src/lib/dates";
-import type { BufferKanaal, BufferPostInput } from "./buffer-client";
+import type { BufferKanaal, BufferPostInput, BufferVideoAsset } from "./buffer-client";
 
 /*
   Pure functies van de Buffer-adapter (spec §5, §6, §8, §9): welke posts,
@@ -118,35 +118,67 @@ export function tiktokTitel(titel: string): string {
   return `${Array.from(titel).slice(0, TIKTOK_TITEL_MAX - 1).join("").trimEnd()}…`;
 }
 
-/* ---------- Mapping per kanaal (spec §6) ---------- */
+/* ---------- Mapping per kanaal (spec 2026-09-23 §6; video: spec 2026-09-24 §7) ---------- */
 
 /** Instagram-posttype voor een reeks beelden; na de verificatie met een concept eventueel "carousel". */
 export const INSTAGRAM_TYPE = "post";
 
+/** Fotocarrousel of slideshow-video per kanaal. Eén constante, dus omkeerbaar per kanaal. */
+export type Vorm = "foto" | "video";
+export const VORM: Record<Kanaal, Vorm> = { instagram: "video", facebook: "video", tiktok: "video" };
+
+/** Thumbnail één seconde in de cover; Buffer ondersteunt dit alleen voor Instagram, TikTok en Pinterest. */
+export const THUMBNAIL_OFFSET_MS = 1000;
+
 export interface InputOpties {
   /** true = concept in Buffer (saveToDraft, wachtrijmodus, geen dueAt). */
   concept: boolean;
+  /** Publieke URL van de slideshow-video; zonder (of bij VORM foto) de fotocarrousel. */
+  videoUrl?: string;
+}
+
+function videoAsset(url: string, kanaal: Kanaal, titel: string): BufferVideoAsset {
+  const metadata: { title: string; thumbnailOffset?: number } = { title: titel };
+  if (kanaal !== "facebook") metadata.thumbnailOffset = THUMBNAIL_OFFSET_MS;
+  return { video: { url, metadata } };
 }
 
 /**
- * createPost-input voor één post op één kanaal. Facebook en Instagram krijgen
- * de feed-slides (4:5), TikTok de story-slides (9:16, fotomodus). Caption per
- * kanaal komt uit de planning.
+ * createPost-input voor één post op één kanaal. Met `videoUrl` en VORM video:
+ * één video-asset, Facebook en Instagram als Reel, TikTok zonder metadata
+ * (`title` is daar voor fotoposts). Anders de fotocarrousel: Facebook en
+ * Instagram de feed-slides (4:5), TikTok de story-slides (9:16, fotomodus).
+ * Caption per kanaal komt uit de planning.
  */
 export function bouwInput(post: PlanningPost, kanaal: Kanaal, kanaalId: string, dueAt: string, opties: InputOpties): BufferPostInput {
+  const video = opties.videoUrl && VORM[kanaal] === "video" ? opties.videoUrl : undefined;
   const formaat = kanaal === "tiktok" ? "story" : "feed";
   const input: BufferPostInput = {
     channelId: kanaalId,
     text: post.captions[kanaal],
-    assets: post.slides.map((s) => ({ image: { url: s[formaat] } })),
+    assets: video ? [videoAsset(video, kanaal, post.titel)] : post.slides.map((s) => ({ image: { url: s[formaat] } })),
     schedulingType: "automatic",
     needsApproval: false,
     ...(opties.concept ? { mode: "addToQueue" as const, saveToDraft: true } : { mode: "customScheduled" as const, dueAt }),
   };
+  if (video) {
+    if (kanaal === "facebook") input.metadata = { facebook: { type: "reel" } };
+    if (kanaal === "instagram") input.metadata = { instagram: { type: "reel", shouldShareToFeed: true } };
+    return input;
+  }
   if (kanaal === "facebook") input.metadata = { facebook: { type: "post" } };
   if (kanaal === "instagram") input.metadata = { instagram: { type: INSTAGRAM_TYPE, shouldShareToFeed: true } };
   if (kanaal === "tiktok") input.metadata = { tiktok: { title: tiktokTitel(post.titel) } };
   return input;
+}
+
+/**
+ * Moet er voor deze post een video komen? Ja als minstens één kanaal met VORM
+ * video een Buffer-id heeft en (buiten concept-modus) nog niet in het grootboek
+ * staat. Dry-run beslist als inplannen; het script rendert dan alleen niet.
+ */
+export function heeftVideoNodig(kanaalIds: KanaalIds, inGrootboek: (kanaal: Kanaal) => boolean, modus: Modus): boolean {
+  return KANALEN.some((k) => VORM[k] === "video" && Boolean(kanaalIds[k]) && (modus === "concept" || !inGrootboek(k)));
 }
 
 /* ---------- Kanaalontdekking (spec §9) ---------- */
