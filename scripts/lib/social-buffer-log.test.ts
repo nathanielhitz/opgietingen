@@ -93,3 +93,12 @@ test("eersteRegelVoorPost: eerste regel van een post-id op welk kanaal ook", () 
   assert.equal(eersteRegelVoorPost(grootboek, "uitgelicht-y"), undefined);
   assert.equal(eersteRegelVoorPost({ posts: [] }, "uitgelicht-x"), undefined);
 });
+
+test("grootboek: regel met video-URL leest en schrijft rond; zonder video blijft geldig; niet-string video is ongeldig", () => {
+  const bestand = tmpBestand();
+  const metVideo: GrootboekRegel = { ...regel, kanaal: "tiktok", video: "https://x.public.blob.vercel-storage.com/social/2026-10-02/weekend-2026-W40.mp4" };
+  schrijfGrootboek({ posts: [regel, metVideo] }, bestand);
+  assert.deepEqual(leesGrootboek(bestand), { posts: [regel, metVideo] });
+  fs.writeFileSync(bestand, JSON.stringify({ posts: [{ ...regel, video: 42 }] }));
+  assert.throws(() => leesGrootboek(bestand), /regel 0 is ongeldig/);
+});
