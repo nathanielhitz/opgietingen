@@ -22,6 +22,8 @@ export interface GrootboekRegel {
   aangemaakt: string;
   /** GITHUB_RUN_ID of "lokaal". */
   run: string;
+  /** Publieke URL van de slideshow-video (Vercel Blob), alleen bij een videopost. */
+  video?: string;
 }
 
 export interface Grootboek {
@@ -44,7 +46,8 @@ function isRegel(x: unknown): x is GrootboekRegel {
     r.bufferId.length > 0 &&
     typeof r.dueAt === "string" &&
     typeof r.aangemaakt === "string" &&
-    typeof r.run === "string"
+    typeof r.run === "string" &&
+    (r.video === undefined || typeof r.video === "string")
   );
 }
 
