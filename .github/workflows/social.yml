@@ -52,9 +52,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # De slideshow-video's worden op de runner gerenderd; ffmpeg staat niet op
+      # het ubuntu-latest-image. Faalt dit, dan vallen de posts terug op foto.
+      - name: Installeer ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends ffmpeg
+
       # Leest /social/planning van de live site (wacht tot de deploy van deze
-      # commit live is) en maakt per post en kanaal een ingeplande Buffer-post.
-      # Zonder BUFFER_API_KEY slaat het script zichzelf over.
+      # commit live is), rendert per post een slideshow-video (ffmpeg → Vercel
+      # Blob) en maakt per kanaal een ingeplande Buffer-post. Zonder
+      # BUFFER_API_KEY slaat het script zichzelf over; zonder BLOB_READ_WRITE_TOKEN
+      # gaan de posts als fotocarrousel (waarschuwing, exitcode 1).
       - name: Plan social-posts in Buffer
         id: buffer
         env:
@@ -62,6 +69,7 @@ jobs:
           BUFFER_KANAAL_FACEBOOK: ${{ secrets.BUFFER_KANAAL_FACEBOOK }}
           BUFFER_KANAAL_INSTAGRAM: ${{ secrets.BUFFER_KANAAL_INSTAGRAM }}
           BUFFER_KANAAL_TIKTOK: ${{ secrets.BUFFER_KANAAL_TIKTOK }}
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
           DATUM: ${{ github.event.inputs.datum }}
           MODUS: ${{ github.event.inputs.modus || 'inplannen' }}
         run: |
