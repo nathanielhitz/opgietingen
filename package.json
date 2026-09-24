@@ -29,6 +29,7 @@
     "@keystatic/next": "^5.0.5",
     "@mendable/firecrawl-js": "^4.30.0",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/blob": "^1.1.1",
     "@vercel/speed-insights": "^2.0.0",
     "gray-matter": "^4.0.3",
     "imapflow": "^1.4.7",
