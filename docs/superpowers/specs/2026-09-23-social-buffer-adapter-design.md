@@ -142,6 +142,8 @@ Regels:
 
 Geverifieerd tegen de API op 2026-09-23 via de concept-run.
 
+> Sinds deelproject 3 ([spec 2026-09-24](2026-09-24-social-video-met-muziek-design.md)) is dit de terugvalvariant; standaard gaat elke post als slideshow-video (Reel/TikTok-video).
+
 `INSTAGRAM_TYPE` is een constante (`"post"`, eventueel `"carousel"` na §13).
 `tiktokTitel` kapt af op 90 tekens op een woordgrens met "…" (TikTok-limiet voor
 fototitels). De planning garandeert al ≤ 10 slides (Instagram-limiet), dus de
