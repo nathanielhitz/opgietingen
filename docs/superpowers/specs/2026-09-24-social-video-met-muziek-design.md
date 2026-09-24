@@ -72,6 +72,12 @@ Verificatiepunten voor de concept-run (§11): of TikTok een video zonder
 `metadata` accepteert, of `video.metadata.title` bij Facebook de "Reel Title"
 vult, en hoe de Facebook-Reel de URL's in de caption toont.
 
+Uitkomst concept-run 2026-09-24: Buffer accepteert de TikTok-video zonder
+`metadata` en de Facebook-Reel (`type: reel`) met `video.metadata.title`; beide
+concepten kregen een post-id. De Blob-URL wordt met `content-type: video/mp4`
+en `cache-control: public, max-age=3600` geserveerd. De weergave van de URL's
+in de Reel-caption is een visuele controle in Buffer/Facebook (§15, eerste risico).
+
 ## 4. De video
 
 - **Bron**: de story-slides (1080×1920 PNG) van de post, in de volgorde van de
