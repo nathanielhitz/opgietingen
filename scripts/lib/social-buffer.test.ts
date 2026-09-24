@@ -2,19 +2,23 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import type { PlanningPost } from "../../src/lib/social-planning";
+import { assetUrl } from "./buffer-client";
 import {
   besluit,
   bouwInput,
   commitKomtOvereen,
   dueAtVoor,
   formatNlTijd,
+  heeftVideoNodig,
   INSTAGRAM_TYPE,
   kiesPosts,
   ontdekKanalen,
   overridesUitEnv,
   PLAATSINGSTIJD,
   resultaatTabel,
+  THUMBNAIL_OFFSET_MS,
   tiktokTitel,
+  VORM,
   type Resultaat,
 } from "./social-buffer";
 
@@ -179,7 +183,7 @@ test("bouwInput facebook: feed-slides in volgorde, FB-caption, ingepland, facebo
   assert.equal(input.channelId, "ch_fb");
   assert.equal(input.text, "FB");
   assert.deepEqual(
-    input.assets.map((a) => a.image.url),
+    input.assets.map(assetUrl),
     [
       "https://opgietingen.nl/social/weekend/2026-W40?formaat=feed",
       "https://opgietingen.nl/social/event/ev?formaat=feed",
@@ -198,7 +202,7 @@ test("bouwInput instagram: feed-slides, IG-caption, instagram-metadata", () => {
   const post = maakPost({ id: "weekend-2026-W40", rubriek: "weekend", plaatsingsdag: "2026-10-02" });
   const input = bouwInput(post, "instagram", "ch_ig", DUE, { concept: false });
   assert.equal(input.text, "IG");
-  assert.ok(input.assets.every((a) => a.image.url.endsWith("formaat=feed")));
+  assert.ok(input.assets.every((a) => assetUrl(a).endsWith("formaat=feed")));
   assert.deepEqual(input.metadata, { instagram: { type: INSTAGRAM_TYPE, shouldShareToFeed: true } });
 });
 
@@ -206,7 +210,7 @@ test("bouwInput tiktok: story-slides, TT-caption, titel in metadata", () => {
   const post = maakPost({ id: "weekend-2026-W40", rubriek: "weekend", plaatsingsdag: "2026-10-02", titel: "Dit weekend: 2 opgietingen" });
   const input = bouwInput(post, "tiktok", "ch_tt", DUE, { concept: false });
   assert.equal(input.text, "TT");
-  assert.ok(input.assets.every((a) => a.image.url.endsWith("formaat=story")));
+  assert.ok(input.assets.every((a) => assetUrl(a).endsWith("formaat=story")));
   assert.deepEqual(input.metadata, { tiktok: { title: "Dit weekend: 2 opgietingen" } });
 });
 
@@ -306,4 +310,68 @@ test("besluit: alle combinaties met een kanaal-id", () => {
   assert.equal(besluit({ kanaalId: "k1", inGrootboek: false, modus: "inplannen" }), "maak");
   assert.equal(besluit({ kanaalId: "k1", inGrootboek: false, modus: "concept" }), "maak");
   assert.equal(besluit({ kanaalId: "k1", inGrootboek: false, modus: "dry-run" }), "dry-run");
+});
+
+/* ---------- Videovariant (spec 2026-09-24 §7) ---------- */
+
+const VIDEO = "https://x.public.blob.vercel-storage.com/social/2026-10-02/weekend-2026-W40.mp4";
+
+test("VORM: alle drie de kanalen op video", () => {
+  assert.deepEqual(VORM, { instagram: "video", facebook: "video", tiktok: "video" });
+});
+
+test("bouwInput video facebook: één video-asset met titel zonder thumbnailOffset, type reel, FB-caption", () => {
+  const post = maakPost({ id: "weekend-2026-W40", rubriek: "weekend", plaatsingsdag: "2026-10-02", titel: "Dit weekend: 2 opgietingen" });
+  const input = bouwInput(post, "facebook", "ch_fb", DUE, { concept: false, videoUrl: VIDEO });
+  assert.deepEqual(input.assets, [{ video: { url: VIDEO, metadata: { title: "Dit weekend: 2 opgietingen" } } }]);
+  assert.deepEqual(input.metadata, { facebook: { type: "reel" } });
+  assert.equal(input.text, "FB");
+  assert.equal(input.mode, "customScheduled");
+  assert.equal(input.dueAt, DUE);
+});
+
+test("bouwInput video instagram: thumbnailOffset en titel, type reel met delen naar de feed", () => {
+  const post = maakPost({ id: "weekend-2026-W40", rubriek: "weekend", plaatsingsdag: "2026-10-02" });
+  const input = bouwInput(post, "instagram", "ch_ig", DUE, { concept: false, videoUrl: VIDEO });
+  assert.deepEqual(input.assets, [{ video: { url: VIDEO, metadata: { title: post.titel, thumbnailOffset: THUMBNAIL_OFFSET_MS } } }]);
+  assert.deepEqual(input.metadata, { instagram: { type: "reel", shouldShareToFeed: true } });
+  assert.equal(THUMBNAIL_OFFSET_MS, 1000);
+});
+
+test("bouwInput video tiktok: thumbnailOffset en titel in het asset, géén metadata (title is voor fotoposts)", () => {
+  const post = maakPost({ id: "weekend-2026-W40", rubriek: "weekend", plaatsingsdag: "2026-10-02" });
+  const input = bouwInput(post, "tiktok", "ch_tt", DUE, { concept: false, videoUrl: VIDEO });
+  assert.deepEqual(input.assets, [{ video: { url: VIDEO, metadata: { title: post.titel, thumbnailOffset: THUMBNAIL_OFFSET_MS } } }]);
+  assert.equal(input.metadata, undefined);
+  assert.equal(input.text, "TT");
+});
+
+test("bouwInput video concept: addToQueue + saveToDraft, zonder dueAt", () => {
+  const post = maakPost({ id: "weekend-2026-W40", rubriek: "weekend", plaatsingsdag: "2026-10-02" });
+  const input = bouwInput(post, "tiktok", "ch_tt", DUE, { concept: true, videoUrl: VIDEO });
+  assert.equal(input.mode, "addToQueue");
+  assert.equal(input.saveToDraft, true);
+  assert.equal(input.dueAt, undefined);
+  assert.ok("video" in input.assets[0]);
+});
+
+test("bouwInput zonder videoUrl: de fotovariant, ongewijzigd", () => {
+  const post = maakPost({ id: "weekend-2026-W40", rubriek: "weekend", plaatsingsdag: "2026-10-02" });
+  const input = bouwInput(post, "facebook", "ch_fb", DUE, { concept: false });
+  assert.equal(input.assets.length, 3);
+  assert.ok(input.assets.every((a) => "image" in a));
+  assert.deepEqual(input.metadata, { facebook: { type: "post" } });
+});
+
+test("heeftVideoNodig: alleen als een videokanaal een id heeft en nog niet in het grootboek staat; concept negeert het grootboek", () => {
+  const ids = { facebook: "ch_fb", tiktok: "ch_tt" };
+  const inGrootboek = (kanalen: string[]) => (k: string) => kanalen.includes(k);
+  assert.equal(heeftVideoNodig(ids, inGrootboek([]), "inplannen"), true);
+  assert.equal(heeftVideoNodig(ids, inGrootboek(["facebook"]), "inplannen"), true);
+  assert.equal(heeftVideoNodig(ids, inGrootboek(["facebook", "tiktok"]), "inplannen"), false);
+  assert.equal(heeftVideoNodig(ids, inGrootboek(["facebook", "tiktok"]), "concept"), true);
+  assert.equal(heeftVideoNodig({}, inGrootboek([]), "inplannen"), false);
+  // dry-run beslist als inplannen; het script rendert dan alleen niet.
+  assert.equal(heeftVideoNodig(ids, inGrootboek([]), "dry-run"), true);
+  assert.equal(heeftVideoNodig(ids, inGrootboek(["facebook", "tiktok"]), "dry-run"), false);
 });
