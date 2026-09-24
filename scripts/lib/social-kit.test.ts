@@ -1,7 +1,7 @@
 // scripts/lib/social-kit.test.ts
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { bestandsnaam, captionsMarkdown, downloadPost, metSubmappen } from "./social-kit";
+import { bestandsnaam, captionsMarkdown, downloadPost, metSubmappen, slidePaden } from "./social-kit";
 import type { PlanningPost } from "../../src/lib/social-planning";
 import fs from "node:fs";
 import os from "node:os";
@@ -96,4 +96,14 @@ test("downloadPost: map buiten root wordt geweigerd", async () => {
   await assert.rejects(() => downloadPost(post, basis, map, ["feed"], ok), /buiten de doelmap/);
   fs.rmSync(basis, { recursive: true, force: true });
   fs.rmSync(buiten, { recursive: true, force: true });
+});
+
+test("slidePaden: carrousel in de formaat-submap zonder achtervoegsel, één slide in de postmap mét achtervoegsel", () => {
+  assert.deepEqual(slidePaden(post, "/m/w37", "story"), [
+    path.join("/m/w37", "story", "01-cover.png"),
+    path.join("/m/w37", "story", "02-event-herfstgloed.png"),
+    path.join("/m/w37", "story", "03-afsluiter.png"),
+  ]);
+  const enkel: PlanningPost = { ...post, slides: [post.slides[1]] };
+  assert.deepEqual(slidePaden(enkel, "/m/u", "story"), [path.join("/m/u", "01-event-herfstgloed-story.png")]);
 });

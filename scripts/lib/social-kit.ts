@@ -25,6 +25,18 @@ export function metSubmappen(post: Pick<PlanningPost, "slides">): boolean {
   return post.slides.length > 1;
 }
 
+/**
+ * Lokale paden van de slides van één formaat, in planningvolgorde, volgens de
+ * mapconventie van downloadPost: carrousel in `<map>/<formaat>/NN-rol[-slug].png`,
+ * één slide als `<map>/NN-rol[-slug]-<formaat>.png`.
+ */
+export function slidePaden(post: Pick<PlanningPost, "slides">, map: string, formaat: Formaat): string[] {
+  const submappen = metSubmappen(post);
+  return post.slides.map((slide, i) =>
+    submappen ? path.join(map, formaat, bestandsnaam(i, slide)) : path.join(map, bestandsnaam(i, slide, formaat)),
+  );
+}
+
 const KANAAL_LABEL: Record<Kanaal, string> = { instagram: "Instagram", facebook: "Facebook", tiktok: "TikTok" };
 
 export function captionsMarkdown(post: PlanningPost): string {
@@ -85,13 +97,13 @@ export async function downloadPost(
   const submappen = metSubmappen(post);
   fs.mkdirSync(map, { recursive: true });
   if (submappen) for (const formaat of formaten) fs.mkdirSync(path.join(map, formaat), { recursive: true });
+  const doelen = new Map(formaten.map((formaat) => [formaat, slidePaden(post, map, formaat)] as const));
   try {
     for (const [i, slide] of post.slides.entries()) {
       for (const formaat of formaten) {
         const res = await ophalen(slide[formaat]);
         if (!res.ok) throw new Error(`${slide[formaat]}: HTTP ${res.status}`);
-        const doel = submappen ? path.join(map, formaat, bestandsnaam(i, slide)) : path.join(map, bestandsnaam(i, slide, formaat));
-        fs.writeFileSync(doel, Buffer.from(await res.arrayBuffer()));
+        fs.writeFileSync(doelen.get(formaat)![i], Buffer.from(await res.arrayBuffer()));
       }
     }
     fs.writeFileSync(path.join(map, "captions.md"), captionsMarkdown(post));
