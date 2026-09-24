@@ -2,11 +2,11 @@
 import path from "node:path";
 import type { PlanningPost } from "../../src/lib/social-planning";
 import { downloadPost, slidePaden, type Ophalen } from "./social-kit";
-import { MUZIEK_PAD, renderSlideshow, videoDuur } from "./video";
+import { renderSlideshow, trackVoorDatum, videoDuur } from "./video";
 
 /*
   Eén post → één video (spec §4, §7 stap 3): de story-slides worden gedownload
-  volgens de mapconventie van social-kit en met de vaste track gerenderd naar
+  volgens de mapconventie van social-kit en met de track van die week gerenderd naar
   `<map>/video.mp4`. Gedeeld door scripts/social-video.ts (lokaal bekijken) en
   scripts/social-buffer.ts (uploaden naar Blob).
 */
@@ -28,6 +28,6 @@ export async function renderPostVideo(post: PlanningPost, root: string, map: str
   await downloadPost(post, root, map, ["story"], ophalen);
   const slides = slidePaden(post, map, "story");
   const bestand = path.join(map, "video.mp4");
-  await renderSlideshow({ slides, track: MUZIEK_PAD, uit: bestand });
+  await renderSlideshow({ slides, track: trackVoorDatum(post.plaatsingsdag), uit: bestand });
   return { bestand, duur: videoDuur(slides.length), aantalSlides: slides.length };
 }

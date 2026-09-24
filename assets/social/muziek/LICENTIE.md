@@ -1,13 +1,17 @@
-# Achtergrondtrack social-video's
+# Achtergrondtracks social-video's
 
-- **Bestand:** `achtergrond.mp3` (mp3, 44,1 kHz stereo, 256 kb/s, 1:54)
-- **Titel:** Serene View
-- **Artiest:** Arulo
-- **Genre (Mixkit):** Chillout
-- **Bron:** <https://mixkit.co/free-stock-music/mood/calm/> — bestand <https://assets.mixkit.co/music/443/443.mp3>
-- **Licentie:** Mixkit Stock Music Free License — <https://mixkit.co/license/#musicFree>
-  (de pagina noemt per track `copyrightNotice: "Mixkit Stock Music Free License"` en deze licentie-URL in de gestructureerde data)
-- **Gedownload:** 2026-09-24
+Drie tracks die per ISO-week rouleren (`trackVoorDatum` in `scripts/lib/video.ts`):
+alle posts van dezelfde week krijgen dezelfde track. Alle drie van Mixkit onder de
+**Mixkit Stock Music Free License** — <https://mixkit.co/license/#musicFree> (de
+pagina noemt per track `copyrightNotice: "Mixkit Stock Music Free License"` en
+deze licentie-URL in de gestructureerde data). Gedownload op 2026-09-24 via
+<https://mixkit.co/free-stock-music/mood/calm/>.
+
+| Bestand | Titel | Artiest | Genre | Duur | Bron |
+|---|---|---|---|---|---|
+| `valley-sunset.mp3` | Valley Sunset | Alejandro Magaña (A. M.) | Ambient | 2:14 | <https://assets.mixkit.co/music/127/127.mp3> |
+| `serene-view.mp3` | Serene View | Arulo | Chillout | 1:54 | <https://assets.mixkit.co/music/443/443.mp3> |
+| `forest-mist-whispers.mp3` | Forest Mist Whispers | Alejandro Magaña (A. M.) | Ambient | 2:31 | <https://assets.mixkit.co/music/148/148.mp3> |
 
 ## Kern van de voorwaarden (samenvatting, de licentietekst op mixkit.co is bindend)
 
@@ -19,5 +23,4 @@
 - Niet los herverdelen of verkopen als muziekbestand; niet op cd/dvd, in games of via
   tv-/radio-uitzending; niet registreren in een claimsysteem (Content ID / Rights Manager).
 
-Gebruikt door `scripts/lib/video.ts` (`MUZIEK_PAD`), spec
-`docs/superpowers/specs/2026-09-24-social-video-met-muziek-design.md` §9.
+Spec: `docs/superpowers/specs/2026-09-24-social-video-met-muziek-design.md` §9.

@@ -43,7 +43,7 @@ import {
   type Resultaat,
 } from "./lib/social-buffer";
 import { renderPostVideo } from "./lib/social-video";
-import { ffmpegBeschikbaar, MUZIEK_PAD } from "./lib/video";
+import { ffmpegBeschikbaar, ontbrekendeTracks } from "./lib/video";
 
 function flag(naam: string, standaard: string): string {
   const i = process.argv.indexOf(naam);
@@ -158,7 +158,8 @@ type VideoUitkomst = { url: string } | { fout: string };
  */
 async function maakVideo(post: PlanningPost): Promise<VideoUitkomst> {
   if (!blobBeschikbaar()) return { fout: "BLOB_READ_WRITE_TOKEN ontbreekt" };
-  if (!fs.existsSync(MUZIEK_PAD)) return { fout: `muziektrack ontbreekt (${path.relative(process.cwd(), MUZIEK_PAD)})` };
+  const ontbrekend = ontbrekendeTracks();
+  if (ontbrekend.length > 0) return { fout: `muziektrack(s) ontbreken: ${ontbrekend.join(", ")}` };
   if (!(await ffmpegBeschikbaar())) return { fout: "ffmpeg niet gevonden" };
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "social-video-"));
   try {

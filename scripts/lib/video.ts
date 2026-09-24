@@ -1,6 +1,8 @@
 // scripts/lib/video.ts
 import { spawn } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
+import { isoWeek } from "../../src/lib/dates";
 
 /*
   Slideshow-video van de story-slides met één achtergrondtrack (spec §4, §5).
@@ -9,8 +11,26 @@ import path from "node:path";
   van Buffer, Blob of de planning: slides in, MP4 uit.
 */
 
-/** De vaste achtergrondtrack (spec §9); niet onder public/, hoeft niet geserveerd te worden. */
-export const MUZIEK_PAD = path.join(process.cwd(), "assets", "social", "muziek", "achtergrond.mp3");
+/** Map met de achtergrondtracks (spec §9); niet onder public/, hoeft niet geserveerd te worden. */
+export const MUZIEK_MAP = path.join(process.cwd(), "assets", "social", "muziek");
+
+/** Tracks die per ISO-week rouleren; volgorde bepaalt welke week welke krijgt. Licenties: assets/social/muziek/LICENTIE.md. */
+export const TRACKS: readonly string[] = ["valley-sunset.mp3", "serene-view.mp3", "forest-mist-whispers.mp3"];
+
+/**
+ * De track voor een plaatsingsdag: rotatie op het ISO-weeknummer, zodat alle
+ * posts van dezelfde week hetzelfde klinken en opeenvolgende weken verschillen.
+ * Week 1 krijgt de eerste track.
+ */
+export function trackVoorDatum(iso: string): string {
+  const week = Number(isoWeek(iso).slice(-2));
+  return path.join(MUZIEK_MAP, TRACKS[(week - 1) % TRACKS.length]);
+}
+
+/** Bestandsnamen van tracks die niet op schijf staan (leeg = alles aanwezig). */
+export function ontbrekendeTracks(): string[] {
+  return TRACKS.filter((naam) => !fs.existsSync(path.join(MUZIEK_MAP, naam)));
+}
 
 export const SLIDE_DUUR = 3.5;
 export const CROSSFADE = 0.5;

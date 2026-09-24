@@ -21,7 +21,7 @@ import { isGeldigeIsoDatum, maandagVanWeek, todayISOInTimeZone } from "../src/li
 import type { PlanningJson } from "../src/lib/social-planning";
 import { blobBeschikbaar, blobPad, uploadVideo } from "./lib/blob";
 import { renderPostVideo } from "./lib/social-video";
-import { ffmpegBeschikbaar, MUZIEK_PAD } from "./lib/video";
+import { ffmpegBeschikbaar, MUZIEK_MAP, ontbrekendeTracks } from "./lib/video";
 
 function flag(naam: string, standaard: string): string {
   const i = process.argv.indexOf(naam);
@@ -37,7 +37,8 @@ const UPLOAD = process.argv.includes("--upload");
 async function main() {
   if (!isGeldigeIsoDatum(DATUM)) throw new Error(`Ongeldige --datum: ${DATUM}`);
   if (!(await ffmpegBeschikbaar())) throw new Error("ffmpeg niet gevonden (zet FFMPEG_PATH of installeer ffmpeg)");
-  if (!fs.existsSync(MUZIEK_PAD)) throw new Error(`Muziektrack ontbreekt: ${MUZIEK_PAD}`);
+  const ontbrekend = ontbrekendeTracks();
+  if (ontbrekend.length > 0) throw new Error(`Muziektrack(s) ontbreken in ${MUZIEK_MAP}: ${ontbrekend.join(", ")}`);
   if (UPLOAD && !blobBeschikbaar()) throw new Error("--upload vereist BLOB_READ_WRITE_TOKEN");
 
   const url = `${BASIS}/social/planning?datum=${DATUM}`;
