@@ -37,6 +37,16 @@ export default function CookiebeleidPage() {
           </p>
         </section>
 
+        <section>
+          <h2 className="font-display text-xl font-semibold text-ink">Voorkeuren in je browser</h2>
+          <p className="mt-3">
+            Zet je het sfeergeluid aan via de luidsprekerknop in de menubalk, dan onthoudt je browser die keuze in
+            de lokale opslag (<em>localStorage</em>) van deze site. Dat is één instelling, alleen leesbaar door
+            opgietingen.nl, zonder identificatie en zonder dat wij die ontvangen. Zet je het geluid uit, dan wordt de
+            voorkeur overschreven; je kunt hem ook zelf wissen via de site-instellingen van je browser.
+          </p>
+        </section>
+
         <p className="text-sm text-ink-faint">
           Meer over hoe we met gegevens omgaan lees je in ons{" "}
           <Link href="/privacybeleid" className="font-medium text-ember hover:underline">
