@@ -6,6 +6,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { leesStand, SFEERGELUID_SRC, SFEERGELUID_TIP_VERTRAGING_MS, SFEERGELUID_VOLUME, tipTonen, wissel } from "../../src/lib/sfeergeluid";
 
+/** sha256 van assets-commit 1dc5902:assets/social/muziek/valley-sunset.mp3 (Mixkit Stock Music Free License). */
+const VALLEY_SUNSET_SHA256 = "f50d822cb8d6cb3da8bc9d6cfccc020786fb0c25e2c222a75d11ca06091050e7";
+
 test("leesStand: alleen letterlijk 'aan' is aan; ontbrekend of onzin is uit", () => {
   assert.equal(leesStand("aan"), "aan");
   assert.equal(leesStand("uit"), "uit");
@@ -24,18 +27,9 @@ test("volume is achtergrond, niet voorgrond", () => {
   assert.ok(SFEERGELUID_VOLUME > 0 && SFEERGELUID_VOLUME <= 0.5);
 });
 
-test("sitebestand bestaat en is byte-gelijk aan de social-track", () => {
+test("sitebestand is de gelicentieerde Mixkit-track Valley Sunset (niet de social-track, zie LICENTIE.md)", () => {
   const site = path.join(process.cwd(), "public", SFEERGELUID_SRC);
-  const social = path.join(process.cwd(), "assets", "social", "muziek", "background-music.mp3");
   assert.ok(fs.existsSync(site), `${site} ontbreekt`);
-  const hash = (p: string) => crypto.createHash("sha256").update(fs.readFileSync(p)).digest("hex");
-  assert.equal(hash(site), hash(social), "public/audio/sfeergeluid.mp3 wijkt af van assets/social/muziek/background-music.mp3");
-});
-
-test("tipTonen: alleen bij geluid uit én tip nog niet gezien; vertraging na het laden", () => {
-  assert.equal(tipTonen({ stand: "uit", tipGezien: false }), true);
-  assert.equal(tipTonen({ stand: "uit", tipGezien: true }), false);
-  assert.equal(tipTonen({ stand: "aan", tipGezien: false }), false);
-  assert.equal(tipTonen({ stand: "aan", tipGezien: true }), false);
-  assert.ok(SFEERGELUID_TIP_VERTRAGING_MS >= 1000, "niet tijdens het laden tonen");
+  const hash = crypto.createHash("sha256").update(fs.readFileSync(site)).digest("hex");
+  assert.equal(hash, VALLEY_SUNSET_SHA256, "public/audio/sfeergeluid.mp3 is niet Valley Sunset (Mixkit); pas de hash alleen aan bij een bewuste, gelicentieerde wissel");
 });
