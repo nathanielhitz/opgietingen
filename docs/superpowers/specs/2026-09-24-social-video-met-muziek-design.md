@@ -186,13 +186,15 @@ het nakijken van een week.
 
 ## 9. Muziek
 
-- Bestanden: `assets/social/muziek/{valley-sunset,serene-view,forest-mist-whispers}.mp3`,
+- Bestanden: `assets/social/muziek/background-music.mp3` (sinds 2026-09-30 één
+  eigen track; de drie Mixkit-tracks van de eerste versie zijn verwijderd),
   lijst `TRACKS` en map `MUZIEK_MAP` in `scripts/lib/video.ts`. Niet onder
   `public/`: de tracks hoeven niet geserveerd te worden.
-- Rotatie: `trackVoorDatum(plaatsingsdag)` kiest `TRACKS[(weeknummer − 1) % 3]`
+- Rotatie: `trackVoorDatum(plaatsingsdag)` kiest `TRACKS[(weeknummer − 1) % TRACKS.length]`
   op het ISO-weeknummer, zodat alle posts van één week dezelfde track hebben en
-  opeenvolgende weken verschillen. `ontbrekendeTracks()` bewaakt dat alle drie
-  op schijf staan (anders terugval op foto, §7).
+  opeenvolgende weken verschillen zodra er meer dan één track is. Met de huidige
+  ene track blijft het mechanisme staan; een tweede track is één regel in `TRACKS`.
+  `ontbrekendeTracks()` bewaakt dat elke track op schijf staat (anders terugval op foto, §7).
 - `assets/social/muziek/LICENTIE.md`: per track titel, artiest, bron-URL,
   licentienaam met link, downloaddatum en de kern van de voorwaarden.
 - Criteria: instrumentaal, rustig en warm (ambient, zachte piano of lo-fi), geen
@@ -246,7 +248,7 @@ het nakijken van een week.
 ## 13. Bestanden
 
 Nieuw: `scripts/lib/video.ts`, `scripts/lib/blob.ts`, `scripts/social-video.ts`,
-`assets/social/muziek/*.mp3` (drie tracks) + `LICENTIE.md`, tests uit §12, dit document.
+`assets/social/muziek/*.mp3` (eerst drie Mixkit-tracks, sinds 2026-09-30 één eigen track) + `LICENTIE.md`, tests uit §12, dit document.
 
 Aangepast: `scripts/lib/social-buffer.ts` (`Vorm`, `VORM`, `bouwInput`,
 `heeftVideoNodig`), `scripts/lib/buffer-client.ts` (asset-union, `reel`),

@@ -17,24 +17,27 @@ export const MUZIEK_MAP = path.join(process.cwd(), "assets", "social", "muziek")
 export interface Track {
   bestand: string;
   /**
-   * Startpunt in seconden. Ambient-intro's zwellen langzaam aan (Valley Sunset
-   * zit pas na 8 s op niveau, Forest Mist Whispers na 10 s); een video van 7 s
-   * zou anders bijna stil zijn. Gemeten met ebur128 op 2026-09-24.
+   * Startpunt in seconden, om een stille of aanzwellende intro over te slaan:
+   * een video van 7 s zou anders bijna stil beginnen. Background music zit na
+   * ruim 1 s stilte vanaf 2 s op niveau (gemeten met volumedetect, 2026-09-30).
    */
   start: number;
 }
 
-/** Tracks die per ISO-week rouleren; volgorde bepaalt welke week welke krijgt. Licenties: assets/social/muziek/LICENTIE.md. */
+/**
+ * Tracks die per ISO-week rouleren; volgorde bepaalt welke week welke krijgt.
+ * Nu één track (sinds 2026-09-30, daarvoor drie Mixkit-tracks); de rotatie
+ * blijft staan zodat een tweede track alleen een regel hier is.
+ * Licenties: assets/social/muziek/LICENTIE.md.
+ */
 export const TRACKS: readonly Track[] = [
-  { bestand: "valley-sunset.mp3", start: 8 },
-  { bestand: "serene-view.mp3", start: 0 },
-  { bestand: "forest-mist-whispers.mp3", start: 10 },
+  { bestand: "background-music.mp3", start: 2 },
 ];
 
 /**
  * De track voor een plaatsingsdag: rotatie op het ISO-weeknummer, zodat alle
- * posts van dezelfde week hetzelfde klinken en opeenvolgende weken verschillen.
- * Week 1 krijgt de eerste track.
+ * posts van dezelfde week hetzelfde klinken en opeenvolgende weken (bij meer
+ * dan één track) verschillen. Week 1 krijgt de eerste track.
  */
 export function trackVoorDatum(iso: string): Track & { pad: string } {
   const week = Number(isoWeek(iso).slice(-2));

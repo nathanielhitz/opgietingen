@@ -1,26 +1,25 @@
-# Achtergrondtracks social-video's
+# Achtergrondtrack social-video's
 
-Drie tracks die per ISO-week rouleren (`trackVoorDatum` in `scripts/lib/video.ts`):
-alle posts van dezelfde week krijgen dezelfde track. Alle drie van Mixkit onder de
-**Mixkit Stock Music Free License** — <https://mixkit.co/license/#musicFree> (de
-pagina noemt per track `copyrightNotice: "Mixkit Stock Music Free License"` en
-deze licentie-URL in de gestructureerde data). Gedownload op 2026-09-24 via
-<https://mixkit.co/free-stock-music/mood/calm/>.
+Eén track (sinds 2026-09-30); `trackVoorDatum` in `scripts/lib/video.ts` rouleert per
+ISO-week zodra er meer tracks in `TRACKS` staan, alle posts van dezelfde week krijgen
+dezelfde track.
 
-| Bestand | Titel | Artiest | Genre | Duur | Bron |
+| Bestand | Titel | Artiest | Duur | Bron | Licentie |
 |---|---|---|---|---|---|
-| `valley-sunset.mp3` | Valley Sunset | Alejandro Magaña (A. M.) | Ambient | 2:14 | <https://assets.mixkit.co/music/127/127.mp3> |
-| `serene-view.mp3` | Serene View | Arulo | Chillout | 1:54 | <https://assets.mixkit.co/music/443/443.mp3> |
-| `forest-mist-whispers.mp3` | Forest Mist Whispers | Alejandro Magaña (A. M.) | Ambient | 2:31 | <https://assets.mixkit.co/music/148/148.mp3> |
+| `background-music.mp3` | Background music (bestandsnaam; titel onbekend) | onbekend | 3:16 | aangeleverd door Nathaniel op 2026-09-30 (`~/Downloads/Background music.mp3`); het bestand bevat geen tags, de container (`dash`/`iso6mp41`) wijst op een download van een streamingplatform | rechtenvrij (copyright free), volgens Nathaniel op 2026-09-30; titel, artiest en bron-URL nog niet vastgelegd |
 
-## Kern van de voorwaarden (samenvatting, de licentietekst op mixkit.co is bindend)
+## Openstaand
 
-- Vrij te gebruiken in persoonlijke en commerciële projecten, waaronder YouTube-video's,
-  social-media-marketing en online advertenties (Mixkit, "Official Information About Mixkit",
-  <https://mixkit.co/llm-info/>: "Allows use in commercial projects (YouTube videos, social media
-  marketing, online ads, music videos) and personal projects. No attribution required.").
-- Geen naamsvermelding vereist.
-- Niet los herverdelen of verkopen als muziekbestand; niet op cd/dvd, in games of via
-  tv-/radio-uitzending; niet registreren in een claimsysteem (Content ID / Rights Manager).
+Nathaniel gaf op 2026-09-30 aan dat de track rechtenvrij is. Wat nog ontbreekt in de
+tabel: titel, artiest en de bron-URL met de licentietekst (spec §9). Vul dat in zodra
+het bekend is, zodat een claim via Rights Manager (Facebook/Instagram) of TikTok
+direct te weerleggen is met de bron.
+
+## Historie
+
+Tot 2026-09-30 stonden hier drie tracks van Mixkit onder de Mixkit Stock Music Free
+License (<https://mixkit.co/license/#musicFree>): Valley Sunset en Forest Mist Whispers
+(Alejandro Magaña) en Serene View (Arulo). Ze staan nog in de git-historie
+(commit 1dc5902) en zijn eenvoudig terug te zetten als tweede/derde track in `TRACKS`.
 
 Spec: `docs/superpowers/specs/2026-09-24-social-video-met-muziek-design.md` §9.

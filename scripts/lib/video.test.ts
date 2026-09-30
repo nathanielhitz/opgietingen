@@ -98,19 +98,17 @@ test("renderSlideshow: een ontbrekende slide geeft een fout met de ffmpeg-uitvoe
   );
 });
 
-test("trackVoorDatum: rouleert op ISO-weeknummer, week 1 krijgt de eerste track, hele week dezelfde", () => {
-  assert.equal(TRACKS.length, 3);
+test("trackVoorDatum: rouleert op ISO-weeknummer over TRACKS, week 1 krijgt de eerste track, hele week dezelfde", () => {
+  assert.equal(TRACKS.length, 1); // één track sinds 2026-09-30; bij een tweede blijft de rotatie hieronder gelden
   assert.equal(trackVoorDatum("2026-01-02").pad, path.join(MUZIEK_MAP, TRACKS[0].bestand)); // 2026-W01
-  assert.equal(trackVoorDatum("2026-09-28").bestand, TRACKS[(40 - 1) % 3].bestand); // W40 → index 0
-  assert.equal(trackVoorDatum("2026-10-05").bestand, TRACKS[(41 - 1) % 3].bestand); // W41 → index 1
-  assert.equal(trackVoorDatum("2026-10-16").bestand, TRACKS[(42 - 1) % 3].bestand); // W42 → index 2
-  assert.equal(trackVoorDatum("2026-09-28").start, 8); // Valley Sunset slaat de aanzwelling over
+  assert.equal(trackVoorDatum("2026-09-28").bestand, TRACKS[(40 - 1) % TRACKS.length].bestand); // W40
+  assert.equal(trackVoorDatum("2026-10-05").bestand, TRACKS[(41 - 1) % TRACKS.length].bestand); // W41
+  assert.equal(trackVoorDatum("2026-10-05").start, 2); // Background music slaat de stille eerste seconde over
   // Maandag en vrijdag van dezelfde week: dezelfde track.
   assert.deepEqual(trackVoorDatum("2026-10-05"), trackVoorDatum("2026-10-09"));
-  assert.notEqual(trackVoorDatum("2026-10-05").bestand, trackVoorDatum("2026-10-12").bestand);
 });
 
-test("ontbrekendeTracks: alle drie de tracks staan in de repo", () => {
+test("ontbrekendeTracks: alle tracks uit TRACKS staan in de repo", () => {
   assert.deepEqual(ontbrekendeTracks(), []);
 });
 
