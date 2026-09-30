@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { SfeergeluidKnop } from "@/components/SfeergeluidKnop";
 
 const navItems = [
   { href: "/agenda", label: "Agenda" },
@@ -134,6 +135,7 @@ export function SiteHeader() {
           >
             Bekijk agenda
           </Link>
+          <SfeergeluidKnop overlay={overlay} />
           <button
             ref={menuButtonRef}
             type="button"
