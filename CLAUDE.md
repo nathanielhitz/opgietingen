@@ -58,6 +58,7 @@ scripts/
   social-video.ts   # rendert de weekvideo's lokaal (ffmpeg) om te bekijken; -- --upload zet ze op Vercel Blob
   vind-instagram.ts # print Instagram-handles die op sauna-websites staan (voorstellen, schrijft niets; -- --sauna <slug>)
   lib/              # net.ts (fetch/robots), content.ts (bronnen/dedup/MDX-write), quality-gate.ts (poort), metrics.ts (run-metrics melden), buffer-client.ts (Buffer-GraphQL) en social-buffer.ts (selectie, dueAt, mapping per kanaal, beslisregel), video.ts (ffmpeg-argumenten + render), blob.ts (Vercel Blob: pad, upload, opruimen), social-video.ts (slides → mp4)
+public/audio/        # sfeergeluid.mp3 voor de header-knop (kopie van de social-track)
 assets/
   social/muziek/    # achtergrondtrack(s) voor de social-video's (rouleren per week zodra er meer dan één is) + LICENTIE.md
 .github/workflows/
@@ -114,6 +115,7 @@ Nieuwsbrief-opt-in is **uitgesteld** naar een latere sessie.
 - **Geen `Date.now()`/`new Date()` in SSG-render paden** waar determinisme telt — gebruik helpers en behandel "vandaag" bewust.
 - **Kleuren via themetokens** (`bg-cream`, `text-ink`, `text-ember`, ...), niet via hex in components. Tokens staan in `globals.css`.
 - **Animatie: alleen de hero-stoom.** De homepage-hero heeft één decoratieve, CSS-only stoomlaag (`HeroStoom`, stijl in `globals.css`): zes wolken vanaf de oven rechtsonder plus een ademende gloed op de stenen, alleen `transform`/`opacity`, bewust zonder `will-change`, bij `prefers-reduced-motion` `display: none`. Geen andere keyframe-animaties op de site (hover-transities uitgezonderd); nieuwe beweging eerst afwegen tegen dit ijkpunt. Spec: [docs/superpowers/specs/2026-09-09-hero-stoom-animatie-design.md](docs/superpowers/specs/2026-09-09-hero-stoom-animatie-design.md).
+- **Sfeergeluid: opt-in, nooit autoplay.** De header heeft een luidspreker-knop (`SfeergeluidKnop`, spec [docs/superpowers/specs/2026-09-30-sfeergeluid-website-design.md](docs/superpowers/specs/2026-09-30-sfeergeluid-website-design.md)) die `public/audio/sfeergeluid.mp3` (byte-gelijk aan de social-track, test bewaakt dat) in een loop speelt op 35 % via een Web Audio `GainNode` (iOS negeert `volume`), met fades. Standaard uit, keuze in `localStorage`, niets geladen vóór de tik; bij een herlaad met "aan" start hij bij de eerste interactie (autoplay-beleid). Pure delen in `src/lib/sfeergeluid.ts`.
 - **Affiliate-links altijd via `/uit/[event-of-sauna-slug]`** zodat kliks meetbaar zijn — nooit direct naar de sauna linken vanaf CTA's.
 - **SEO:** elke route exporteert `metadata`/`generateMetadata`; detailpagina's renderen JSON-LD structured data; `sitemap.ts` genereert `/sitemap.xml`.
 

@@ -6,12 +6,17 @@ dezelfde track.
 
 | Bestand | Titel | Artiest | Duur | Bron | Licentie |
 |---|---|---|---|---|---|
-| `background-music.mp3` | Background music (bestandsnaam; titel onbekend) | onbekend | 3:16 | aangeleverd door Nathaniel op 2026-09-30 (`~/Downloads/Background music.mp3`); het bestand bevat geen tags, de container (`dash`/`iso6mp41`) wijst op een download van een streamingplatform | rechtenvrij (copyright free), volgens Nathaniel op 2026-09-30; titel, artiest en bron-URL nog niet vastgelegd |
+| `background-music.mp3` | Background music (bestandsnaam; titel onbekend) | onbekend | 3:16 | YouTube, kanaal/afspeellijst "no copyright music" (volgens Nathaniel, 2026-09-30); video-URL nog aan te leveren | rechtenvrij volgens de uploader; titel, artiest, video-URL en exacte voorwaarden (vaak: naamsvermelding verplicht) nog niet vastgelegd |
+
+## Gebruik op de website
+
+Dezelfde track staat byte-gelijk als `public/audio/sfeergeluid.mp3` op de site (sfeergeluid-knop in de header, spec `docs/superpowers/specs/2026-09-30-sfeergeluid-website-design.md`); een test bewaakt dat beide bestanden gelijk blijven. Vervang je de track, vervang dan beide.
 
 ## Openstaand
 
-Nathaniel gaf op 2026-09-30 aan dat de track rechtenvrij is. Wat nog ontbreekt in de
-tabel: titel, artiest en de bron-URL met de licentietekst (spec §9). Vul dat in zodra
+Nathaniel gaf op 2026-09-30 aan dat de track van YouTube ("no copyright music") komt. Wat nog
+ontbreekt: titel, artiest en de video-URL met de licentietekst (spec §9). Let op: veel van die
+tracks eisen naamsvermelding in de beschrijving; dat geldt dan ook voor de website. Vul dat in zodra
 het bekend is, zodat een claim via Rights Manager (Facebook/Instagram) of TikTok
 direct te weerleggen is met de bron.
 
