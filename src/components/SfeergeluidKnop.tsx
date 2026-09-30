@@ -1,75 +1,14 @@
 "use client";
 
-import { track } from "@vercel/analytics";
-import { useEffect, useRef, useState } from "react";
-import { leesStand, maakSpeler, SFEERGELUID_OPSLAG, wissel, type Speler, type Stand } from "@/lib/sfeergeluid";
+import { useSfeergeluid } from "@/components/SfeergeluidProvider";
 
 /*
-  Aan/uit-knop voor het sfeergeluid in de header (spec 2026-09-30). Standaard
-  uit; de keuze staat in localStorage. Leeft in SiteHeader en blijft dus
-  gemonteerd bij client-navigatie, zodat de muziek doorloopt. Bij een
-  volledige herlaad met "aan" probeert hij te starten; weigert de browser dat
-  (autoplay-beleid), dan start hij bij de eerste tik of toets. Geen animatie:
+  Aan/uit-knop voor het sfeergeluid in de header (spec 2026-09-30). De stand en
+  de speler komen uit SfeergeluidProvider; hier alleen de knop. Geen animatie:
   twee statische iconen.
 */
-
-function leesVoorkeur(): Stand {
-  try {
-    return leesStand(window.localStorage.getItem(SFEERGELUID_OPSLAG));
-  } catch {
-    return "uit";
-  }
-}
-
-function bewaarVoorkeur(stand: Stand): void {
-  try {
-    window.localStorage.setItem(SFEERGELUID_OPSLAG, stand);
-  } catch {
-    // Privémodus of geblokkeerde opslag: de knop werkt, alleen zonder geheugen.
-  }
-}
-
 export function SfeergeluidKnop({ overlay }: { overlay: boolean }) {
-  // Server en eerste client-render zijn altijd "uit"; de voorkeur komt in het effect (geen hydration-verschil).
-  const [stand, setStand] = useState<Stand>("uit");
-  const spelerRef = useRef<Speler | null>(null);
-  const speler = () => (spelerRef.current ??= maakSpeler());
-
-  useEffect(() => {
-    if (leesVoorkeur() !== "aan") return;
-    setStand("aan");
-    let opgeruimd = false;
-    const startBijInteractie = () => {
-      void speler().aan();
-      verwijder();
-    };
-    const verwijder = () => {
-      document.removeEventListener("pointerdown", startBijInteractie);
-      document.removeEventListener("keydown", startBijInteractie);
-    };
-    void speler()
-      .aan()
-      .then((gestart) => {
-        if (gestart || opgeruimd) return;
-        // Geblokkeerd door het autoplay-beleid: bij de eerste interactie alsnog starten.
-        document.addEventListener("pointerdown", startBijInteractie, { once: true });
-        document.addEventListener("keydown", startBijInteractie, { once: true });
-      });
-    return () => {
-      opgeruimd = true;
-      verwijder();
-    };
-  }, []);
-
-  const klik = () => {
-    const nieuw = wissel(stand);
-    setStand(nieuw);
-    bewaarVoorkeur(nieuw);
-    if (nieuw === "aan") void speler().aan();
-    else speler().uit();
-    track("sfeergeluid", { stand: nieuw });
-  };
-
+  const { stand, zetAan, zetUit } = useSfeergeluid();
   const aan = stand === "aan";
   return (
     <button
@@ -77,7 +16,7 @@ export function SfeergeluidKnop({ overlay }: { overlay: boolean }) {
       aria-pressed={aan}
       aria-label={aan ? "Sfeergeluid uit" : "Sfeergeluid aan"}
       title={aan ? "Sfeergeluid uit" : "Sfeergeluid aan"}
-      onClick={klik}
+      onClick={aan ? zetUit : zetAan}
       className={`grid h-11 w-11 place-items-center rounded-full transition-colors ${
         overlay ? "text-white hover:bg-white/10" : "text-ink hover:bg-sand"
       }`}
