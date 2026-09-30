@@ -13,20 +13,15 @@
 Risico zolang de licentie ontbreekt: een claim via Meta Rights Manager of TikTok (gedempte
 of geblokkeerde post) en een inbreukclaim van de uitgever.
 
-## Website: `public/audio/sfeergeluid.mp3`
+## Website
 
-| Veld | Waarde |
-|---|---|
-| Titel | Valley Sunset |
-| Artiest | Alejandro Magaña (A. M.) |
-| Bron | Mixkit, <https://assets.mixkit.co/music/127/127.mp3> via <https://mixkit.co/free-stock-music/mood/calm/> |
-| Licentie | Mixkit Stock Music Free License — <https://mixkit.co/license/#musicFree>: persoonlijk en commercieel gebruik incl. websites en social, geen naamsvermelding; niet los herverdelen, niet op cd/dvd/games/uitzending, niet in een claimsysteem registreren. |
-| Status | Gelicentieerd; sinds 2026-09-30 de sfeergeluid-track van de site (knop in de header). `scripts/lib/sfeergeluid.test.ts` bewaakt de sha256 van dit bestand. |
+Geen muziek op de site (sinds 2026-09-30, zelfde dag als de introductie; zie spec
+`2026-09-30-sfeergeluid-website-design.md`).
 
 ## Historie
 
 - 2026-09-24 t/m 2026-09-30: drie Mixkit-tracks in de social-video's (Valley Sunset, Serene View, Forest Mist Whispers; commit 1dc5902, allemaal Stock Music Free License). Eenvoudig terug te zetten in `TRACKS` (`scripts/lib/video.ts`).
-- 2026-09-30: eigen track (Ocean Dream Meditation) in de social-video's; website kortstondig dezelfde track, daarna Valley Sunset.
+- 2026-09-30: eigen track (Ocean Dream Meditation) in de social-video's; de website had één dag een sfeergeluid-knop (eerst dezelfde track, daarna Valley Sunset), daarna verwijderd.
 
 Spec: `docs/superpowers/specs/2026-09-24-social-video-met-muziek-design.md` §9 en
 `docs/superpowers/specs/2026-09-30-sfeergeluid-website-design.md`.

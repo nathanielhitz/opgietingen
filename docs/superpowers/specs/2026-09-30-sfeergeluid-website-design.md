@@ -1,6 +1,11 @@
 # Sfeergeluid op de website — ontwerp
 
-Datum: 2026-09-30. Status: ontwerp, goedgekeurd in de brainstorm van 2026-09-30
+Datum: 2026-09-30. Status: **teruggedraaid op 2026-09-30** (PR #9 en #10 gebouwd en live
+geweest; op verzoek van Nathaniel dezelfde dag volledig verwijderd, incl. headerknop en
+uitnodigingsbalk, nadat de social-track een betaalde licentie bleek te vereisen). Dit
+document blijft als naslag; de code staat in de git-historie (commits 3d74e59, 5c1d13e).
+
+Oorspronkelijk: ontwerp, goedgekeurd in de brainstorm van 2026-09-30
 (keuze uit drie mockups: A, icoon in de header).
 
 ## 1. Aanleiding
