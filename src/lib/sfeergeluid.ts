@@ -13,7 +13,16 @@ export const SFEERGELUID_VOLUME = 0.35;
 export const SFEERGELUID_FADE_IN_S = 2;
 export const SFEERGELUID_FADE_UIT_S = 0.8;
 
+/** Eenmalig tipje (balk aan de onderrand) dat op het sfeergeluid wijst. */
+export const SFEERGELUID_TIP_OPSLAG = "opgietingen:sfeergeluid-tip";
+export const SFEERGELUID_TIP_VERTRAGING_MS = 2000;
+
 export type Stand = "aan" | "uit";
+
+/** De tip komt alleen als het geluid uitstaat en de tip nog nooit is getoond. */
+export function tipTonen(o: { stand: Stand; tipGezien: boolean }): boolean {
+  return o.stand === "uit" && !o.tipGezien;
+}
 
 /** Alleen letterlijk "aan" telt; alles anders (ontbrekend, onzin) is uit. */
 export function leesStand(raw: string | null | undefined): Stand {

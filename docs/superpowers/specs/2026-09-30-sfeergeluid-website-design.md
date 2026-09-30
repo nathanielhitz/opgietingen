@@ -51,10 +51,29 @@ autoplay. De site is SEO-first: er mag niets geladen worden vóór die tik.
 `undefined`, onzin → uit), `wissel`, en een bestandscheck: `public/audio/sfeergeluid.mp3`
 is byte-gelijk aan de social-track (sha256), zodat site en video's niet uit elkaar lopen.
 
+## 4a. Eenmalig tipje (aanvulling 2026-09-30, mockup B gekozen)
+
+Nathaniel wilde de eerste interactie uitlokken zonder cookiebanner-truc. Besluit:
+een smalle **balk aan de onderrand** (`SfeergeluidTip`), twee seconden na het
+laden, alleen als het geluid uitstaat en de tip nog nooit is getoond
+(`localStorage`-sleutel `opgietingen:sfeergeluid-tip`, gezet bij het tonen: hoogstens
+één keer per browser). Knop "Aan" zet het geluid aan (zelfde pad als de headerknop),
+het kruisje sluit; beide tellen voor de browser als eerste interactie, zodat de
+muziek daarna op elke pagina mag doorlopen. Zet iemand het geluid via de header
+aan terwijl de balk staat, dan verdwijnt hij. Geen overlay (de inhoud blijft
+zichtbaar, Google ziet geen interstitial), geen animatie. Afgewezen: een
+toast-kaart (A) en een callout bij het icoon (C); een echte poort/welkomstscherm
+blijft buiten scope (kost een klik vóór de inhoud, SEO-nadeel).
+
+De stand en de speler zijn daarvoor uit de knop gehaald naar
+`SfeergeluidProvider` (context in `SiteChrome`): knop en tip delen één speler.
+`useSfeergeluid()` geeft buiten de provider een no-op, zodat de globale 404
+zonder chrome niet breekt. Pure functie `tipTonen({ stand, tipGezien })` met test.
+
 ## 5. Buiten scope
 
 Sauna-sfeeropname, meerdere tracks of een volumeregelaar, geluid in het beheerpaneel,
-autoplay-trucs (muted video als opstap).
+autoplay-trucs (muted video als opstap), een welkomstscherm of nep-cookiebanner als klik-poort.
 
 ## 6. Risico's
 

@@ -41,9 +41,10 @@ export default function CookiebeleidPage() {
           <h2 className="font-display text-xl font-semibold text-ink">Voorkeuren in je browser</h2>
           <p className="mt-3">
             Zet je het sfeergeluid aan via de luidsprekerknop in de menubalk, dan onthoudt je browser die keuze in
-            de lokale opslag (<em>localStorage</em>) van deze site. Dat is één instelling, alleen leesbaar door
+            de lokale opslag (<em>localStorage</em>) van deze site; hetzelfde geldt voor het eenmalige tipje over het
+            sfeergeluid, zodat je dat maar één keer ziet. Dat zijn twee instellingen, alleen leesbaar door
             opgietingen.nl, zonder identificatie en zonder dat wij die ontvangen. Zet je het geluid uit, dan wordt de
-            voorkeur overschreven; je kunt hem ook zelf wissen via de site-instellingen van je browser.
+            voorkeur overschreven; je kunt ze ook zelf wissen via de site-instellingen van je browser.
           </p>
         </section>
 
