@@ -14,10 +14,10 @@ autoplay. De site is SEO-first: er mag niets geladen worden vóór die tik.
 
 | Vraag | Besluit | Waarom |
 |---|---|---|
-| Geluid | Dezelfde track als de social-video's (`background-music.mp3`), in een loop | Eén herkenbaar geluid over site en social; Nathaniels keuze boven een sauna-sfeeropname. |
+| Geluid | Eerst dezelfde track als de social-video's; sinds 2026-09-30 (zelfde dag) de Mixkit-track Valley Sunset | De social-track (Ocean Dream Meditation) blijkt een betaalde licentie te vereisen die nog niet gekocht is; Nathaniel koos: op social voorlopig houden, van de site af. Valley Sunset is gelicentieerd (Mixkit Stock Music Free License). |
 | Plaatsing | Luidspreker-icoon in de header, links van het menu-icoon, alle publieke pagina's | Rustig, altijd bereikbaar, past bij de kale header (mockup A gekozen boven zwevende knop en hero-knop). |
 | Standaard | Uit; keuze onthouden in `localStorage` | Autoplay is niet mogelijk en muziek die ongevraagd start stoort. |
-| Bestand | `public/audio/sfeergeluid.mp3`, byte-gelijke kopie van de social-track (al MP3 128 kb/s, 3,1 MB) | Hercoderen op dezelfde bitrate kost alleen kwaliteit; pas geladen na de tik (`preload="none"`), dus geen effect op LCP/CWV. |
+| Bestand | `public/audio/sfeergeluid.mp3` = Valley Sunset (MP3 256 kb/s, 4,1 MB), sha256 bewaakt door de test | Pas geladen na de tik (`preload="none"`), dus geen effect op LCP/CWV. |
 | Volume/fades | 35 %, fade-in 2 s, fade-out 0,8 s, via Web Audio `GainNode` | iOS negeert `HTMLMediaElement.volume`; een GainNode werkt overal. Terugval op `volume` als `AudioContext` ontbreekt. |
 | Doorlopen | De knop leeft in `SiteHeader` (client-component in de (site)-layout) | Blijft gemonteerd bij client-navigatie, dus de muziek loopt door. Bij een volledige herlaad met "aan": start proberen; blokkeert de browser, dan bij de eerste tik/toets. |
 | Beweging | Twee statische iconen (uit: streep, aan: golfjes), geen animatie | Regel: alleen de hero-stoom beweegt. |
@@ -41,7 +41,7 @@ autoplay. De site is SEO-first: er mag niets geladen worden vóór die tik.
   Props: `overlay` (zelfde kleurlogica als de menuknop).
 - `src/components/SiteHeader.tsx`: de knop in de `<nav>` vóór de menuknop,
   zichtbaar op alle breedtes.
-- `public/audio/sfeergeluid.mp3`: kopie van `assets/social/muziek/background-music.mp3` (test bewaakt dat beide gelijk zijn).
+- `public/audio/sfeergeluid.mp3`: Mixkit-track Valley Sunset (licentie in `assets/social/muziek/LICENTIE.md`; test bewaakt de sha256).
 - `assets/social/muziek/LICENTIE.md`: vermelding van de sitekopie en de bron
   (YouTube, "no copyright music"; titel en video-URL nog aan te leveren).
 
@@ -49,7 +49,7 @@ autoplay. De site is SEO-first: er mag niets geladen worden vóór die tik.
 
 `scripts/lib/sfeergeluid.test.ts`: `leesStand` (`"aan"` → aan; `"uit"`, `null`,
 `undefined`, onzin → uit), `wissel`, en een bestandscheck: `public/audio/sfeergeluid.mp3`
-is byte-gelijk aan de social-track (sha256), zodat site en video's niet uit elkaar lopen.
+heeft de sha256 van Valley Sunset, zodat niemand ongemerkt een ongelicentieerde track op de site zet.
 
 ## 4a. Eenmalig tipje (aanvulling 2026-09-30, mockup B gekozen)
 

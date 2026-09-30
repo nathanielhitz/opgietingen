@@ -1,30 +1,32 @@
-# Achtergrondtrack social-video's
+# Muziek: licenties
 
-Eén track (sinds 2026-09-30); `trackVoorDatum` in `scripts/lib/video.ts` rouleert per
-ISO-week zodra er meer tracks in `TRACKS` staan, alle posts van dezelfde week krijgen
-dezelfde track.
+## Social-video's: `background-music.mp3`
 
-| Bestand | Titel | Artiest | Duur | Bron | Licentie |
-|---|---|---|---|---|---|
-| `background-music.mp3` | Background music (bestandsnaam; titel onbekend) | onbekend | 3:16 | YouTube, kanaal/afspeellijst "no copyright music" (volgens Nathaniel, 2026-09-30); video-URL nog aan te leveren | rechtenvrij volgens de uploader; titel, artiest, video-URL en exacte voorwaarden (vaak: naamsvermelding verplicht) nog niet vastgelegd |
+| Veld | Waarde |
+|---|---|
+| Titel | Ocean Dream Meditation |
+| Uitgever / kanaal | Healing Meditation Music — <https://www.youtube.com/@HealingMeditationMusic> |
+| Bron | <https://www.youtube.com/watch?v=1shZObJdO64> ("Royalty Free Meditation Music \| Relaxing Music Ocean Waves Nature Sounds & Calm Piano", 2020-06-04); het bestand is een fragment van 3:16 |
+| Licentie | **Betaalde licentie vereist.** De videobeschrijving: "License this track here: <https://royaltyfreemeditationmusiclibrary.com/b/ocean-dream-meditation>" en "royalty free" = één keer betalen, daarna geen royalty's. |
+| Status | **Nog niet gekocht** (stand 2026-09-30). Nathaniel besloot op 2026-09-30 de track voorlopig in de social-video's te houden en van de website te halen. Koop de licentie via de link hierboven en zet het bewijs (ordernummer, datum, licentietekst) hier neer, of vervang de track door een Mixkit-track (zie Historie). |
 
-## Gebruik op de website
+Risico zolang de licentie ontbreekt: een claim via Meta Rights Manager of TikTok (gedempte
+of geblokkeerde post) en een inbreukclaim van de uitgever.
 
-Dezelfde track staat byte-gelijk als `public/audio/sfeergeluid.mp3` op de site (sfeergeluid-knop in de header, spec `docs/superpowers/specs/2026-09-30-sfeergeluid-website-design.md`); een test bewaakt dat beide bestanden gelijk blijven. Vervang je de track, vervang dan beide.
+## Website: `public/audio/sfeergeluid.mp3`
 
-## Openstaand
-
-Nathaniel gaf op 2026-09-30 aan dat de track van YouTube ("no copyright music") komt. Wat nog
-ontbreekt: titel, artiest en de video-URL met de licentietekst (spec §9). Let op: veel van die
-tracks eisen naamsvermelding in de beschrijving; dat geldt dan ook voor de website. Vul dat in zodra
-het bekend is, zodat een claim via Rights Manager (Facebook/Instagram) of TikTok
-direct te weerleggen is met de bron.
+| Veld | Waarde |
+|---|---|
+| Titel | Valley Sunset |
+| Artiest | Alejandro Magaña (A. M.) |
+| Bron | Mixkit, <https://assets.mixkit.co/music/127/127.mp3> via <https://mixkit.co/free-stock-music/mood/calm/> |
+| Licentie | Mixkit Stock Music Free License — <https://mixkit.co/license/#musicFree>: persoonlijk en commercieel gebruik incl. websites en social, geen naamsvermelding; niet los herverdelen, niet op cd/dvd/games/uitzending, niet in een claimsysteem registreren. |
+| Status | Gelicentieerd; sinds 2026-09-30 de sfeergeluid-track van de site (knop in de header). `scripts/lib/sfeergeluid.test.ts` bewaakt de sha256 van dit bestand. |
 
 ## Historie
 
-Tot 2026-09-30 stonden hier drie tracks van Mixkit onder de Mixkit Stock Music Free
-License (<https://mixkit.co/license/#musicFree>): Valley Sunset en Forest Mist Whispers
-(Alejandro Magaña) en Serene View (Arulo). Ze staan nog in de git-historie
-(commit 1dc5902) en zijn eenvoudig terug te zetten als tweede/derde track in `TRACKS`.
+- 2026-09-24 t/m 2026-09-30: drie Mixkit-tracks in de social-video's (Valley Sunset, Serene View, Forest Mist Whispers; commit 1dc5902, allemaal Stock Music Free License). Eenvoudig terug te zetten in `TRACKS` (`scripts/lib/video.ts`).
+- 2026-09-30: eigen track (Ocean Dream Meditation) in de social-video's; website kortstondig dezelfde track, daarna Valley Sunset.
 
-Spec: `docs/superpowers/specs/2026-09-24-social-video-met-muziek-design.md` §9.
+Spec: `docs/superpowers/specs/2026-09-24-social-video-met-muziek-design.md` §9 en
+`docs/superpowers/specs/2026-09-30-sfeergeluid-website-design.md`.
