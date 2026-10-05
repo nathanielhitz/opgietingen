@@ -103,6 +103,60 @@
       "aangemaakt": "2026-09-30T19:23:25.829Z",
       "run": "lokaal",
       "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-02/weekend-2026-W40.mp4"
+    },
+    {
+      "post": "nieuw-2026-W41",
+      "kanaal": "facebook",
+      "bufferId": "6ac3cdeac9864b5b32e01b4c",
+      "dueAt": "2026-10-05T16:33:00.000Z",
+      "aangemaakt": "2026-10-05T16:18:50.563Z",
+      "run": "37339648150",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-05/nieuw-2026-W41.mp4"
+    },
+    {
+      "post": "nieuw-2026-W41",
+      "kanaal": "tiktok",
+      "bufferId": "6ac3cdebe88ece22d38a9b2d",
+      "dueAt": "2026-10-05T16:33:00.000Z",
+      "aangemaakt": "2026-10-05T16:18:51.842Z",
+      "run": "37339648150",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-05/nieuw-2026-W41.mp4"
+    },
+    {
+      "post": "uitgelicht-sauna-swoll-menthol-opgiet-2026-10-14",
+      "kanaal": "facebook",
+      "bufferId": "6ac3cdf4fc460c0e7181f574",
+      "dueAt": "2026-10-07T17:00:00.000Z",
+      "aangemaakt": "2026-10-05T16:19:00.886Z",
+      "run": "37339648150",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-07/uitgelicht-sauna-swoll-menthol-opgiet-2026-10-14.mp4"
+    },
+    {
+      "post": "uitgelicht-sauna-swoll-menthol-opgiet-2026-10-14",
+      "kanaal": "tiktok",
+      "bufferId": "6ac3cdf5d394a1ebb7ba4fae",
+      "dueAt": "2026-10-07T17:00:00.000Z",
+      "aangemaakt": "2026-10-05T16:19:02.068Z",
+      "run": "37339648150",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-07/uitgelicht-sauna-swoll-menthol-opgiet-2026-10-14.mp4"
+    },
+    {
+      "post": "weekend-2026-W41",
+      "kanaal": "facebook",
+      "bufferId": "6ac3ce11bc3ee1787678c9f9",
+      "dueAt": "2026-10-09T10:00:00.000Z",
+      "aangemaakt": "2026-10-05T16:19:29.170Z",
+      "run": "37339648150",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-09/weekend-2026-W41.mp4"
+    },
+    {
+      "post": "weekend-2026-W41",
+      "kanaal": "tiktok",
+      "bufferId": "6ac3ce1204f79165c6d01623",
+      "dueAt": "2026-10-09T10:00:00.000Z",
+      "aangemaakt": "2026-10-05T16:19:30.263Z",
+      "run": "37339648150",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-09/weekend-2026-W41.mp4"
     }
   ]
 }
