@@ -37,10 +37,22 @@ test("facebook: echte URL met UTM, drie hashtags, geen @handles", () => {
   assert.ok(!c.includes("@thermenbussloo"));
 });
 
-test("tiktok: vijf hashtags en link-in-bio", () => {
+test("tiktok: kern-, type-, plaats- én saunatags (zoektermen), link-in-bio", () => {
   const c = bouwCaption(weekend, "tiktok");
-  assert.match(c, /#opgieting #opgietingen #aufguss #sauna #saunaliefhebbers$/);
+  assert.match(c, /#opgieting #opgietingen #aufguss #sauna #saunaliefhebbers #wellness #themaopgieting #opgietweekend #voorst #hierden #thermenbussloo #zwaluwhoeve$/);
   assert.match(c, /link in bio/);
+  assert.ok(!c.includes("@thermenbussloo"), "geen Instagram-handles op TikTok");
+});
+
+test("hashtags: tiktok maximaal 15, saunanamen alleen op tiktok", () => {
+  const veel = Array.from({ length: 8 }, (_, i) =>
+    maakEvent({ slug: `e${i}`, startDatum: "2026-09-12", type: "opgietweekend", sauna: { ...sauna, naam: `Sauna ${i}`, plaats: `Plaats ${i}` } }),
+  );
+  const post = bouwPosts(veel, DATUM).find((p) => p.rubriek === "weekend")!;
+  const tt = hashtags(post, "tiktok");
+  assert.ok(tt.length <= 15, `${tt.length}`);
+  assert.ok(tt.includes("sauna0") && tt.includes("plaats0"));
+  assert.ok(!hashtags(post, "instagram").includes("sauna0"));
 });
 
 test("uitgelicht: detailregels met tijden en prijs, facebook linkt naar het event", () => {

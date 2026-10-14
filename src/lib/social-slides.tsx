@@ -2,6 +2,7 @@
 import type { ReactNode } from "react";
 import type { OpgietEvent } from "@/lib/content";
 import type { Formaat } from "@/lib/social";
+import type { GidsPunt, PlanningGids } from "@/lib/social-gids";
 import { FORMATEN, HOUT_GRADIENT, KLEUR, OMSLAG, PROFIEL, STORY_VEILIG } from "@/lib/social-stijl";
 import { formatDagCompact, formatDateRange } from "@/lib/dates";
 import { EVENT_TYPES, site } from "@/lib/site";
@@ -255,6 +256,38 @@ export function EventSlide({
       <div style={{ display: "flex", marginTop: 26, fontSize: 38, fontWeight: 500 }}>{`${event.sauna.naam} · ${event.sauna.plaats}`}</div>
       <div style={{ display: "flex", marginTop: 12, fontSize: 34, color: KLEUR.emberSoft }}>{wanneer}</div>
       {event.prijsIndicatie ? <div style={{ display: "flex", marginTop: 10, fontSize: 30, color: "#f7f2eacc" }}>{event.prijsIndicatie}</div> : null}
+    </Canvas>
+  );
+}
+
+/** Cover van een gidspost: titel en samenvatting op het beeld van de gids. */
+export function GidsCoverSlide({ formaat, beeld, gids }: { formaat: Formaat; beeld?: string; gids: Pick<PlanningGids, "titel" | "samenvatting"> }) {
+  const titel = afkap(gids.titel, 90);
+  return (
+    <Canvas formaat={formaat} beeld={beeld} sluier={SLUIER_PROGRAMMA} onderExtra={24}>
+      <Badge tekst="Saunagids" />
+      <div style={{ display: "block", marginTop: 30, fontFamily: KOP, fontWeight: 600, fontSize: titel.length > 40 ? 64 : 78, lineHeight: 1.1, lineClamp: 3, wordBreak: "break-word" }}>
+        {titel}
+      </div>
+      <div style={{ display: "block", marginTop: 26, fontSize: 34, lineHeight: 1.35, color: "#f7f2eadd", lineClamp: formaat === "story" ? 5 : 4 }}>
+        {afkap(gids.samenvatting, 220)}
+      </div>
+    </Canvas>
+  );
+}
+
+/** Eén kernpunt van een gids: teller, kop en één of twee zinnen; zelfde beeld als de cover zodat de video één geheel blijft. */
+export function GidsPuntSlide({ formaat, beeld, punt, nummer, totaal }: { formaat: Formaat; beeld?: string; punt: GidsPunt; nummer: number; totaal: number }) {
+  const kop = afkap(punt.kop, 60);
+  return (
+    <Canvas formaat={formaat} beeld={beeld} sluier={SLUIER_PROGRAMMA} onderExtra={24}>
+      <Badge tekst={`${nummer} van ${totaal}`} />
+      <div style={{ display: "block", marginTop: 30, fontFamily: KOP, fontWeight: 600, fontSize: kop.length > 30 ? 64 : 78, lineHeight: 1.1, lineClamp: 3, wordBreak: "break-word" }}>
+        {kop}
+      </div>
+      <div style={{ display: "block", marginTop: 26, fontSize: 36, lineHeight: 1.35, color: "#f7f2eadd", lineClamp: formaat === "story" ? 6 : 5 }}>
+        {punt.tekst}
+      </div>
     </Canvas>
   );
 }

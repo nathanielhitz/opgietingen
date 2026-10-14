@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { getAllEvents } from "@/lib/content";
+import { getAllEvents, getAllGidsen } from "@/lib/content";
 import { todayISO } from "@/lib/dates";
 import { planningAntwoord } from "@/lib/social-planning";
 
@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
     datumParam: request.nextUrl.searchParams.get("datum"),
     origin: request.nextUrl.origin,
     events: getAllEvents(),
+    gidsen: getAllGidsen(),
     vandaag: todayISO(),
     vercelEnv: process.env.VERCEL_ENV,
     // Lege string (deploy zonder git-koppeling) telt als onbekend, anders wacht de adapter op een hash die nooit komt.

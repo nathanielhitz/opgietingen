@@ -43,7 +43,7 @@ function maakPost(o: Partial<PlanningPost> & { id: string; rubriek: PlanningPost
 const NU = new Date("2026-09-28T07:31:00.000Z");
 
 test("PLAATSINGSTIJD: vaste NL-tijden per rubriek", () => {
-  assert.deepEqual(PLAATSINGSTIJD, { nieuw: "17:00", uitgelicht: "19:00", weekend: "12:00", maand: "10:00" });
+  assert.deepEqual(PLAATSINGSTIJD, { nieuw: "17:00", uitgelicht: "19:00", weekend: "12:00", maand: "10:00", gids: "19:00" });
 });
 
 test("dueAtVoor: plaatsingsdag + rubriektijd in NL-tijd, als UTC", () => {
