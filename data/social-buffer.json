@@ -211,6 +211,24 @@
       "aangemaakt": "2026-10-12T16:55:38.042Z",
       "run": "38280532825",
       "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-16/weekend-2026-W42.mp4"
+    },
+    {
+      "post": "gids-2026-W42",
+      "kanaal": "facebook",
+      "bufferId": "6acfe45deab29caa1e5e68e2",
+      "dueAt": "2026-10-18T17:00:00.000Z",
+      "aangemaakt": "2026-10-14T20:21:49.557Z",
+      "run": "38631186754",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-18/gids-2026-W42.mp4"
+    },
+    {
+      "post": "gids-2026-W42",
+      "kanaal": "tiktok",
+      "bufferId": "6acfe45e3166073688d4a677",
+      "dueAt": "2026-10-18T17:00:00.000Z",
+      "aangemaakt": "2026-10-14T20:21:50.791Z",
+      "run": "38631186754",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-18/gids-2026-W42.mp4"
     }
   ]
 }
