@@ -18,6 +18,16 @@ export const LIMIET: Record<Kanaal, number> = { instagram: 2200, facebook: Numbe
 const KERN = ["opgieting", "opgietingen", "aufguss", "sauna", "saunaliefhebbers", "wellness"];
 /** Facebook krijgt bewust maar drie, kernachtige tags (geen meervoudsdubbel met "opgieting"). */
 const KERN_FACEBOOK = ["opgieting", "aufguss", "sauna"];
+/** Evergreen gidsposts: geen plaatsen of types, wel de zoektermen van beginners. */
+const GIDS_TAGS = ["saunatips", "saunagids"];
+/**
+ * Maximum per kanaal. TikTok is een zoekmachine: daar mogen de plaats- en
+ * saunanamen erbij (ruimte zat, 4000 tekens); Instagram kapt bij 12 omdat
+ * langere tagreeksen daar als spam gelden.
+ */
+const MAX_TAGS: Record<Kanaal, number> = { instagram: 12, tiktok: 15, facebook: 3 };
+/** Hoeveel plaats- resp. saunanamen als hashtag meegaan. */
+const MAX_NAAM_TAGS = 3;
 const TYPE_TAGS: Partial<Record<EventType, string>> = {
   opgietweekend: "opgietweekend",
   kampioenschap: "aufgusskampioenschap",
@@ -44,6 +54,11 @@ function spreiding(post: SocialPost): string {
 
 function maandNaam(post: SocialPost): string {
   return MONTHS_NL[parseISO(post.periode.van).getUTCMonth()];
+}
+
+/** Sluit af met een punt, tenzij de tekst al op een leesteken eindigt ("…welke kies je?"). */
+function zin(s: string): string {
+  return /[.!?…]$/.test(s) ? s : `${s}.`;
 }
 
 function hoofdletter(s: string): string {
@@ -83,6 +98,11 @@ const OPENINGEN: Record<SocialPost["rubriek"], ((p: SocialPost) => string)[]> = 
     (p) => `Alvast in je agenda: ${p.events[0].titel}, ${dagLabel(p.events[0])} bij ${p.events[0].sauna}.`,
     (p) => `Over ${wekenTekst(dagenTussen(p.plaatsingsdag, p.events[0].startDatum))}: ${p.events[0].titel} bij ${p.events[0].sauna}.`,
   ],
+  gids: [
+    (p) => zin(`Saunagids: ${p.gids?.titel ?? p.titel}`),
+    (p) => p.gids?.samenvatting || zin(`Saunagids: ${p.titel}`),
+    (p) => zin(`Goed om te weten voor je volgende opgieting: ${p.gids?.titel ?? p.titel}`),
+  ],
 };
 
 function escapeRegExp(s: string): string {
@@ -103,6 +123,11 @@ function eventRegel(e: PlanningEvent, kanaal: Kanaal): string {
   return `📅 ${dagLabel(e)} · ${titel} · ${saunaLabel(sauna, plaats)}${tag}`;
 }
 
+/** De kernpunten van een gids als genummerde regels (zelfde volgorde als de slides). */
+function puntRegels(post: SocialPost): string[] {
+  return (post.gids?.punten ?? []).map((p, i) => `${i + 1}. ${p.kop}`);
+}
+
 function detailRegels(e: PlanningEvent): string[] {
   return [
     ...(e.tijden ? [`Tijden: ${normalizeRangeDashes(e.tijden)}`] : []),
@@ -121,23 +146,45 @@ export function doelPad(post: SocialPost): string {
       return `/event/${post.events[0].slug}`;
     case "nieuw":
       return "/agenda";
+    case "gids":
+      return post.gids ? `/gids/${post.gids.slug}` : "/gids";
+  }
+}
+
+function oproepTekst(post: SocialPost): string {
+  switch (post.rubriek) {
+    case "uitgelicht":
+      return "Meer info en tickets";
+    case "gids":
+      return "De hele gids";
+    default:
+      return "Volledige agenda";
   }
 }
 
 function oproep(post: SocialPost, kanaal: Kanaal): string {
-  if (kanaal !== "facebook") {
-    return post.rubriek === "uitgelicht" ? "Meer info en tickets via de link in bio." : "Volledige agenda via de link in bio.";
-  }
+  if (kanaal !== "facebook") return `${oproepTekst(post)} via de link in bio.`;
   const url = utmUrl(new URL(doelPad(post), site.url).toString(), { source: "facebook", medium: "social", campaign: post.id });
-  return post.rubriek === "uitgelicht" ? `Meer info en tickets: ${url}` : `Volledige agenda: ${url}`;
+  return `${oproepTekst(post)}: ${url}`;
 }
 
+/** Hashtag-vorm van een naam: "Sint-Michielsgestel" → "sintmichielsgestel". */
+function naamTag(naam: string): string {
+  return slugify(naam).replace(/-/g, "");
+}
+
+/**
+ * Kern + eventtype + plaatsnamen; op TikTok ook de saunanamen (daar wordt op
+ * gezocht). Gidsposts krijgen de kern plus de gidstags. Facebook altijd drie.
+ */
 export function hashtags(post: SocialPost, kanaal: Kanaal): string[] {
   if (kanaal === "facebook") return [...KERN_FACEBOOK];
-  if (kanaal === "tiktok") return KERN.slice(0, 5);
+  if (post.rubriek === "gids") return uniek([...KERN, ...GIDS_TAGS]).slice(0, MAX_TAGS[kanaal]);
+  const zichtbaar = post.events.slice(0, MAX_EVENT_SLIDES);
   const types = uniek(post.events.map((e) => TYPE_TAGS[e.type]).filter((t): t is string => Boolean(t)));
-  const plaatsen = uniek(post.events.slice(0, MAX_EVENT_SLIDES).map((e) => slugify(e.plaats).replace(/-/g, ""))).slice(0, 3);
-  return uniek([...KERN, ...types, ...plaatsen]).slice(0, 12);
+  const plaatsen = uniek(zichtbaar.map((e) => naamTag(e.plaats))).slice(0, MAX_NAAM_TAGS);
+  const saunas = kanaal === "tiktok" ? uniek(zichtbaar.map((e) => naamTag(e.sauna))).slice(0, MAX_NAAM_TAGS) : [];
+  return uniek([...KERN, ...types, ...plaatsen, ...saunas]).slice(0, MAX_TAGS[kanaal]);
 }
 
 /**
@@ -149,7 +196,7 @@ export function bouwCaption(post: SocialPost, kanaal: Kanaal): string {
   const varianten = OPENINGEN[post.rubriek];
   const variantIndex = (weekNummer(post.plaatsingsdag) + post.rang - 1) % varianten.length;
   const opening = normalizeProseDashes(varianten[variantIndex](post));
-  const regels = post.events.map((e) => eventRegel(e, kanaal));
+  const regels = post.rubriek === "gids" ? puntRegels(post) : post.events.map((e) => eventRegel(e, kanaal));
   const extra = post.rubriek === "uitgelicht" ? detailRegels(post.events[0]) : [];
   const slot = oproep(post, kanaal);
   const tags = hashtags(post, kanaal).map((t) => `#${t}`).join(" ");

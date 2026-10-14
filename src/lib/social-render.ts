@@ -81,3 +81,11 @@ export const COVER_FALLBACK = "/images/hero/hero-mobiel.jpg";
 export async function coverBeeld(oorsprong: string, pad: string): Promise<string | undefined> {
   return (await beeldUrlAlsAanwezig(oorsprong, pad)) ?? (await beeldUrlAlsAanwezig(oorsprong, COVER_FALLBACK));
 }
+
+/** Rubriekbeeld van de gidsposts, voor gidsen zonder eigen beeld; ontbreekt het, dan de homepage-hero via coverBeeld. */
+export const GIDS_SFEERBEELD = "/images/social/gids.jpg";
+
+/** Beeld voor de slides van een gids: de eigen gidsafbeelding, anders dezelfde terugval als de covers. */
+export async function gidsBeeld(oorsprong: string, afbeelding: string | undefined): Promise<string | undefined> {
+  return (await beeldUrlAlsAanwezig(oorsprong, afbeelding)) ?? (await coverBeeld(oorsprong, GIDS_SFEERBEELD));
+}

@@ -1,4 +1,5 @@
-import type { OpgietEvent } from "@/lib/content";
+import type { Gids, OpgietEvent } from "@/lib/content";
+import { kiesGids, naarPlanningGids, type PlanningGids } from "@/lib/social-gids";
 import type { EventType } from "@/lib/site";
 import {
   addDaysISO,
@@ -19,9 +20,11 @@ import {
   plandag); vanuit maandag (latere Buffer-adapter) komt hetzelfde weekend.
   Een referentie ná vrijdag (za/zo) houdt bewust het hele vr–zo-bereik,
   inclusief al gepasseerde dagen: de post heet 'Dit weekend'.
+  De rubriek Saunagids (zondag) hangt niet aan events maar aan de gidsen
+  (src/lib/social-gids.ts): evergreen, elke week één artikel.
 */
 
-export type Rubriek = "weekend" | "uitgelicht" | "maand" | "nieuw";
+export type Rubriek = "weekend" | "uitgelicht" | "maand" | "nieuw" | "gids";
 export type Kanaal = "instagram" | "facebook" | "tiktok";
 export type Formaat = "feed" | "story";
 
@@ -46,8 +49,10 @@ export interface PlanningEvent {
   instagram?: string;
 }
 
+export type SlideRol = "cover" | "event" | "punt" | "afsluiter";
+
 export interface Slide {
-  rol: "cover" | "event" | "afsluiter";
+  rol: SlideRol;
   eventSlug?: string;
   /** Pad zonder `?formaat=`; de planning maakt er feed- en story-URL's van. */
   pad: string;
@@ -63,7 +68,10 @@ export interface SocialPost {
   plaatsingsdag: string;
   /** Bereik waar de post over gaat (weekend, maand, nieuw-venster of eventdatum). */
   periode: { van: string; tot: string };
+  /** Leeg bij de rubriek gids. */
   events: PlanningEvent[];
+  /** Alleen bij de rubriek gids. */
+  gids?: PlanningGids;
   slides: Slide[];
 }
 
@@ -159,10 +167,31 @@ export function maandBereik(maandSlug: string): { van: string; tot: string } | n
 }
 
 /** Alle posts voor een referentiedatum, gesorteerd op plaatsingsdag en rang. Lege rubrieken vallen weg. */
-export function bouwPosts(events: OpgietEvent[], datum: string): SocialPost[] {
+export function bouwPosts(events: OpgietEvent[], datum: string, gidsen: Gids[] = []): SocialPost[] {
   const posts: SocialPost[] = [];
 
   const week = isoWeek(datum);
+  const gids = kiesGids(gidsen, weekNummer(datum));
+  if (gids) {
+    const planningGids = naarPlanningGids(gids);
+    // Zondag van dezelfde ISO-week (vanaf ma, vr of zo zelf); zondagavond is de rustigste dag van het rooster.
+    const zondag = volgendeWeekdag(datum, 0);
+    posts.push({
+      id: `gids-${week}`,
+      rubriek: "gids",
+      rang: 1,
+      titel: `Saunagids: ${planningGids.titel}`,
+      plaatsingsdag: zondag,
+      periode: { van: zondag, tot: zondag },
+      events: [],
+      gids: planningGids,
+      slides: [
+        { rol: "cover", pad: `/social/gids/${gids.slug}` },
+        ...planningGids.punten.map((_, i) => ({ rol: "punt" as const, pad: `/social/gids/${gids.slug}/${i + 1}` })),
+        { rol: "afsluiter", pad: "/social/afsluiter" },
+      ],
+    });
+  }
   const weekend = weekendVanIsoWeek(week);
   const we = weekend ? filterWeekend(events, weekend) : [];
   if (weekend && we.length > 0) {

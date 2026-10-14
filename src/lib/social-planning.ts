@@ -1,7 +1,8 @@
-import type { OpgietEvent } from "@/lib/content";
+import type { Gids, OpgietEvent } from "@/lib/content";
 import { isGeldigeIsoDatum } from "@/lib/dates";
 import { site } from "@/lib/site";
-import { bouwPosts, type Kanaal, type PlanningEvent, type Rubriek } from "@/lib/social";
+import { bouwPosts, type Kanaal, type PlanningEvent, type Rubriek, type SlideRol } from "@/lib/social";
+import type { PlanningGids } from "@/lib/social-gids";
 import { bouwCaption } from "@/lib/social-captions";
 
 /*
@@ -11,7 +12,7 @@ import { bouwCaption } from "@/lib/social-captions";
 */
 
 export interface PlanningSlide {
-  rol: "cover" | "event" | "afsluiter";
+  rol: SlideRol;
   eventSlug?: string;
   feed: string;
   story: string;
@@ -24,7 +25,10 @@ export interface PlanningPost {
   titel: string;
   plaatsingsdag: string;
   periode: { van: string; tot: string };
+  /** Leeg bij de rubriek gids. */
   events: PlanningEvent[];
+  /** Alleen bij de rubriek gids (sinds 2026-10; oudere consumenten negeren het veld). */
+  gids?: PlanningGids;
   slides: PlanningSlide[];
   captions: Record<Kanaal, string>;
 }
@@ -41,9 +45,9 @@ export interface PlanningJson {
   posts: PlanningPost[];
 }
 
-export function bouwPlanning(events: OpgietEvent[], datum: string, basis: string, commit: string | null = null): PlanningJson {
+export function bouwPlanning(events: OpgietEvent[], datum: string, basis: string, commit: string | null = null, gidsen: Gids[] = []): PlanningJson {
   const oorsprong = basis.replace(/\/$/, "");
-  const posts = bouwPosts(events, datum).map((post) => {
+  const posts = bouwPosts(events, datum, gidsen).map((post) => {
     // Record<Kanaal, string> dwingt af dat elk kanaal een caption krijgt (compile-time check).
     const captions: Record<Kanaal, string> = {
       instagram: bouwCaption(post, "instagram"),
@@ -58,6 +62,7 @@ export function bouwPlanning(events: OpgietEvent[], datum: string, basis: string
       plaatsingsdag: post.plaatsingsdag,
       periode: post.periode,
       events: post.events,
+      ...(post.gids ? { gids: post.gids } : {}),
       slides: post.slides.map((s) => ({
         rol: s.rol,
         ...(s.eventSlug ? { eventSlug: s.eventSlug } : {}),
@@ -86,6 +91,7 @@ export function planningAntwoord(opties: {
   datumParam: string | null;
   origin: string;
   events: OpgietEvent[];
+  gidsen?: Gids[];
   vandaag: string;
   vercelEnv?: string;
   /** VERCEL_GIT_COMMIT_SHA van de draaiende deploy; lokaal weglaten. */
@@ -97,5 +103,5 @@ export function planningAntwoord(opties: {
     return { status: 400, body: { fout: `Ongeldige datum "${datum}", verwacht YYYY-MM-DD` }, headers };
   }
   const basis = opties.vercelEnv === "production" ? site.url : opties.origin;
-  return { status: 200, body: bouwPlanning(opties.events, datum, basis, opties.commit ?? null), headers };
+  return { status: 200, body: bouwPlanning(opties.events, datum, basis, opties.commit ?? null, opties.gidsen ?? []), headers };
 }

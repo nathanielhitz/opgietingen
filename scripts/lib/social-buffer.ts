@@ -16,6 +16,7 @@ export const PLAATSINGSTIJD: Record<Rubriek, string> = {
   uitgelicht: "19:00",
   weekend: "12:00",
   maand: "10:00",
+  gids: "19:00",
 };
 
 /** Hoeveel later dan "nu" een al verstreken tijdstip wordt gezet. */
