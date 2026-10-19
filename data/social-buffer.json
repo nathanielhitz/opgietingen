@@ -229,6 +229,60 @@
       "aangemaakt": "2026-10-14T20:21:50.791Z",
       "run": "38631186754",
       "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-18/gids-2026-W42.mp4"
+    },
+    {
+      "post": "uitgelicht-opgietweekend-herfstgloed-bussloo",
+      "kanaal": "facebook",
+      "bufferId": "6ad62e8df8ab1a7963276bb8",
+      "dueAt": "2026-10-21T17:00:00.000Z",
+      "aangemaakt": "2026-10-19T14:51:57.802Z",
+      "run": "39272621874",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-21/uitgelicht-opgietweekend-herfstgloed-bussloo.mp4"
+    },
+    {
+      "post": "uitgelicht-opgietweekend-herfstgloed-bussloo",
+      "kanaal": "tiktok",
+      "bufferId": "6ad62e8fa9028f903569e110",
+      "dueAt": "2026-10-21T17:00:00.000Z",
+      "aangemaakt": "2026-10-19T14:51:59.240Z",
+      "run": "39272621874",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-21/uitgelicht-opgietweekend-herfstgloed-bussloo.mp4"
+    },
+    {
+      "post": "weekend-2026-W43",
+      "kanaal": "facebook",
+      "bufferId": "6ad62eb93e5fb9f3ab9a03dd",
+      "dueAt": "2026-10-23T10:00:00.000Z",
+      "aangemaakt": "2026-10-19T14:52:41.817Z",
+      "run": "39272621874",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-23/weekend-2026-W43.mp4"
+    },
+    {
+      "post": "weekend-2026-W43",
+      "kanaal": "tiktok",
+      "bufferId": "6ad62ebbe21b24048f51abbb",
+      "dueAt": "2026-10-23T10:00:00.000Z",
+      "aangemaakt": "2026-10-19T14:52:43.166Z",
+      "run": "39272621874",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-23/weekend-2026-W43.mp4"
+    },
+    {
+      "post": "gids-2026-W43",
+      "kanaal": "facebook",
+      "bufferId": "6ad62ef4e21b24048f51bc7b",
+      "dueAt": "2026-10-25T18:00:00.000Z",
+      "aangemaakt": "2026-10-19T14:53:40.307Z",
+      "run": "39272621874",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-25/gids-2026-W43.mp4"
+    },
+    {
+      "post": "gids-2026-W43",
+      "kanaal": "tiktok",
+      "bufferId": "6ad62ef5f8ab1a7963277da9",
+      "dueAt": "2026-10-25T18:00:00.000Z",
+      "aangemaakt": "2026-10-19T14:53:41.666Z",
+      "run": "39272621874",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-25/gids-2026-W43.mp4"
     }
   ]
 }
