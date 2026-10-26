@@ -283,6 +283,96 @@
       "aangemaakt": "2026-10-19T14:53:41.666Z",
       "run": "39272621874",
       "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-25/gids-2026-W43.mp4"
+    },
+    {
+      "post": "nieuw-2026-W44",
+      "kanaal": "facebook",
+      "bufferId": "6adf639c845924629ecf3b13",
+      "dueAt": "2026-10-26T16:00:00.000Z",
+      "aangemaakt": "2026-10-26T14:28:44.566Z",
+      "run": "40339847839",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-26/nieuw-2026-W44.mp4"
+    },
+    {
+      "post": "nieuw-2026-W44",
+      "kanaal": "tiktok",
+      "bufferId": "6adf639d845924629ecf3bf1",
+      "dueAt": "2026-10-26T16:00:00.000Z",
+      "aangemaakt": "2026-10-26T14:28:45.677Z",
+      "run": "40339847839",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-26/nieuw-2026-W44.mp4"
+    },
+    {
+      "post": "uitgelicht-thermen-maarssen-opgietweekend-viking-2026-11-21",
+      "kanaal": "facebook",
+      "bufferId": "6adf63a88e6c1ef513f08f34",
+      "dueAt": "2026-10-28T18:00:00.000Z",
+      "aangemaakt": "2026-10-26T14:28:56.922Z",
+      "run": "40339847839",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-28/uitgelicht-thermen-maarssen-opgietweekend-viking-2026-11-21.mp4"
+    },
+    {
+      "post": "uitgelicht-thermen-maarssen-opgietweekend-viking-2026-11-21",
+      "kanaal": "tiktok",
+      "bufferId": "6adf63a98e6c1ef513f08f80",
+      "dueAt": "2026-10-28T18:00:00.000Z",
+      "aangemaakt": "2026-10-26T14:28:57.727Z",
+      "run": "40339847839",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-28/uitgelicht-thermen-maarssen-opgietweekend-viking-2026-11-21.mp4"
+    },
+    {
+      "post": "weekend-2026-W44",
+      "kanaal": "facebook",
+      "bufferId": "6adf63d356fbfbb91199919c",
+      "dueAt": "2026-10-30T11:00:00.000Z",
+      "aangemaakt": "2026-10-26T14:29:39.463Z",
+      "run": "40339847839",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-30/weekend-2026-W44.mp4"
+    },
+    {
+      "post": "weekend-2026-W44",
+      "kanaal": "tiktok",
+      "bufferId": "6adf63d4845924629ecf48fb",
+      "dueAt": "2026-10-30T11:00:00.000Z",
+      "aangemaakt": "2026-10-26T14:29:40.678Z",
+      "run": "40339847839",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-10-30/weekend-2026-W44.mp4"
+    },
+    {
+      "post": "gids-2026-W44",
+      "kanaal": "facebook",
+      "bufferId": "6adf640813bbb91ebaf3c5a4",
+      "dueAt": "2026-11-01T18:00:00.000Z",
+      "aangemaakt": "2026-10-26T14:30:32.792Z",
+      "run": "40339847839",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-11-01/gids-2026-W44.mp4"
+    },
+    {
+      "post": "gids-2026-W44",
+      "kanaal": "tiktok",
+      "bufferId": "6adf640a13bbb91ebaf3c6ca",
+      "dueAt": "2026-11-01T18:00:00.000Z",
+      "aangemaakt": "2026-10-26T14:30:34.346Z",
+      "run": "40339847839",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-11-01/gids-2026-W44.mp4"
+    },
+    {
+      "post": "maand-november-2026",
+      "kanaal": "facebook",
+      "bufferId": "6adf644f04950309ed200031",
+      "dueAt": "2026-11-01T09:00:00.000Z",
+      "aangemaakt": "2026-10-26T14:31:43.262Z",
+      "run": "40339847839",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-11-01/maand-november-2026.mp4"
+    },
+    {
+      "post": "maand-november-2026",
+      "kanaal": "tiktok",
+      "bufferId": "6adf6450c19bb19045b1edd0",
+      "dueAt": "2026-11-01T09:00:00.000Z",
+      "aangemaakt": "2026-10-26T14:31:44.659Z",
+      "run": "40339847839",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-11-01/maand-november-2026.mp4"
     }
   ]
 }
