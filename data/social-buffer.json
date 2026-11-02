@@ -373,6 +373,78 @@
       "aangemaakt": "2026-10-26T14:31:44.659Z",
       "run": "40339847839",
       "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-11-01/maand-november-2026.mp4"
+    },
+    {
+      "post": "nieuw-2026-W45",
+      "kanaal": "facebook",
+      "bufferId": "6ae8c662dd69ed08c74c50a3",
+      "dueAt": "2026-11-02T17:35:00.000Z",
+      "aangemaakt": "2026-11-02T17:20:34.841Z",
+      "run": "41489994541",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-11-02/nieuw-2026-W45.mp4"
+    },
+    {
+      "post": "nieuw-2026-W45",
+      "kanaal": "tiktok",
+      "bufferId": "6ae8c663948a9655f41af623",
+      "dueAt": "2026-11-02T17:35:00.000Z",
+      "aangemaakt": "2026-11-02T17:20:36.075Z",
+      "run": "41489994541",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-11-02/nieuw-2026-W45.mp4"
+    },
+    {
+      "post": "uitgelicht-opgietweekend-2026-11-28",
+      "kanaal": "facebook",
+      "bufferId": "6ae8c66e16eeb393286d324a",
+      "dueAt": "2026-11-04T18:00:00.000Z",
+      "aangemaakt": "2026-11-02T17:20:47.024Z",
+      "run": "41489994541",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-11-04/uitgelicht-opgietweekend-2026-11-28.mp4"
+    },
+    {
+      "post": "uitgelicht-opgietweekend-2026-11-28",
+      "kanaal": "tiktok",
+      "bufferId": "6ae8c670559f13a14d67f8e7",
+      "dueAt": "2026-11-04T18:00:00.000Z",
+      "aangemaakt": "2026-11-02T17:20:49.015Z",
+      "run": "41489994541",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-11-04/uitgelicht-opgietweekend-2026-11-28.mp4"
+    },
+    {
+      "post": "weekend-2026-W45",
+      "kanaal": "facebook",
+      "bufferId": "6ae8c68a948a9655f41b0f65",
+      "dueAt": "2026-11-06T11:00:00.000Z",
+      "aangemaakt": "2026-11-02T17:21:14.432Z",
+      "run": "41489994541",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-11-06/weekend-2026-W45.mp4"
+    },
+    {
+      "post": "weekend-2026-W45",
+      "kanaal": "tiktok",
+      "bufferId": "6ae8c68bf7f868563fec8384",
+      "dueAt": "2026-11-06T11:00:00.000Z",
+      "aangemaakt": "2026-11-02T17:21:15.836Z",
+      "run": "41489994541",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-11-06/weekend-2026-W45.mp4"
+    },
+    {
+      "post": "gids-2026-W45",
+      "kanaal": "facebook",
+      "bufferId": "6ae8c6b416eeb393286d4838",
+      "dueAt": "2026-11-08T18:00:00.000Z",
+      "aangemaakt": "2026-11-02T17:21:56.194Z",
+      "run": "41489994541",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-11-08/gids-2026-W45.mp4"
+    },
+    {
+      "post": "gids-2026-W45",
+      "kanaal": "tiktok",
+      "bufferId": "6ae8c6b5dd69ed08c74c7219",
+      "dueAt": "2026-11-08T18:00:00.000Z",
+      "aangemaakt": "2026-11-02T17:21:57.427Z",
+      "run": "41489994541",
+      "video": "https://5efzxjafvjqkpihs.public.blob.vercel-storage.com/social/2026-11-08/gids-2026-W45.mp4"
     }
   ]
 }
